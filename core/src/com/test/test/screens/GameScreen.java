@@ -49,6 +49,7 @@ public class GameScreen implements Screen {
     // objects
     private Hero player;
 
+    private Texture tiles;
     private TextureRegion floorTexture;
 
 
@@ -61,8 +62,8 @@ public class GameScreen implements Screen {
         this.gamePort = new FitViewport(SpaceAnts.V_WIDTH, SpaceAnts.V_HEIGHT, cam);
 //        this.hud = new Hud(game.batch);
         this.player = new Hero(this);
-        this.mapRenderer = new OrthogonalTiledMapRenderer(map);
         defineMap();
+        this.mapRenderer = new OrthogonalTiledMapRenderer(map);
         cam.position.set(gamePort.getWorldWidth() / 2, gamePort.getWorldHeight() / 2, 0);
         mapRenderer.setView(cam);
 
@@ -82,58 +83,72 @@ public class GameScreen implements Screen {
         cam.position.x = player.b2body.getPosition().x;
         cam.position.y = player.b2body.getPosition().y;
 
-        cam.update();
-        mapRenderer.setView(cam);
-
         // openGL
         Gdx.gl.glClearColor(0,0,0,1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-//        mapRenderer.render();
+
+        cam.update();
+        mapRenderer.setView(cam);
+        mapRenderer.render();
         b2dr.render(world, cam.combined);
 
         game.batch.setProjectionMatrix(cam.combined);
         game.batch.begin();
-        player.draw(game.batch);
+//        player.draw(game.batch);
         game.batch.end();
     }
 
 
     public void defineMap(){
         //        map = LevelGenerator.NewLevel()
+
+        tiles = new Texture(Gdx.files.internal("textures/gauntness.png"));
+        TextureRegion[][] splitTiles = TextureRegion.split(tiles, 16, 16);
+
+        System.out.println(splitTiles.length);
+
+        map = new TiledMap();
         MapLayers layers = map.getLayers();
-        TiledMapTileLayer layer1 = new TiledMapTileLayer(16, 16, 16, 16);
-        TiledMapTileLayer.Cell cell;
-
-        for( int x = 0; x < 100; x++ ){
-            for( int y = 0; y < 100; y++){
-                cell = new TiledMapTileLayer.Cell();
-                cell.setTile(new StaticTiledMapTile(floorTexture));
-                layer1.setCell(x, y, cell);
+//        for (int l = 0; l < 20; l++) {
+            TiledMapTileLayer layer = new TiledMapTileLayer(115, 160, 16, 16);
+            for (int x = 0; x < splitTiles.length; x++) {
+                for (int y = 0; y < splitTiles[x].length; y++) {
+                    int ty = (int)(Math.random() * splitTiles.length);
+                    int tx = (int)(Math.random() * splitTiles[ty].length);
+                    TiledMapTileLayer.Cell cell = new TiledMapTileLayer.Cell();
+                    cell.setTile(new StaticTiledMapTile(splitTiles[x][y]));
+                    layer.setCell(x, y, cell);
+                }
             }
-        }
-        layers.add(layer1);
+            layers.add(layer);
+//        }
 
-        BodyDef bdef = new BodyDef();
-        PolygonShape shape = new PolygonShape();
-        FixtureDef fdef = new FixtureDef();
-        Body body;
 
-        for(MapObject object : map.getLayers().get(0).getObjects().getByType(RectangleMapObject.class)){
-            Rectangle rect = ((RectangleMapObject) object).getRectangle();
 
-            bdef.type = BodyDef.BodyType.StaticBody;
-            bdef.position.set(rect.getX() + rect.getWidth() / 2, rect.getY() + rect.getHeight() / 2);
-
-            body = world.createBody(bdef);
-
-            shape.setAsBox(rect.getWidth() / 2, rect.getHeight() / 2);
-            fdef.shape = shape;
-            body.createFixture(fdef);
-        }
-
-        System.out.println(map.getLayers().get(0));
-        System.out.println(map);
+//
+//        BodyDef bdef = new BodyDef();
+//        PolygonShape shape = new PolygonShape();
+//        FixtureDef fdef = new FixtureDef();
+//        Body body;
+//
+//        for(MapObject object : map.getLayers().get(0).getObjects().getByType(RectangleMapObject.class)){
+//            System.out.println("loop");
+//            Rectangle rect = ((RectangleMapObject) object).getRectangle();
+//
+//            bdef.type = BodyDef.BodyType.StaticBody;
+//            bdef.position.set(rect.getX() + rect.getWidth() / 2,
+//                              rect.getY() + rect.getHeight() / 2);
+//
+//            body = world.createBody(bdef);
+//
+//            shape.setAsBox(rect.getWidth() / 2, rect.getHeight() / 2);
+//            fdef.shape = shape;
+//            body.createFixture(fdef);
+//        }
+//
+//        System.out.println(map.getLayers().get(0));
+//        System.out.println(map);
     }
 
     public void defineHero(){
@@ -148,14 +163,15 @@ public class GameScreen implements Screen {
     public void handleInput(float dt){
         //control our player using immediate impulses
         if(player.currentState != Hero.State.DEAD) {
-            if (Gdx.input.isKeyJustPressed(Input.Keys.UP))
-                player.b2body.applyLinearImpulse(new Vector2(0, 0.1f), player.b2body.getWorldCenter(), true);
+            if (Gdx.input.isKeyPressed(Input.Keys.UP)){
+                player.b2body.applyLinearImpulse(new Vector2(0, 2f), player.b2body.getWorldCenter(), true);
+            }
             if (Gdx.input.isKeyPressed(Input.Keys.RIGHT))
-                player.b2body.applyLinearImpulse(new Vector2(0.1f, 0), player.b2body.getWorldCenter(), true);
+                player.b2body.applyLinearImpulse(new Vector2(2f, 0), player.b2body.getWorldCenter(), true);
             if (Gdx.input.isKeyPressed(Input.Keys.LEFT))
-                player.b2body.applyLinearImpulse(new Vector2(-0.1f, 0), player.b2body.getWorldCenter(), true);
-            if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN))
-                player.b2body.applyLinearImpulse(new Vector2(0, -0.1f), player.b2body.getWorldCenter(), true);
+                player.b2body.applyLinearImpulse(new Vector2(-2f, 0), player.b2body.getWorldCenter(), true);
+            if (Gdx.input.isKeyPressed(Input.Keys.DOWN))
+                player.b2body.applyLinearImpulse(new Vector2(0, -2f), player.b2body.getWorldCenter(), true);
         }
 
     }

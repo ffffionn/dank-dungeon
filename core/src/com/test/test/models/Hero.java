@@ -1,10 +1,8 @@
 package com.test.test.models;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.test.test.screens.GameScreen;
 
@@ -46,14 +44,15 @@ public class Hero extends Sprite {
 
         FixtureDef fdef = new FixtureDef();
         CircleShape shape = new CircleShape();
-        shape.setRadius(5f);
+        shape.setRadius(10);
         fdef.shape = shape;
 
         b2body.createFixture(fdef);
     }
 
     public void update(float dt){
-        setPosition(b2body.getPosition().x - getWidth() / 2, b2body.getPosition().y - getHeight() / 2);
+        setPosition(b2body.getPosition().x - getWidth() / 2,
+                    b2body.getPosition().y - getHeight() / 2);
     }
 
     public boolean isDead(){

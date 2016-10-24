@@ -20,54 +20,37 @@ public class SpaceAnts extends Game {
     public static int V_WIDTH = 800;
     public static int V_HEIGHT = 480;
 
-    private static int WIDTH;
-    private static int HEIGHT;
-
     public static OrthographicCamera cam;
 
     public SpriteBatch batch;
-	private Texture[] textures;
-	private BitmapFont font;
+
     private Runnable sleepTask, countTask;
 
 	private static final int NUM_THREADS = 4;
 	private static final int MAX_TASKS = 4;
 
-    private ExecutorService pool;// = Executors.newFixedThreadPool(NUM_THREADS);
+    private ExecutorService pool = Executors.newFixedThreadPool(NUM_THREADS);
 	private List<GameWorker> workers;
 	private ConcurrentLinkedQueue<Runnable> tasks;
 
 	int fps;
 	long lastFPS;
-    FPSLogger log;
+    private FPSLogger log;
 
 	@Override
 	public void create () {
         this.batch = new SpriteBatch();
-        log = new FPSLogger();
-        this.font = new BitmapFont();
-        this.textures = new Texture[10];
-		this.workers = new ArrayList<GameWorker>();
+        this.log = new FPSLogger();
+    	this.workers = new ArrayList<GameWorker>();
         this.tasks = new ConcurrentLinkedQueue<Runnable>();
-//        WIDTH = Gdx.graphics.getWidth();
-//        HEIGHT = Gdx.graphics.getHeight();
 
         setScreen(new GameScreen(this));
-
 	}
 
 	@Override
 	public void render () {
         super.render();
-//		drawGL();
         log.log();
-	}
-
-	public void drawGL(){
-        Gdx.gl.glClearColor(0, 0, 0, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        batch.begin();
-        batch.end();
 	}
 
 	@Override
@@ -90,20 +73,5 @@ public class SpaceAnts extends Game {
             System.out.println("shutdown finished");
         }
 	}
-
-    @Override
-    public void pause(){
-        super.pause();
-    }
-
-    @Override
-    public void resume(){
-        super.resume();
-    }
-
-    @Override
-    public void resize(int width, int height){
-        super.resize(width, height);
-    }
 
 }
