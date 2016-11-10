@@ -20,6 +20,8 @@ public class SpaceAnts extends Game {
     public static int V_WIDTH = 800;
     public static int V_HEIGHT = 480;
 
+    public static final float PPM = 100;
+
     public static OrthographicCamera cam;
 
     public SpriteBatch batch;
