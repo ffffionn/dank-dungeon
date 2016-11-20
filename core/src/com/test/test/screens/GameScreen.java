@@ -33,6 +33,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.test.test.models.Hero;
 import com.test.test.SpaceAnts;
 import com.test.test.scenes.Hud;
+import com.test.test.utils.LevelDefiner;
 
 import static com.test.test.SpaceAnts.PPM;
 import static com.test.test.SpaceAnts.V_HEIGHT;
@@ -50,6 +51,7 @@ public class GameScreen implements Screen {
     private Viewport gamePort;
     private Hud hud;
 
+    private TextureAtlas atlas;
 
     // map
     private TiledMap map;
@@ -69,7 +71,7 @@ public class GameScreen implements Screen {
     private TextureRegion heroTexture;
 
     private AssetManager assetManager;
-
+    private LevelDefiner ld;
 
     public GameScreen(SpaceAnts game){
         this.game = game;
@@ -79,11 +81,14 @@ public class GameScreen implements Screen {
         cam.setToOrtho(false, V_WIDTH / 2 / PPM, V_HEIGHT / 2 / PPM);
         assetManager = new AssetManager();
         this.map = new TiledMap();
+        atlas = new TextureAtlas("animations/player.pack");
         this.gamePort = new FitViewport(SpaceAnts.V_WIDTH / PPM, SpaceAnts.V_HEIGHT / PPM , cam);
 //        this.hud = new Hud(game.batch);
-        defineCursor();
+//        defineCursor();
+        this.ld = new LevelDefiner(world, this);
+        this.cursorBody = ld.defineCursor();
         defineMap();
-        this.player = new Hero(this, heroTexture);
+        this.player = ld.defineHero(heroTexture);
 
         this.mapRenderer = new OrthogonalTiledMapRenderer(map, 1 / PPM);
         cam.position.set(gamePort.getWorldWidth() / PPM, gamePort.getWorldHeight() / 2 / PPM, 0);
@@ -193,24 +198,6 @@ public class GameScreen implements Screen {
     }
 
 
-    public void defineCursor(){
-        BodyDef bdef = new BodyDef();
-        bdef.type = BodyDef.BodyType.StaticBody;
-        bdef.position.set(32 / PPM, 32 / PPM);
-
-        CircleShape shape = new CircleShape();
-        shape.setRadius(5 / PPM);
-
-        FixtureDef fdef = new FixtureDef();
-        fdef.shape = shape;
-        fdef.density = 0f;
-        fdef.friction = 0f;
-        fdef.isSensor = true;
-        fdef.restitution = 0f;
-
-        this.cursorBody = world.createBody(bdef);
-        cursorBody.createFixture(fdef);
-    }
 
     @Override
     public void show() {
@@ -238,9 +225,6 @@ public class GameScreen implements Screen {
             if (Gdx.input.isKeyPressed(Input.Keys.S) && player.b2body.getLinearVelocity().y >= -MAX_VELOCITY) {
                 player.b2body.applyLinearImpulse(new Vector2(0, -0.2f), player.b2body.getWorldCenter(), true);
             }
-            if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
-                player.b2body.applyTorque(2f, true);
-            }
         }
 
     }
@@ -256,7 +240,7 @@ public class GameScreen implements Screen {
         player.b2body.setTransform(player.b2body.getPosition(),
                                    MathUtils.atan2(y - player.b2body.getPosition().y,
                                                    x - player.b2body.getPosition().x));
-        player.setRotation(angle * MathUtils.radiansToDegrees);
+        player.sprite.setRotation(angle * MathUtils.radiansToDegrees);
     }
 
 
@@ -309,6 +293,8 @@ public class GameScreen implements Screen {
     public Hud getHud(){
         return this.hud;
     }
+
+    public TextureAtlas getAtlas(){ return this.atlas; }
 
     public World getWorld(){
         return this.world;
