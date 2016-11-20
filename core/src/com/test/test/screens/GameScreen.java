@@ -18,6 +18,7 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.test.test.models.Enemy;
 import com.test.test.models.Fireball;
 import com.test.test.models.Hero;
 import com.test.test.SpaceAnts;
@@ -57,7 +58,7 @@ public class GameScreen implements Screen {
     private Body cursorBody;
 
     private Texture tiles;
-
+    private Array<Enemy> enemies;
 
 
     private AssetManager assetManager;
@@ -69,14 +70,16 @@ public class GameScreen implements Screen {
         this.b2dr = new Box2DDebugRenderer();
         this.cam = new OrthographicCamera();
         cam.setToOrtho(false, V_WIDTH / 2 / PPM, V_HEIGHT / 2 / PPM);
+
         this.assetManager = new AssetManager();
         this.map = new TiledMap();
+        this.enemies = new Array<Enemy>();
         this.atlas = new TextureAtlas("animations/player.pack");
         this.gamePort = new FitViewport(SpaceAnts.V_WIDTH / PPM, SpaceAnts.V_HEIGHT / PPM , cam);
+        this.tiles = new Texture(Gdx.files.internal("textures/dungeon_tiles2.png"));
 //        this.hud = new Hud(game.batch);
         this.ld = new LevelDefiner(world, this);
         this.cursorBody = ld.defineCursor();
-        this.tiles = new Texture(Gdx.files.internal("textures/dungeon_tiles2.png"));
         this.player = ld.defineHero();
         ld.defineMap(tiles);
 
@@ -84,8 +87,8 @@ public class GameScreen implements Screen {
         cam.position.set(gamePort.getWorldWidth() / PPM, gamePort.getWorldHeight() / 2 / PPM, 0);
         cam.zoom -= 0.6;
         mapRenderer.setView(cam);
-
-        //set Player animation frams
+        enemies.add(ld.defineEnemy());
+        //set Player animation frames
         TextureAtlas.AtlasRegion region = atlas.findRegion("player-move");
         TextureRegion[] moveFrames = region.split(64, 64)[0];
         player.setTexture(moveFrames[0]);
@@ -98,6 +101,9 @@ public class GameScreen implements Screen {
         stepWorld();
 
         player.update(delta);
+        for( Enemy e : enemies ){
+            e.update(delta);
+        }
         cam.position.x = player.getPosition().x;
         cam.position.y = player.getPosition().y;
         cam.update();
@@ -123,7 +129,7 @@ public class GameScreen implements Screen {
 
     public void handleInput(float dt){
 
-        float MAX_VELOCITY = 2.0f;
+        float MAX_VELOCITY = 1.4f;
         faceCursor();
 //
 //        System.out.printf("**MOUSE: %f : %f \t", cursorBody.getPosition().x * PPM, cursorBody.getPosition().y * PPM);

@@ -83,9 +83,6 @@ public class Hero extends B2DSprite {
 
         Fireball fireball = new Fireball(b2body, screen.getCursor().getPosition());
         fireballs.add(fireball);
-
-//        fireball.getBody().setLinearVelocity(new Vector2(1, 1));
-//        fireball.getBody().applyLinearImpulse(0, 500000f, fireball.getBody().getWorldCenter().x, fireball.getBody().getWorldCenter().y, true);
         return fireball;
     }
 

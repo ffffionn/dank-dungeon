@@ -9,6 +9,7 @@ import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.test.test.models.B2DSprite;
+import com.test.test.models.Enemy;
 import com.test.test.models.Fireball;
 import com.test.test.models.Hero;
 import com.test.test.screens.GameScreen;
@@ -31,7 +32,7 @@ public class LevelDefiner {
 
     public Hero defineHero(){
         BodyDef bdef = new BodyDef();
-        bdef.position.set(60 / PPM, 60 / PPM);
+        bdef.position.set(220 / PPM, 220 / PPM);
         bdef.type = BodyDef.BodyType.DynamicBody;
         bdef.linearDamping = 5.0f;
         bdef.fixedRotation = true;
@@ -51,7 +52,7 @@ public class LevelDefiner {
         return player;
     }
 
-    public B2DSprite defineEnemy(){
+    public Enemy defineEnemy(){
         BodyDef bdef = new BodyDef();
         bdef.position.set(60 / PPM, 60 / PPM);
         bdef.type = BodyDef.BodyType.DynamicBody;
@@ -68,7 +69,7 @@ public class LevelDefiner {
 
         b2body.createFixture(fdef);
 
-        return new B2DSprite(b2body);
+        return new Enemy(b2body);
     }
 
 

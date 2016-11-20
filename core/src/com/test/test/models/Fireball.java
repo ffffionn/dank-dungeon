@@ -11,7 +11,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 public class Fireball extends B2DSprite {
 
     private Vector2 position, velocity, acceleration;
-    private static final float BULLET_SPEED = 1;
+    private static final float BULLET_SPEED = 1.5f;
 
     public Fireball(Body body, Vector2 target){
         super(body);
