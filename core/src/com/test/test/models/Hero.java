@@ -1,6 +1,8 @@
 package com.test.test.models;
 
+import static  com.test.test.SpaceAnts.PPM;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -24,6 +26,8 @@ public class Hero extends Sprite {
 
     public World world;
 
+    private Animation animation;
+
     private boolean isDead;
     private GameScreen screen;
     private int health;
@@ -35,47 +39,33 @@ public class Hero extends Sprite {
     public Hero(GameScreen screen, TextureRegion texture){
         this.screen = screen;
         this.world = screen.getWorld();
+//        animation = new Animation()
         currentState = State.STANDING;
         previousState = State.STANDING;
         health = 100;
         isDead = false;
-        setBounds(0, 0, 16 / SpaceAnts.PPM, 16 / SpaceAnts.PPM);
+        setBounds(0, 0, 16 / PPM, 16 / PPM);
         setRegion(texture);
+        setOriginCenter();
 
         define();
     }
 
     public void define(){
         BodyDef bdef = new BodyDef();
-        bdef.position.set(32 / SpaceAnts.PPM, 32 / SpaceAnts.PPM);
+        bdef.position.set(60 / PPM, 60 / PPM);
         bdef.type = BodyDef.BodyType.DynamicBody;
-        bdef.fixedRotation = false;
-        bdef.linearDamping = 3.0f;
+        bdef.linearDamping = 5.0f;
+        bdef.fixedRotation = true;
         this.b2body = world.createBody(bdef);
-
-//        bdef = new BodyDef();
-//        bdef.type = BodyDef.BodyType.KinematicBody;
-//        bdef.position.set(32 / SpaceAnts.PPM, 32 / SpaceAnts.PPM);
-//
-//        this.cursorBody = world.createBody(bdef);
-//
-//        WheelJointDef jointDef = new WheelJointDef();
-//        jointDef.maxMotorTorque = 0f;
-//        jointDef.frequencyHz = 0f;
-//        jointDef.motorSpeed = 0f;
-//        jointDef.dampingRatio = 0f;
-//        jointDef.initialize(b2body, cursorBody, new Vector2(1, 1), new Vector2(1, 1));
-//
-//        WheelJoint joint = (WheelJoint) world.createJoint(jointDef);
-//        joint.setMotorSpeed(1f);
 
         FixtureDef fdef = new FixtureDef();
         CircleShape shape = new CircleShape();
-        shape.setRadius(10 / SpaceAnts.PPM);
+        shape.setRadius(7 / PPM);
         fdef.shape = shape;
 //        fdef.density = 5.0f;
-        fdef.friction = 0.5f;
-        fdef.restitution = 0.1f;
+        fdef.friction = 0.75f;
+        fdef.restitution = 0.0f;
 
         b2body.createFixture(fdef);
     }
@@ -90,7 +80,6 @@ public class Hero extends Sprite {
     }
 
     public void draw(Batch batch){
-        System.out.println("batchin");
         super.draw(batch);
     }
 

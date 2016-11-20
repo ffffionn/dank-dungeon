@@ -35,8 +35,6 @@ public class SpaceAnts extends Game {
 	private List<GameWorker> workers;
 	private ConcurrentLinkedQueue<Runnable> tasks;
 
-	int fps;
-	long lastFPS;
     private FPSLogger log;
 
 	@Override

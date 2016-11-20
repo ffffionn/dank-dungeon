@@ -3,6 +3,8 @@ package com.test.test.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -12,6 +14,7 @@ import com.badlogic.gdx.maps.MapLayers;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
@@ -19,7 +22,10 @@ import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.physics.box2d.joints.MouseJoint;
+import com.badlogic.gdx.physics.box2d.joints.MouseJointDef;
 import com.badlogic.gdx.physics.box2d.joints.WheelJoint;
 import com.badlogic.gdx.physics.box2d.joints.WheelJointDef;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -27,6 +33,10 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.test.test.models.Hero;
 import com.test.test.SpaceAnts;
 import com.test.test.scenes.Hud;
+
+import static com.test.test.SpaceAnts.PPM;
+import static com.test.test.SpaceAnts.V_HEIGHT;
+import static com.test.test.SpaceAnts.V_WIDTH;
 
 /**
  * Created by Fionn on 22/10/2016.
@@ -58,22 +68,26 @@ public class GameScreen implements Screen {
     private TextureRegion floorTexture;
     private TextureRegion heroTexture;
 
+    private AssetManager assetManager;
+
 
     public GameScreen(SpaceAnts game){
         this.game = game;
         this.world = new World(new Vector2(0, 0), true);
         this.b2dr = new Box2DDebugRenderer();
         this.cam = new OrthographicCamera();
-        cam.setToOrtho(false, 10, 20);
+        cam.setToOrtho(false, V_WIDTH / 2 / PPM, V_HEIGHT / 2 / PPM);
+        assetManager = new AssetManager();
         this.map = new TiledMap();
-        this.gamePort = new FitViewport(SpaceAnts.V_WIDTH / SpaceAnts.PPM, SpaceAnts.V_HEIGHT / SpaceAnts.PPM , cam);
+        this.gamePort = new FitViewport(SpaceAnts.V_WIDTH / PPM, SpaceAnts.V_HEIGHT / PPM , cam);
 //        this.hud = new Hud(game.batch);
-        this.player = new Hero(this, heroTexture);
         defineCursor();
         defineMap();
-        this.mapRenderer = new OrthogonalTiledMapRenderer(map, 1 / SpaceAnts.PPM);
-        cam.position.set(gamePort.getWorldWidth() / 2, gamePort.getWorldHeight() / 2, 0);
-        cam.zoom -= 0.3;
+        this.player = new Hero(this, heroTexture);
+
+        this.mapRenderer = new OrthogonalTiledMapRenderer(map, 1 / PPM);
+        cam.position.set(gamePort.getWorldWidth() / PPM, gamePort.getWorldHeight() / 2 / PPM, 0);
+        cam.zoom -= 0.6;
         mapRenderer.setView(cam);
 
 
@@ -92,20 +106,20 @@ public class GameScreen implements Screen {
         player.update(delta);
         cam.position.x = player.b2body.getPosition().x;
         cam.position.y = player.b2body.getPosition().y;
-
-        // openGL
-        Gdx.gl.glClearColor(100f / 255f, 100f / 255f, 250f / 255f, 1f);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-
         cam.update();
         mapRenderer.setView(cam);
+
+        // openGL
+        Gdx.gl.glClearColor(100f / 255f, 100f / 255f, 100f / 255f, 1f);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
         mapRenderer.render();
         b2dr.render(world, cam.combined);
 
+
         game.batch.setProjectionMatrix(cam.combined);
         game.batch.begin();
-//        player.draw(game.batch);
+        player.draw(game.batch);
         game.batch.end();
     }
 
@@ -114,77 +128,88 @@ public class GameScreen implements Screen {
         //        map = LevelGenerator.NewLevel()
 
         tiles = new Texture(Gdx.files.internal("textures/dungeon_tiles2.png"));
-        TextureRegion[][] splitTiles = TextureRegion.split(tiles, 20, 20);
+        int tileSize = 20;
+        TextureRegion[][] splitTiles = TextureRegion.split(tiles, tileSize, tileSize);
+
+        /* tmx */
+//        map = new TmxMapLoader().load("test.tmx");
+//        assetManager.setLoader(TiledMap.class, new TmxMapLoader(new InternalFileHandleResolver()));
+//        assetManager.load("test.tmx", TiledMap.class);
+//        assetManager.finishLoading();
+//        map = assetManager.get("test.tmx");
+//
+//        TiledMapTileLayer layer = (TiledMapTileLayer) map.getLayers().get("floor");
+//        for( int row = 0; row < layer.getHeight(); row++){
+//            for(int col = 0; col <  layer.getWidth(); col++){
+//                TiledMapTileLayer.Cell cell = layer.getCell(col, row);
+//
+//                if (cell == null) continue;
+//                if (cell.getTile() == null) continue;
+//                if (cell.getTile().getProperties().containsKey("type")){
+//                    BodyDef bdef = new BodyDef();
+//                    bdef.type = BodyDef.BodyType.StaticBody;
+//                    // center of tile
+//                    bdef.position.set(
+//                        (col + 0.5f) * tileSize * PPM,
+//                        (row + 0.5f) * tileSize * PPM
+//                    );
+//                    System.out.println("type");
+//
+//                }
+//            }
+//        }
+
 
         TextureRegion centreFloor = splitTiles[1][1];
-
-        System.out.println(splitTiles.length);
-
+        heroTexture = splitTiles[4][4];
         map = new TiledMap();
         MapLayers layers = map.getLayers();
 
-        // layer 0
-        TiledMapTileLayer layer = new TiledMapTileLayer(240, 240, 20, 20);
+        TiledMapTileLayer layer = new TiledMapTileLayer(16, 16, tileSize, tileSize);
         for (int x = 0; x < layer.getWidth(); x++) {
             for (int y = 0; y < layer.getHeight(); y++) {
                 TiledMapTileLayer.Cell cell = new TiledMapTileLayer.Cell();
                 cell.setTile(new StaticTiledMapTile(centreFloor));
                 System.out.println("Y = " + y);
                 layer.setCell(y, x, cell);
+                if(x == 0 || y == 0 || x == 15 || y == 15){
+                    Vector2 centre = new Vector2((x + 0.5f) * tileSize / 2 / PPM,
+                                                 (y + 0.5f) * tileSize / 2 /PPM);
+                    BodyDef bdef = new BodyDef();
+                    bdef.type = BodyDef.BodyType.StaticBody;
+                    bdef.position.set(centre);
+
+                    PolygonShape wall = new PolygonShape();
+                    wall.setAsBox(tileSize / 2 / PPM, tileSize / 2 / PPM, centre, 0);
+                    FixtureDef fdef = new FixtureDef();
+                    fdef.shape = wall;
+
+                    world.createBody(bdef).createFixture(fdef);
+                }
             }
-            System.out.println("X = " + x);
         }
 
         layers.add(layer);
-
-
-        // layer 1
-        layer = new TiledMapTileLayer(240, 240, 20, 20);
-        for (int x = 0; x < splitTiles.length; x++) {
-            for (int y = 0; y < splitTiles[x].length; y++) {
-                TiledMapTileLayer.Cell cell = new TiledMapTileLayer.Cell();
-                cell.setTile(new StaticTiledMapTile(splitTiles[x][y]));
-                System.out.println("Y = " + y);
-//                        layer.setCell(y, x, cell.setRotation(TiledMapTileLayer.Cell.ROTATE_90));
-                layer.setCell(y, x, cell);
-            }
-            System.out.println("X = " + x);
-        }
-
-//        layers.add(layer);
-
-
     }
 
 
     public void defineCursor(){
         BodyDef bdef = new BodyDef();
-        bdef.type = BodyDef.BodyType.DynamicBody;
-        bdef.position.set(32 / SpaceAnts.PPM, 32 / SpaceAnts.PPM);
+        bdef.type = BodyDef.BodyType.StaticBody;
+        bdef.position.set(32 / PPM, 32 / PPM);
 
-        this.cursorBody = world.createBody(bdef);
-
+        CircleShape shape = new CircleShape();
+        shape.setRadius(5 / PPM);
 
         FixtureDef fdef = new FixtureDef();
-        CircleShape shape = new CircleShape();
-        shape.setRadius(5 / SpaceAnts.PPM);
         fdef.shape = shape;
         fdef.density = 0f;
         fdef.friction = 0f;
+        fdef.isSensor = true;
         fdef.restitution = 0f;
 
+        this.cursorBody = world.createBody(bdef);
         cursorBody.createFixture(fdef);
-
-        WheelJointDef jointDef = new WheelJointDef();
-        jointDef.maxMotorTorque = 0f;
-        jointDef.frequencyHz = 0f;
-        jointDef.motorSpeed = 0f;
-        jointDef.dampingRatio = 0f;
-        jointDef.initialize(player.b2body, cursorBody, player.b2body.getPosition(), new Vector2(1, 1));
-
-        WheelJoint joint = (WheelJoint) world.createJoint(jointDef);
-        joint.setMotorSpeed(0f);
-
     }
 
     @Override
@@ -193,42 +218,45 @@ public class GameScreen implements Screen {
     }
 
     public void handleInput(float dt){
-        //control our player using immediate impulses
 
-        float x = (float) Gdx.input.getX();
-        float y = (float) Gdx.input.getY();
-//        float h = (float) Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+        float MAX_VELOCITY = 1.2f;
+        faceCursor();
 
-        float angle = player.b2body.getPosition().angle(new Vector2(x, y));
-//
-        player.b2body.setTransform(player.b2body.getPosition(), MathUtils.degreesToRadians * angle);
-//        cursorBody.setTransform(new Vector2(x, y), 0);
-
-//        System.out.printf("X: %f   Y: %f   Angle: %f  \n", x, y, MathUtils.degreesToRadians * angle);
-        System.out.printf("X: %f   Y: %f   Angle: %f  \n", player.b2body.getPosition().x, player.b2body.getPosition().y, MathUtils.degreesToRadians * angle);
-//        System.out.printf("X: %f   Y: %f   Angle: %f  \n", cursorBody.getPosition().x, cursorBody.getPosition().y, MathUtils.degreesToRadians * angle);
+        System.out.printf("**MOUSE: %f : %f \t", cursorBody.getPosition().x * PPM, cursorBody.getPosition().y * PPM);
+        System.out.printf("**PLAYER: %f : %f \n", player.b2body.getPosition().x * PPM, player.b2body.getPosition().y * PPM);
 
         if(player.currentState != Hero.State.DEAD) {
-            if (Gdx.input.isKeyPressed(Input.Keys.W) && player.b2body.getLinearVelocity().y <= 1) {
+            if (Gdx.input.isKeyPressed(Input.Keys.W) && player.b2body.getLinearVelocity().y <= MAX_VELOCITY) {
                 player.b2body.applyLinearImpulse(new Vector2(0, 0.2f), player.b2body.getWorldCenter(), true);
-//                player.b2body.setTransform(player.b2body.getPosition(), 1.5f);
             }
-            if (Gdx.input.isKeyPressed(Input.Keys.D) && player.b2body.getLinearVelocity().x <= 1) {
+            if (Gdx.input.isKeyPressed(Input.Keys.D) && player.b2body.getLinearVelocity().x <= MAX_VELOCITY) {
                 player.b2body.applyLinearImpulse(new Vector2(0.2f, 0), player.b2body.getWorldCenter(), true);
-//                player.b2body.setTransform(player.b2body.getPosition(), 0.0f);
             }
-            if (Gdx.input.isKeyPressed(Input.Keys.A) && player.b2body.getLinearVelocity().x >= -1) {
-//                player.b2body.setTransform(player.b2body.getPosition(), 3.1f);
+            if (Gdx.input.isKeyPressed(Input.Keys.A) && player.b2body.getLinearVelocity().x >= -MAX_VELOCITY) {
                 player.b2body.applyLinearImpulse(new Vector2(-0.2f, 0), player.b2body.getWorldCenter(), true);
             }
-            if (Gdx.input.isKeyPressed(Input.Keys.S) && player.b2body.getLinearVelocity().y >= -1) {
+            if (Gdx.input.isKeyPressed(Input.Keys.S) && player.b2body.getLinearVelocity().y >= -MAX_VELOCITY) {
                 player.b2body.applyLinearImpulse(new Vector2(0, -0.2f), player.b2body.getWorldCenter(), true);
-//                player.b2body.setTransform(player.b2body.getPosition(), -1.5f);
             }
             if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
                 player.b2body.applyTorque(2f, true);
             }
         }
+
+    }
+
+    private void faceCursor(){
+        // get the game-world translation of the mouse position
+        Vector3 v3 = cam.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+        float x = v3.x;
+        float y = v3.y;
+        float angle = MathUtils.atan2(y - player.b2body.getPosition().y, x - player.b2body.getPosition().x);
+
+        cursorBody.setTransform(new Vector2(x, y), 0);
+        player.b2body.setTransform(player.b2body.getPosition(),
+                                   MathUtils.atan2(y - player.b2body.getPosition().y,
+                                                   x - player.b2body.getPosition().x));
+        player.setRotation(angle * MathUtils.radiansToDegrees);
     }
 
 
