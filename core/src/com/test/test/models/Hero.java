@@ -1,94 +1,58 @@
 package com.test.test.models;
 
 import static com.test.test.SpaceAnts.PPM;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+
+import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 import com.test.test.screens.GameScreen;
-import com.test.test.utils.Animation;
 
 /**
  * Created by Fionn on 22/10/2016.
  */
-public class Hero  {
+public class Hero extends B2DSprite {
     public enum State { STANDING, MOVING, ATTACKING, DEAD }
     public State currentState;
     public State previousState;
-
-    public Body b2body;
-    public Body cursorBody;
-
-    public World world;
-
-    private Animation animation;
-
-    private boolean isDead;
+    private World world;
+    private Array<Fireball> fireballs;
     private GameScreen screen;
-    private int health;
 
-    public Sprite sprite;
-
-    private TextureRegion playerTexture;
-    private TextureAtlas.AtlasRegion moveRegion;
-
-
-    public Hero(GameScreen screen, TextureRegion texture){
+    public Hero(Body body, World world, GameScreen screen){
+        super(body);
         this.screen = screen;
-        this.world = screen.getWorld();
+        this.world = world;
         currentState = State.STANDING;
         previousState = State.STANDING;
-        health = 100;
-        isDead = false;
-        sprite = new Sprite(texture);
-        sprite.setBounds(0, 0, 16 / PPM, 16 / PPM);
-        sprite.setOriginCenter();
-        sprite.rotate90(true);
+        fireballs = new Array<Fireball>();
 
-        TextureAtlas.AtlasRegion region = screen.getAtlas().findRegion("player-move");
-        System.out.println(screen.getAtlas().getRegions().toString());
-        System.out.println(region.toString());
-        TextureRegion[] moveFrames = region.split(64, 64)[0];
-
-        animation = new Animation(moveFrames, 1 / 12f);
-
-//        define();
     }
 
-    public void define(){
-        BodyDef bdef = new BodyDef();
-        bdef.position.set(60 / PPM, 60 / PPM);
-//        bdef.angle = -2.7f;
-        bdef.type = BodyDef.BodyType.DynamicBody;
-        bdef.linearDamping = 5.0f;
-        bdef.fixedRotation = true;
-        this.b2body = world.createBody(bdef);
-
-        FixtureDef fdef = new FixtureDef();
-        CircleShape shape = new CircleShape();
-        shape.setRadius(7 / PPM);
-        fdef.shape = shape;
-        fdef.friction = 0.75f;
-        fdef.restitution = 0.0f;
-
-        b2body.createFixture(fdef);
+    @Override
+    public void setTexture(TextureRegion texture){
+//        sprite.setBounds(0, 0, texture.getRegionWidth() / PPM, texture.getRegionHeight() / PPM);
+        sprite.setBounds(0, 0, 16 / PPM, 16 / PPM);
+        sprite.setOriginCenter();
+        sprite.setRegion(texture);
     }
 
     public void update(float dt){
+        if( b2body.getLinearVelocity().x == 0 && b2body.getLinearVelocity().y == 0 ){
+            currentState = State.STANDING;
+        }else{
+            currentState = State.MOVING;
+        }
+//        System.out.println(currentState.toString());
         sprite.setPosition(b2body.getPosition().x - sprite.getWidth() / 2,
-                    b2body.getPosition().y - sprite.getHeight() / 2);
+                b2body.getPosition().y - sprite.getHeight() / 2);
         animation.update(dt);
+        for(Fireball fb : fireballs){
+            fb.update(dt);
+        }
     }
 
-    public boolean isDead(){
-        return this.isDead;
-    }
-
-    public void draw(Batch batch){
+    public void render(SpriteBatch batch){
         sprite.setRegion(animation.getFrame());
 
         // rotate region 90 first for perf.
@@ -96,6 +60,34 @@ public class Hero  {
         sprite.draw(batch);
     }
 
+    public Fireball shoot(){
+
+        BodyDef bdef = new BodyDef();
+        bdef.position.set(b2body.getPosition());
+        bdef.fixedRotation = true;
+        bdef.linearDamping = 0.0f;
+        bdef.type = BodyDef.BodyType.DynamicBody;
+
+        Body b2body = world.createBody(bdef);
+
+        FixtureDef fdef = new FixtureDef();
+        CircleShape shape = new CircleShape();
+        shape.setRadius(2 / PPM);
+        fdef.shape = shape;
+        fdef.friction = 0.0f;
+        fdef.restitution = 0.0f;
+        // check against enemy/wall bits
+        fdef.isSensor = true;
+
+        b2body.createFixture(fdef);
+
+        Fireball fireball = new Fireball(b2body, screen.getCursor().getPosition());
+        fireballs.add(fireball);
+
+//        fireball.getBody().setLinearVelocity(new Vector2(1, 1));
+//        fireball.getBody().applyLinearImpulse(0, 500000f, fireball.getBody().getWorldCenter().x, fireball.getBody().getWorldCenter().y, true);
+        return fireball;
+    }
 
 
 }

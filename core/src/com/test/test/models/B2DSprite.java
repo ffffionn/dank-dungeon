@@ -1,5 +1,6 @@
 package com.test.test.models;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -20,9 +21,21 @@ public class B2DSprite{
     protected float width;
     protected float height;
 
+    private int health;
+    private boolean isDead;
+
     public B2DSprite(Body body){
         this.b2body = body;
         animation = new Animation();
+        health = 100;
+        isDead = false;
+        sprite = new Sprite();
+    }
+
+    public void setTexture(TextureRegion texture){
+        sprite.setBounds(0, 0, texture.getRegionWidth() / PPM, texture.getRegionHeight() / PPM);
+        sprite.setRegion(texture);
+        sprite.setOriginCenter();
     }
 
     public void setAnimation(TextureRegion[] reg, float delay) {
@@ -32,22 +45,25 @@ public class B2DSprite{
     }
 
     public void update(float dt) {
-        animation.update(dt);
+        sprite.setPosition(b2body.getPosition().x - sprite.getWidth() / 2,
+                           b2body.getPosition().y - sprite.getHeight() / 2);
+//        animation.update(dt);
     }
 
     public void render(SpriteBatch sb) {
-        sb.begin();
-        sb.draw(
-                animation.getFrame(),
-                b2body.getPosition().x * PPM - width / 2,
-                b2body.getPosition().y * PPM - height / 2
-        );
-        sb.end();
+        sprite.setRegion(animation.getFrame());
+        sprite.draw(sb);
     }
+
+    public Sprite getSprite(){ return this.sprite; }
 
     public Body getBody() { return b2body; }
     public Vector2 getPosition() { return b2body.getPosition(); }
     public float getWidth() { return width; }
     public float getHeight() { return height; }
+
+    public boolean isDead(){
+        return this.isDead;
+    }
 
 }

@@ -50,7 +50,7 @@ public class SpaceAnts extends Game {
 	@Override
 	public void render () {
         super.render();
-        log.log();
+//        log.log();
 	}
 
 	@Override
