@@ -24,6 +24,7 @@ import com.test.test.models.Hero;
 import com.test.test.SpaceAnts;
 import com.test.test.scenes.Hud;
 import com.test.test.utils.LevelDefiner;
+import com.test.test.utils.WorldContactListener;
 import javafx.scene.input.MouseButton;
 
 import static com.test.test.SpaceAnts.PPM;
@@ -71,6 +72,8 @@ public class GameScreen implements Screen {
         this.cam = new OrthographicCamera();
         cam.setToOrtho(false, V_WIDTH / 2 / PPM, V_HEIGHT / 2 / PPM);
 
+        world.setContactListener(new WorldContactListener(world));
+
         this.assetManager = new AssetManager();
         this.map = new TiledMap();
         this.enemies = new Array<Enemy>();
@@ -88,6 +91,7 @@ public class GameScreen implements Screen {
         cam.zoom -= 0.6;
         mapRenderer.setView(cam);
         enemies.add(ld.defineEnemy());
+
         //set Player animation frames
         TextureAtlas.AtlasRegion region = atlas.findRegion("player-move");
         TextureRegion[] moveFrames = region.split(64, 64)[0];

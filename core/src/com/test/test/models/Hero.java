@@ -15,18 +15,36 @@ public class Hero extends B2DSprite {
     public enum State { STANDING, MOVING, ATTACKING, DEAD }
     public State currentState;
     public State previousState;
-    private World world;
     private Array<Fireball> fireballs;
     private GameScreen screen;
 
-    public Hero(Body body, World world, GameScreen screen){
+    // animation frames
+    TextureRegion[] moveAnimation;
+    TextureRegion[] standAnimation;
+    TextureRegion[] castAnimation;
+    TextureRegion[] dieAnimation;
+
+
+    public Hero(Body body, GameScreen screen){
         super(body);
         this.screen = screen;
-        this.world = world;
         currentState = State.STANDING;
         previousState = State.STANDING;
         fireballs = new Array<Fireball>();
 
+        // define animations
+        TextureAtlas.AtlasRegion region;
+        region = screen.getAtlas().findRegion("player-move");
+        moveAnimation = region.split(64, 64)[0];
+        region = screen.getAtlas().findRegion("player-cast");
+        castAnimation = region.split(64, 64)[0];
+        region = screen.getAtlas().findRegion("player-die");
+        dieAnimation = region.split(64, 64)[0];
+        region = screen.getAtlas().findRegion("player-strafe");
+        standAnimation = region.split(64, 64)[0];
+
+        setTexture(moveAnimation[0]);
+        setAnimation(moveAnimation, 1 / 12f);
     }
 
     @Override
@@ -38,18 +56,28 @@ public class Hero extends B2DSprite {
     }
 
     public void update(float dt){
-        if( b2body.getLinearVelocity().x == 0 && b2body.getLinearVelocity().y == 0 ){
-            currentState = State.STANDING;
+        if( Math.abs(b2body.getLinearVelocity().x) < 0.1f && Math.abs(b2body.getLinearVelocity().y) < 0.1f ){
+            if( previousState != State.STANDING) {
+                changeState(State.STANDING);
+            }
+            setAnimation(standAnimation, 1/12f);
         }else{
-            currentState = State.MOVING;
+            if( previousState != State.MOVING){
+                setAnimation(moveAnimation, 1/12f);
+            }
+            changeState(State.MOVING);
         }
-//        System.out.println(currentState.toString());
         sprite.setPosition(b2body.getPosition().x - sprite.getWidth() / 2,
                 b2body.getPosition().y - sprite.getHeight() / 2);
         animation.update(dt);
         for(Fireball fb : fireballs){
             fb.update(dt);
         }
+    }
+
+    public void changeState(State s){
+        previousState = currentState;
+        currentState = s;
     }
 
     public void render(SpriteBatch batch){
@@ -68,7 +96,7 @@ public class Hero extends B2DSprite {
         bdef.linearDamping = 0.0f;
         bdef.type = BodyDef.BodyType.DynamicBody;
 
-        Body b2body = world.createBody(bdef);
+        Body b2body = screen.getWorld().createBody(bdef);
 
         FixtureDef fdef = new FixtureDef();
         CircleShape shape = new CircleShape();
@@ -79,7 +107,7 @@ public class Hero extends B2DSprite {
         // check against enemy/wall bits
         fdef.isSensor = true;
 
-        b2body.createFixture(fdef);
+        b2body.createFixture(fdef).setUserData("fireball");
 
         Fireball fireball = new Fireball(b2body, screen.getCursor().getPosition());
         fireballs.add(fireball);

@@ -32,9 +32,9 @@ public class LevelDefiner {
 
     public Hero defineHero(){
         BodyDef bdef = new BodyDef();
-        bdef.position.set(220 / PPM, 220 / PPM);
+        bdef.position.set(220 / PPM, 120 / PPM);
         bdef.type = BodyDef.BodyType.DynamicBody;
-        bdef.linearDamping = 5.0f;
+        bdef.linearDamping = 10.0f;
         bdef.fixedRotation = true;
         Body b2body = world.createBody(bdef);
 
@@ -45,9 +45,9 @@ public class LevelDefiner {
         fdef.friction = 0.75f;
         fdef.restitution = 0.0f;
 
-        b2body.createFixture(fdef);
+        b2body.createFixture(fdef).setUserData("player");
 
-        Hero player = new Hero(b2body, world, screen);
+        Hero player = new Hero(b2body, screen);
 
         return player;
     }
@@ -62,12 +62,12 @@ public class LevelDefiner {
 
         FixtureDef fdef = new FixtureDef();
         CircleShape shape = new CircleShape();
-        shape.setRadius(7 / PPM);
+        shape.setRadius(5 / PPM);
         fdef.shape = shape;
         fdef.friction = 0.75f;
         fdef.restitution = 0.0f;
 
-        b2body.createFixture(fdef);
+        b2body.createFixture(fdef).setUserData("enemy");
 
         return new Enemy(b2body);
     }
