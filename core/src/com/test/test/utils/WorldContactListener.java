@@ -2,6 +2,8 @@ package com.test.test.utils;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.test.test.models.Enemy;
+import com.test.test.models.Fireball;
 
 
 /**
@@ -26,13 +28,17 @@ public class WorldContactListener implements ContactListener{
                 Vector2 v = fa.getBody().getLinearVelocity();
                 fa.getBody().setLinearVelocity(new Vector2(-v.x * 2, -v.y * 2));
                 fb.getBody().setLinearVelocity(new Vector2(v.x, v.y));
-
             }else if(fa.getUserData().equals("enemy") && fb.getUserData().equals("fireball")) {
-                System.out.println(fa.toString());
+                ((Enemy) fa.getBody().getUserData()).setToDestroy();
+                ((Fireball) fb.getBody().getUserData()).setToDestroy();
             }else if(fa.getUserData().equals("fireball") && fb.getUserData().equals("enemy")) {
-                System.out.println(fa.toString());
+                ((Fireball) fa.getBody().getUserData()).setToDestroy();
+                ((Enemy) fb.getBody().getUserData()).setToDestroy();
+            }else if(fa.getUserData().equals("fireball") && fb.getUserData().equals("wall")) {
+                ((Fireball) fa.getBody().getUserData()).setToDestroy();
+            }else if(fa.getUserData().equals("wall") && fb.getUserData().equals("fireball")) {
+                ((Fireball) fb.getBody().getUserData()).setToDestroy();
             }else{
-                System.out.println("....");
 
             }
 

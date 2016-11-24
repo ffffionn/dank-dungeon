@@ -109,7 +109,8 @@ public class Hero extends B2DSprite {
 
         b2body.createFixture(fdef).setUserData("fireball");
 
-        Fireball fireball = new Fireball(b2body, screen.getCursor().getPosition());
+        Fireball fireball = new Fireball(b2body, screen);
+        b2body.setUserData(fireball);
         fireballs.add(fireball);
         return fireball;
     }

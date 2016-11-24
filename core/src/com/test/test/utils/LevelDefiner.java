@@ -69,7 +69,9 @@ public class LevelDefiner {
 
         b2body.createFixture(fdef).setUserData("enemy");
 
-        return new Enemy(b2body);
+        Enemy e = new Enemy(b2body, screen);
+        b2body.setUserData(e);
+        return e;
     }
 
 
@@ -103,6 +105,8 @@ public class LevelDefiner {
         MapLayers layers = screen.getMap().getLayers();
 
         TiledMapTileLayer layer = new TiledMapTileLayer(16, 16, tileSize, tileSize);
+        layers.add(layer);
+
         for (int col = 0; col < layer.getWidth(); col++) {
             for (int row = 0; row < layer.getHeight(); row++) {
                 TiledMapTileLayer.Cell cell = new TiledMapTileLayer.Cell();
@@ -118,8 +122,7 @@ public class LevelDefiner {
                     wall.setAsBox(tileSize / 2 / PPM, tileSize / 2 / PPM, centre, 0);
                     FixtureDef fdef = new FixtureDef();
                     fdef.shape = wall;
-
-                    world.createBody(bdef).createFixture(fdef);
+                    world.createBody(bdef).createFixture(fdef).setUserData("wall");
                     tex = splitTiles[0][8];
                 }
                 cell.setTile(new StaticTiledMapTile(tex));

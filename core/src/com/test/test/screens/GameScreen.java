@@ -24,8 +24,8 @@ import com.test.test.models.Hero;
 import com.test.test.SpaceAnts;
 import com.test.test.scenes.Hud;
 import com.test.test.utils.LevelDefiner;
+import com.test.test.utils.LevelGenerator;
 import com.test.test.utils.WorldContactListener;
-import javafx.scene.input.MouseButton;
 
 import static com.test.test.SpaceAnts.PPM;
 import static com.test.test.SpaceAnts.V_HEIGHT;
@@ -84,13 +84,18 @@ public class GameScreen implements Screen {
         this.ld = new LevelDefiner(world, this);
         this.cursorBody = ld.defineCursor();
         this.player = ld.defineHero();
-        ld.defineMap(tiles);
+//        ld.defineMap(tiles);
+
+        LevelGenerator levelGen = new LevelGenerator(this, tiles);
+        this.map = levelGen.generateLevel(240, 240, 0.0f);
 
         this.mapRenderer = new OrthogonalTiledMapRenderer(map, 1 / PPM);
         cam.position.set(gamePort.getWorldWidth() / PPM, gamePort.getWorldHeight() / 2 / PPM, 0);
-        cam.zoom -= 0.6;
+        cam.zoom += 0.6;
         mapRenderer.setView(cam);
-        enemies.add(ld.defineEnemy());
+        for(int i=0; i < 50; i++){
+            enemies.add(ld.defineEnemy());
+        }
 
         //set Player animation frames
         TextureAtlas.AtlasRegion region = atlas.findRegion("player-move");

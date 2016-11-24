@@ -21,14 +21,17 @@ public class B2DSprite{
     protected float width;
     protected float height;
 
+    protected boolean setToDestroy;
+    protected boolean destroyed;
+
     private int health;
-    private boolean isDead;
 
     public B2DSprite(Body body){
         this.b2body = body;
         animation = new Animation();
         health = 100;
-        isDead = false;
+        destroyed = false;
+        setToDestroy = false;
         sprite = new Sprite();
     }
 
@@ -55,15 +58,11 @@ public class B2DSprite{
         sprite.draw(sb);
     }
 
-    public Sprite getSprite(){ return this.sprite; }
 
+    public void setToDestroy(){ setToDestroy = true; }
+    public Sprite getSprite(){ return this.sprite; }
     public Body getBody() { return b2body; }
     public Vector2 getPosition() { return b2body.getPosition(); }
     public float getWidth() { return width; }
     public float getHeight() { return height; }
-
-    public boolean isDead(){
-        return this.isDead;
-    }
-
 }
