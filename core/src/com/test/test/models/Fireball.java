@@ -19,6 +19,8 @@ public class Fireball extends B2DSprite {
         Vector2 target = screen.getCursor().getPosition();
         position = new Vector2(body.getPosition().x, body.getPosition().y);
         velocity = target.cpy().sub(position).nor().scl(BULLET_SPEED);
+                    b2body.setLinearVelocity(velocity);
+
     }
 
     public void update(float delta) {
@@ -26,7 +28,7 @@ public class Fireball extends B2DSprite {
             screen.getWorld().destroyBody(b2body);
             destroyed = true;
         }else if( !destroyed ){
-            b2body.setLinearVelocity(velocity);
+//            b2body.setLinearVelocity(velocity);
         }
     }
 

@@ -30,9 +30,10 @@ public class LevelDefiner {
         this.screen = screen;
     }
 
-    public Hero defineHero(){
+    public Hero defineHero(int x, int y){
         BodyDef bdef = new BodyDef();
-        bdef.position.set(220 / PPM, 120 / PPM);
+        System.out.printf("X: %d  Y: %d  \n", x, y);
+        bdef.position.set(x * 20/ PPM, y * 20 / PPM);
         bdef.type = BodyDef.BodyType.DynamicBody;
         bdef.linearDamping = 10.0f;
         bdef.fixedRotation = true;
@@ -52,9 +53,9 @@ public class LevelDefiner {
         return player;
     }
 
-    public Enemy defineEnemy(){
+    public Enemy defineEnemy(int x, int y){
         BodyDef bdef = new BodyDef();
-        bdef.position.set(60 / PPM, 60 / PPM);
+        bdef.position.set(x * 20 / PPM, y * 20 / PPM);
         bdef.type = BodyDef.BodyType.DynamicBody;
         bdef.linearDamping = 5.0f;
         bdef.fixedRotation = true;
