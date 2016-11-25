@@ -60,7 +60,7 @@ public class GameScreen implements Screen {
 
     private Texture tiles;
     private Array<Enemy> enemies;
-
+    private float modifier;
 
     private AssetManager assetManager;
     private LevelDefiner ld;
@@ -73,7 +73,7 @@ public class GameScreen implements Screen {
         cam.setToOrtho(false, V_WIDTH / 2 / PPM, V_HEIGHT / 2 / PPM);
 
         world.setContactListener(new WorldContactListener(world));
-
+        this.modifier = 1.0f;
         this.assetManager = new AssetManager();
         this.map = new TiledMap();
         this.enemies = new Array<Enemy>();
@@ -83,18 +83,17 @@ public class GameScreen implements Screen {
 //        this.hud = new Hud(game.batch);
         this.ld = new LevelDefiner(world, this);
         this.cursorBody = ld.defineCursor();
-//        ld.defineMap(tiles);
 
         LevelGenerator levelGen = new LevelGenerator(this, tiles);
-        this.map = levelGen.generateLevel(40, 40, 0.0f);
+        this.map = levelGen.generateLevel(64, 64, 0.0f);
+
         Vector2 start = levelGen.getRandomTile();
-        System.out.println(start.toString());
         this.player = ld.defineHero(Math.round(start.x), Math.round(start.y));
         this.mapRenderer = new OrthogonalTiledMapRenderer(map, 1 / PPM);
         cam.position.set(gamePort.getWorldWidth() / PPM, gamePort.getWorldHeight() / 2 / PPM, 0);
         cam.zoom -= 0.6;
         mapRenderer.setView(cam);
-        for(int i=0; i < 50; i++){
+        for(int i=0; i < 200; i++){
             start = levelGen.getRandomTile();
             enemies.add(ld.defineEnemy(Math.round(start.x), Math.round(start.y)));
         }
@@ -113,6 +112,7 @@ public class GameScreen implements Screen {
 
         player.update(delta);
         for( Enemy e : enemies ){
+            e.setTarget(player.getPosition());
             e.update(delta);
         }
         cam.position.x = player.getPosition().x;
@@ -140,7 +140,7 @@ public class GameScreen implements Screen {
 
     public void handleInput(float dt){
 
-        float MAX_VELOCITY = 7.5f;
+        float MAX_VELOCITY = 2.5f;
         faceCursor();
 //
 //        System.out.printf("**MOUSE: %f : %f \t", cursorBody.getPosition().x * PPM, cursorBody.getPosition().y * PPM);
@@ -148,16 +148,16 @@ public class GameScreen implements Screen {
 
         if(player.currentState != Hero.State.DEAD) {
             if (Gdx.input.isKeyPressed(Input.Keys.W) && player.getBody().getLinearVelocity().y <= MAX_VELOCITY) {
-                player.getBody().applyLinearImpulse(new Vector2(0, 1.2f), player.getBody().getWorldCenter(), true);
+                player.getBody().applyLinearImpulse(new Vector2(0, 0.2f * modifier), player.getBody().getWorldCenter(), true);
             }
             if (Gdx.input.isKeyPressed(Input.Keys.D) && player.getBody().getLinearVelocity().x <= MAX_VELOCITY) {
-                player.getBody().applyLinearImpulse(new Vector2(1.2f, 0), player.getBody().getWorldCenter(), true);
+                player.getBody().applyLinearImpulse(new Vector2(0.2f * modifier, 0), player.getBody().getWorldCenter(), true);
             }
             if (Gdx.input.isKeyPressed(Input.Keys.A) && player.getBody().getLinearVelocity().x >= -MAX_VELOCITY) {
-                player.getBody().applyLinearImpulse(new Vector2(-1.2f, 0), player.getBody().getWorldCenter(), true);
+                player.getBody().applyLinearImpulse(new Vector2(-0.2f * modifier, 0), player.getBody().getWorldCenter(), true);
             }
             if (Gdx.input.isKeyPressed(Input.Keys.S) && player.getBody().getLinearVelocity().y >= -MAX_VELOCITY) {
-                player.getBody().applyLinearImpulse(new Vector2(0, -1.2f), player.getBody().getWorldCenter(), true);
+                player.getBody().applyLinearImpulse(new Vector2(0, -0.2f * modifier), player.getBody().getWorldCenter(), true);
             }
             if (Gdx.input.justTouched()) player.shoot();
             if (Gdx.input.isKeyPressed(Input.Keys.Q)){
@@ -165,6 +165,11 @@ public class GameScreen implements Screen {
             }
             if (Gdx.input.isKeyPressed(Input.Keys.E)){
                 cam.zoom += 0.1f;
+            }
+            if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+                modifier = 3.0f;
+            }else{
+                modifier = 1.0f;
             }
         }
     }

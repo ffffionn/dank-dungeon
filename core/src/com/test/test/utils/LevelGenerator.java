@@ -56,7 +56,7 @@ public class LevelGenerator {
         this.mapWidth = width;
         this.mapHeight = height;
         terrainLayer = new TiledMapTileLayer(mapWidth, mapHeight, TILE_SIZE, TILE_SIZE);
-        int numRooms = 5;
+        int numRooms = 9;
         placeRooms(numRooms);
         defineBox2d();
         map.getLayers().add(terrainLayer);
@@ -97,8 +97,8 @@ public class LevelGenerator {
         boolean roomIntersects;
 
         for(int i = 0; i < n; i++){
-            int w = MathUtils.random(MIN_ROOM_SIZE + 1, MAX_ROOM_SIZE);
-            int h = MathUtils.random(MIN_ROOM_SIZE + 1, MAX_ROOM_SIZE);
+            int w = MathUtils.random(MIN_ROOM_SIZE, MAX_ROOM_SIZE);
+            int h = MathUtils.random(MIN_ROOM_SIZE, MAX_ROOM_SIZE);
             int x = MathUtils.random(mapWidth - w);
             int y = MathUtils.random(mapHeight - h);
 
@@ -173,7 +173,7 @@ public class LevelGenerator {
         private int centerX;
         private int centerY;
 
-        public Room(int x1, int y1, int width, int height){
+        private Room(int x1, int y1, int width, int height){
             System.out.printf("Creating room with (%d, %d, %d, %d)\n", x1, y1, width, height);
 
             this.x1 = x1;
@@ -186,12 +186,12 @@ public class LevelGenerator {
             System.out.printf("Finishing room with (%d, %d, %d, %d)\n", x2, y2, centerX, centerY);
         }
 
-        public boolean intersects(Room r){
+        private boolean intersects(Room r){
             return (x1 <= r.x2 && x2 >= r.x1 &&
                     y1 <= r.y2 && r.y2 >= r.y1);
         }
 
-        public Vector2 getRandomTile(){
+        private Vector2 getRandomTile(){
             return new Vector2(MathUtils.random(x1, x2), MathUtils.random(y1, y2));
         }
 
