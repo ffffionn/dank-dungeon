@@ -13,18 +13,15 @@ import com.test.test.screens.GameScreen;
  */
 public class WorldContactListener implements ContactListener{
 
-    private World world;
     private GameScreen screen;
 
-    public WorldContactListener(World world, GameScreen screen){
-        this.world = world;
+    public WorldContactListener(GameScreen screen){
         this.screen = screen;
     }
 
     public void beginContact(Contact c){
         Fixture fa = c.getFixtureA();
         Fixture fb = c.getFixtureB();
-
 
         if(fa.getUserData() != null && fb.getUserData() != null){
             if(fa.getUserData().equals("player") && fb.getUserData().equals("enemy") ) {

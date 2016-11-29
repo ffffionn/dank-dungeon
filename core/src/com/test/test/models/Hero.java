@@ -22,6 +22,7 @@ public class Hero extends B2DSprite {
 
     private float modifier;
     private static float MAX_VELOCITY = 2.5f;
+    private static int MAX_FIREBALLS = 3;
 
     // animation frames
     TextureRegion[] moveAnimation;
@@ -35,7 +36,7 @@ public class Hero extends B2DSprite {
         this.screen = screen;
         currentState = State.STANDING;
         previousState = State.STANDING;
-        fireballs = new Array<Fireball>();
+        fireballs = new Array<Fireball>(MAX_FIREBALLS);
         modifier = 1.0f;
         health = 100;
 
@@ -77,9 +78,11 @@ public class Hero extends B2DSprite {
     }
 
     public void redefine(Vector2 position){
-        for(Fireball f : fireballs){
-            screen.getWorld().destroyBody(f.getBody());
-        }
+//        for(Fireball f : fireballs){
+//            screen.getWorld().destroyBody(f.getBody());
+//        }
+        System.out.printf("%d FIRE \n", fireballs.size);
+        fireballs.clear();
         screen.getWorld().destroyBody(b2body);
         define(position);
     }
@@ -119,12 +122,12 @@ public class Hero extends B2DSprite {
         animation.update(dt);
 
         for(Fireball fb : fireballs){
-            fb.update(dt);
             if (fb.isDestroyed()){
-                screen.delete(fb);
+                fireballs.removeValue(fb, true);
+            }else{
+                fb.update(dt);
             }
         }
-
     }
 
     public void changeState(State s){
@@ -145,10 +148,6 @@ public class Hero extends B2DSprite {
         fireballs.add(fb);
     }
 
-    public void destroy(Fireball f){
-        fireballs.removeValue(f, true);
-    }
-
     public boolean isDead(){
         return currentState == State.DEAD;
     }
@@ -161,15 +160,13 @@ public class Hero extends B2DSprite {
         screen.getHud().updatePlayerHealth(this.health);
     }
 
-
     private void die(){
         changeState(State.DEAD);
         setAnimation(dieAnimation, 1/12f);
     }
 
     private void handleInput(float dt){
-
-        if (Gdx.input.isKeyPressed(Input.Keys.W) && getBody().getLinearVelocity().y <= MAX_VELOCITY) {
+        if (Gdx.input.isKeyPressed(Input.Keys.W) && b2body.getLinearVelocity().y <= MAX_VELOCITY) {
             b2body.applyLinearImpulse(new Vector2(0, 0.2f * modifier), b2body.getWorldCenter(), true);
         }
         if (Gdx.input.isKeyPressed(Input.Keys.D) && b2body.getLinearVelocity().x <= MAX_VELOCITY) {
