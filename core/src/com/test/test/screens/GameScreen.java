@@ -19,10 +19,9 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.test.test.models.Enemy;
-import com.test.test.models.Fireball;
 import com.test.test.models.Hero;
 import com.test.test.SpaceAnts;
-import com.test.test.scenes.Hud;
+import com.test.test.scenes.GameHud;
 import com.test.test.utils.LevelDefiner;
 import com.test.test.utils.LevelGenerator;
 import com.test.test.utils.WorldContactListener;
@@ -41,7 +40,7 @@ public class GameScreen implements Screen {
     // screen
     private OrthographicCamera cam;
     private Viewport gamePort;
-    private Hud hud;
+    private GameHud hud;
 
     private TextureAtlas atlas;
 
@@ -64,6 +63,8 @@ public class GameScreen implements Screen {
 
     private AssetManager assetManager;
     private LevelDefiner ld;
+    private LevelGenerator levelGen;
+    private int floor;
 
     public GameScreen(SpaceAnts game){
         this.game = game;
@@ -71,8 +72,8 @@ public class GameScreen implements Screen {
         this.b2dr = new Box2DDebugRenderer();
         this.cam = new OrthographicCamera();
         cam.setToOrtho(false, V_WIDTH / 2 / PPM, V_HEIGHT / 2 / PPM);
-
-        world.setContactListener(new WorldContactListener(world));
+        this.floor = 1;
+        world.setContactListener(new WorldContactListener(world, this));
         this.modifier = 1.0f;
         this.assetManager = new AssetManager();
         this.map = new TiledMap();
@@ -80,25 +81,21 @@ public class GameScreen implements Screen {
         this.atlas = new TextureAtlas("animations/player.pack");
         this.gamePort = new FitViewport(SpaceAnts.V_WIDTH / PPM, SpaceAnts.V_HEIGHT / PPM , cam);
         this.tiles = new Texture(Gdx.files.internal("textures/dungeon_tiles2.png"));
-//        this.hud = new Hud(game.batch);
+        this.hud = new GameHud(game.batch);
         this.ld = new LevelDefiner(world, this);
         this.cursorBody = ld.defineCursor();
-
-        LevelGenerator levelGen = new LevelGenerator(this, tiles);
-        this.map = levelGen.generateLevel(64, 64, 0.0f);
-
-        Vector2 start = levelGen.getRandomTile();
-        this.player = ld.defineHero(Math.round(start.x), Math.round(start.y));
+        this.levelGen = new LevelGenerator(this, tiles);
+        this.player = new Hero(this, new Vector2(0, 0));
         this.mapRenderer = new OrthogonalTiledMapRenderer(map, 1 / PPM);
+
+        generateLevel(floor);
+
+        // set camera
         cam.position.set(gamePort.getWorldWidth() / PPM, gamePort.getWorldHeight() / 2 / PPM, 0);
         cam.zoom -= 0.6;
         mapRenderer.setView(cam);
-        for(int i=0; i < 200; i++){
-            start = levelGen.getRandomTile();
-            enemies.add(ld.defineEnemy(Math.round(start.x), Math.round(start.y)));
-        }
 
-        //set Player animation frames
+        // set player animation frames
         TextureAtlas.AtlasRegion region = atlas.findRegion("player-move");
         TextureRegion[] moveFrames = region.split(64, 64)[0];
         player.setTexture(moveFrames[0]);
@@ -107,14 +104,22 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta){
-        handleInput(delta);
         stepWorld();
+        handleInput(delta);
 
         player.update(delta);
+
+//        if (player.isDead()){
+//            game.setScreen(new GameOverScreen());
+//        }
+
+        // update enemies
         for( Enemy e : enemies ){
             e.setTarget(player.getPosition());
             e.update(delta);
         }
+
+        // keep camera centered on player
         cam.position.x = player.getPosition().x;
         cam.position.y = player.getPosition().y;
         cam.update();
@@ -127,6 +132,8 @@ public class GameScreen implements Screen {
         mapRenderer.render();
         b2dr.render(world, cam.combined);
 
+        game.batch.setProjectionMatrix(hud.getStage().getCamera().combined);
+        hud.getStage().draw();
         game.batch.setProjectionMatrix(cam.combined);
         game.batch.begin();
         player.render(game.batch);
@@ -138,39 +145,67 @@ public class GameScreen implements Screen {
 
     }
 
-    public void handleInput(float dt){
+    public void generateLevel(int level){
+        System.out.printf("gen level %d  \n", level);
 
-        float MAX_VELOCITY = 2.5f;
-        faceCursor();
+        float seedFloor = (level % 10) / 100.0f;
+        float seedCeiling = (level / 100.0f);
+
+        System.out.printf("R - (%f, %f) \n", seedFloor, seedCeiling);
+
+        float seed = MathUtils.random(seedFloor, seedCeiling);
+
+        if(floor > 1)levelGen.destroyLevel();
+
+        this.map = levelGen.generateLevel(64, 64, seed);
+
+//        this.player = ld.defineHero(Math.round(start.x), Math.round(start.y));
+        System.out.println("hmmm");
+        player.redefine(levelGen.getHeroStart());
+        System.out.println("yepp!");
+
+//        System.out.println("goal!");
 //
-//        System.out.printf("**MOUSE: %f : %f \t", cursorBody.getPosition().x * PPM, cursorBody.getPosition().y * PPM);
-//        System.out.printf("**PLAYER: %f : %f \n", player.getBody().getPosition().x * PPM, player.getBody().getPosition().y * PPM);
+//        Vector2 goal = levelGen.getGoalTile();
+//        // floats?
+//        ld.defineGoal(Math.round(goal.x), Math.round(goal.y));
 
-        if(player.currentState != Hero.State.DEAD) {
-            if (Gdx.input.isKeyPressed(Input.Keys.W) && player.getBody().getLinearVelocity().y <= MAX_VELOCITY) {
-                player.getBody().applyLinearImpulse(new Vector2(0, 0.2f * modifier), player.getBody().getWorldCenter(), true);
+        System.out.println("enemies!");
+
+        Vector2 start;
+        for(int i=0; i < 20; i++){
+            start = levelGen.getRandomTile();
+            enemies.add(ld.defineEnemy(Math.round(start.x), Math.round(start.y)));
+        }
+
+        System.out.println("done!");
+
+        mapRenderer.setMap(map);
+    }
+
+
+    public void levelUp(){
+        System.out.println("level up!!");
+        System.out.printf(" %d  enemies left \n", enemies.size);
+        floor++;
+        world.clearForces();
+        for( Enemy e : enemies ){
+            if (!e.isDead()){
+                e.dispose();
+                System.out.println(e.toString());
             }
-            if (Gdx.input.isKeyPressed(Input.Keys.D) && player.getBody().getLinearVelocity().x <= MAX_VELOCITY) {
-                player.getBody().applyLinearImpulse(new Vector2(0.2f * modifier, 0), player.getBody().getWorldCenter(), true);
-            }
-            if (Gdx.input.isKeyPressed(Input.Keys.A) && player.getBody().getLinearVelocity().x >= -MAX_VELOCITY) {
-                player.getBody().applyLinearImpulse(new Vector2(-0.2f * modifier, 0), player.getBody().getWorldCenter(), true);
-            }
-            if (Gdx.input.isKeyPressed(Input.Keys.S) && player.getBody().getLinearVelocity().y >= -MAX_VELOCITY) {
-                player.getBody().applyLinearImpulse(new Vector2(0, -0.2f * modifier), player.getBody().getWorldCenter(), true);
-            }
-            if (Gdx.input.justTouched()) player.shoot();
-            if (Gdx.input.isKeyPressed(Input.Keys.Q)){
-                cam.zoom -= 0.1f;
-            }
-            if (Gdx.input.isKeyPressed(Input.Keys.E)){
-                cam.zoom += 0.1f;
-            }
-            if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
-                modifier = 3.0f;
-            }else{
-                modifier = 1.0f;
-            }
+        }
+        this.enemies = new Array<Enemy>();
+        generateLevel(floor);
+    }
+
+    public void handleInput(float dt){
+        faceCursor();
+        if (Gdx.input.isKeyPressed(Input.Keys.Q)){
+            cam.zoom -= 0.1f;
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.E)){
+            cam.zoom += 0.1f;
         }
     }
 
@@ -224,18 +259,20 @@ public class GameScreen implements Screen {
 
     @Override
     public void hide() {
+        System.out.println("bye bye");
         dispose();
     }
 
     @Override
     public void dispose() {
         map.dispose();
-        world.dispose();
         mapRenderer.dispose();
+        world.dispose();
         b2dr.dispose();
+//        hud.dispose();
     }
 
-    public Hud getHud(){
+    public GameHud getHud(){
         return this.hud;
     }
 

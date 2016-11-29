@@ -1,6 +1,5 @@
 package com.test.test.models;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -24,12 +23,18 @@ public class B2DSprite{
     protected boolean setToDestroy;
     protected boolean destroyed;
 
-    private int health;
+    protected int health;
+
+    public B2DSprite(){
+        animation = new Animation();
+        destroyed = false;
+        setToDestroy = false;
+        sprite = new Sprite();
+    }
 
     public B2DSprite(Body body){
         this.b2body = body;
         animation = new Animation();
-        health = 100;
         destroyed = false;
         setToDestroy = false;
         sprite = new Sprite();
@@ -58,6 +63,10 @@ public class B2DSprite{
         sprite.draw(sb);
     }
 
+    public void dispose(){
+        this.b2body = null;
+        this.sprite = null;
+    }
 
     public void setToDestroy(){ setToDestroy = true; }
     public Sprite getSprite(){ return this.sprite; }

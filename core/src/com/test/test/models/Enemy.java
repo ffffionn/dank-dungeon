@@ -4,8 +4,6 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.test.test.screens.GameScreen;
 
-import static com.test.test.SpaceAnts.PPM;
-
 /**
  * Created by Fionn on 20/11/2016.
  */
@@ -42,8 +40,15 @@ public class Enemy extends B2DSprite {
 
     }
 
+    public boolean isDead(){
+        return destroyed;
+    }
 
     public void setTarget(Vector2 target){
         this.target = target;
+    }
+
+    public void dispose(){
+        screen.getWorld().destroyBody(b2body);
     }
 }

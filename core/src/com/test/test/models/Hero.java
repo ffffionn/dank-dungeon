@@ -2,6 +2,8 @@ package com.test.test.models;
 
 import static com.test.test.SpaceAnts.PPM;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
@@ -18,6 +20,9 @@ public class Hero extends B2DSprite {
     private Array<Fireball> fireballs;
     private GameScreen screen;
 
+    private float modifier;
+    private static float MAX_VELOCITY = 2.5f;
+
     // animation frames
     TextureRegion[] moveAnimation;
     TextureRegion[] standAnimation;
@@ -25,12 +30,16 @@ public class Hero extends B2DSprite {
     TextureRegion[] dieAnimation;
 
 
-    public Hero(Body body, GameScreen screen){
-        super(body);
+    public Hero(GameScreen screen, Vector2 position){
+        super();
         this.screen = screen;
         currentState = State.STANDING;
         previousState = State.STANDING;
         fireballs = new Array<Fireball>();
+        modifier = 1.0f;
+        health = 100;
+
+        define(position);
 
         // define animations
         TextureAtlas.AtlasRegion region;
@@ -47,6 +56,34 @@ public class Hero extends B2DSprite {
         setAnimation(moveAnimation, 1 / 12f);
     }
 
+    private void define(Vector2 position){
+        BodyDef bdef = new BodyDef();
+//        System.out.printf("X: %d  Y: %d  \n", position.x, position.y);
+        bdef.position.set((position.x + 0.5f) * 20/ PPM, (position.y + 0.5f) * 20 / PPM);
+        bdef.type = BodyDef.BodyType.DynamicBody;
+        bdef.linearDamping = 10.0f;
+        bdef.fixedRotation = true;
+        b2body = screen.getWorld().createBody(bdef);
+
+        FixtureDef fdef = new FixtureDef();
+        CircleShape shape = new CircleShape();
+        shape.setRadius(7 / PPM);
+        fdef.shape = shape;
+        fdef.friction = 0.75f;
+        fdef.restitution = 0.0f;
+
+        b2body.createFixture(fdef).setUserData("player");
+        b2body.setUserData(this);
+    }
+
+    public void redefine(Vector2 position){
+        screen.getWorld().destroyBody(b2body);
+        for(Fireball f : fireballs){
+            f.dispose();
+        }
+        define(position);
+    }
+
     @Override
     public void setTexture(TextureRegion texture){
 //        sprite.setBounds(0, 0, texture.getRegionWidth() / PPM, texture.getRegionHeight() / PPM);
@@ -56,23 +93,34 @@ public class Hero extends B2DSprite {
     }
 
     public void update(float dt){
-        if( Math.abs(b2body.getLinearVelocity().x) < 0.1f && Math.abs(b2body.getLinearVelocity().y) < 0.1f ){
-            if( previousState != State.STANDING) {
-                changeState(State.STANDING);
+        if( currentState != State.DEAD){
+            handleInput(dt);
+
+            if( Math.abs(b2body.getLinearVelocity().x) < 0.1f && Math.abs(b2body.getLinearVelocity().y) < 0.1f ){
+                if( previousState != State.STANDING) {
+                    changeState(State.STANDING);
+                }
+                setAnimation(standAnimation, 1/12f);
+            }else{
+                if( previousState != State.MOVING){
+                    setAnimation(moveAnimation, 1/12f);
+                }
+                changeState(State.MOVING);
             }
-            setAnimation(standAnimation, 1/12f);
         }else{
-            if( previousState != State.MOVING){
-                setAnimation(moveAnimation, 1/12f);
+            if( animation.getTimesPlayed() > 0 ){
+                System.out.println("OWOWOWOWOWO");
+                setToDestroy();
             }
-            changeState(State.MOVING);
         }
+
         sprite.setPosition(b2body.getPosition().x - sprite.getWidth() / 2,
                 b2body.getPosition().y - sprite.getHeight() / 2);
         animation.update(dt);
         for(Fireball fb : fireballs){
             fb.update(dt);
         }
+
     }
 
     public void changeState(State s){
@@ -88,32 +136,48 @@ public class Hero extends B2DSprite {
         sprite.draw(batch);
     }
 
-    public Fireball shoot(){
+    public void shoot(){
+        fireballs.add(new Fireball(screen, b2body.getPosition()));
+    }
 
-        BodyDef bdef = new BodyDef();
-        bdef.position.set(b2body.getPosition());
-        bdef.fixedRotation = true;
-        bdef.linearDamping = 0.0f;
-        bdef.type = BodyDef.BodyType.DynamicBody;
+    public boolean isDead(){
+        return currentState == State.DEAD;
+    }
 
-        Body b2body = screen.getWorld().createBody(bdef);
-
-        FixtureDef fdef = new FixtureDef();
-        CircleShape shape = new CircleShape();
-        shape.setRadius(2 / PPM);
-        fdef.shape = shape;
-        fdef.friction = 0.0f;
-        fdef.restitution = 0.0f;
-        // check against enemy/wall bits
-        fdef.isSensor = true;
-
-        b2body.createFixture(fdef).setUserData("fireball");
-
-        Fireball fireball = new Fireball(b2body, screen);
-        b2body.setUserData(fireball);
-        fireballs.add(fireball);
-        return fireball;
+    public void damage(int hp){
+        this.health -= hp;
+        if (health < 0){
+            die();
+        }
+        screen.getHud().updatePlayerHealth(this.health);
     }
 
 
+    private void die(){
+        changeState(State.DEAD);
+        setAnimation(dieAnimation, 1/12f);
+    }
+
+    private void handleInput(float dt){
+
+        if (Gdx.input.isKeyPressed(Input.Keys.W) && getBody().getLinearVelocity().y <= MAX_VELOCITY) {
+            b2body.applyLinearImpulse(new Vector2(0, 0.2f * modifier), b2body.getWorldCenter(), true);
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.D) && b2body.getLinearVelocity().x <= MAX_VELOCITY) {
+            b2body.applyLinearImpulse(new Vector2(0.2f * modifier, 0), b2body.getWorldCenter(), true);
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.A) && b2body.getLinearVelocity().x >= -MAX_VELOCITY) {
+            b2body.applyLinearImpulse(new Vector2(-0.2f * modifier, 0), b2body.getWorldCenter(), true);
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.S) && b2body.getLinearVelocity().y >= -MAX_VELOCITY) {
+            b2body.applyLinearImpulse(new Vector2(0, -0.2f * modifier), b2body.getWorldCenter(), true);
+        }
+        if (Gdx.input.justTouched()) shoot();
+
+        if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+            modifier = 3.0f;
+        }else{
+            modifier = 1.0f;
+        }
+    }
 }

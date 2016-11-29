@@ -30,32 +30,31 @@ public class LevelDefiner {
         this.screen = screen;
     }
 
-    public Hero defineHero(int x, int y){
+    public void defineGoal(int x, int y){
         BodyDef bdef = new BodyDef();
-        System.out.printf("X: %d  Y: %d  \n", x, y);
-        bdef.position.set(x * 20/ PPM, y * 20 / PPM);
+        bdef.position.set((x + 0.5f) * 20 / PPM, y * 20 / PPM);
         bdef.type = BodyDef.BodyType.DynamicBody;
-        bdef.linearDamping = 10.0f;
+        bdef.linearDamping = 5.0f;
         bdef.fixedRotation = true;
         Body b2body = world.createBody(bdef);
 
         FixtureDef fdef = new FixtureDef();
         CircleShape shape = new CircleShape();
-        shape.setRadius(7 / PPM);
+        shape.setRadius(5 / PPM);
         fdef.shape = shape;
         fdef.friction = 0.75f;
         fdef.restitution = 0.0f;
+        fdef.isSensor = true;
 
-        b2body.createFixture(fdef).setUserData("player");
+        b2body.createFixture(fdef).setUserData("goal");
 
-        Hero player = new Hero(b2body, screen);
-
-        return player;
+        B2DSprite goal = new B2DSprite(b2body);
+        b2body.setUserData(goal);
     }
 
     public Enemy defineEnemy(int x, int y){
         BodyDef bdef = new BodyDef();
-        bdef.position.set(x * 20 / PPM, y * 20 / PPM);
+        bdef.position.set((x + 0.5f) * 20 / PPM, y * 20 / PPM);
         bdef.type = BodyDef.BodyType.DynamicBody;
         bdef.linearDamping = 5.0f;
         bdef.fixedRotation = true;
@@ -79,10 +78,10 @@ public class LevelDefiner {
     public Body defineCursor(){
         BodyDef bdef = new BodyDef();
         bdef.type = BodyDef.BodyType.StaticBody;
-        bdef.position.set(32 / PPM, 32 / PPM);
+        bdef.position.set(0, 0);
 
         CircleShape shape = new CircleShape();
-        shape.setRadius(5 / PPM);
+        shape.setRadius(3 / PPM);
 
         FixtureDef fdef = new FixtureDef();
         fdef.shape = shape;
@@ -95,44 +94,5 @@ public class LevelDefiner {
         cursorBody.createFixture(fdef);
         return cursorBody;
     }
-
-    public void defineMap(Texture tiles) {
-        //        map = LevelGenerator.NewLevel()
-
-        int tileSize = 20;
-        TextureRegion[][] splitTiles = TextureRegion.split(tiles, tileSize, tileSize);
-
-        TextureRegion centreFloor = splitTiles[1][1];
-        MapLayers layers = screen.getMap().getLayers();
-
-        TiledMapTileLayer layer = new TiledMapTileLayer(16, 16, tileSize, tileSize);
-        layers.add(layer);
-
-        for (int col = 0; col < layer.getWidth(); col++) {
-            for (int row = 0; row < layer.getHeight(); row++) {
-                TiledMapTileLayer.Cell cell = new TiledMapTileLayer.Cell();
-                TextureRegion tex = centreFloor;
-                if(col == 0 || row == 0 || col == 15 || row == 15){
-                    Vector2 centre = new Vector2((col + 0.5f) * tileSize / 2 / PPM,
-                                                 (row + 0.5f) * tileSize / 2 / PPM);
-                    BodyDef bdef = new BodyDef();
-                    bdef.type = BodyDef.BodyType.StaticBody;
-                    bdef.position.set(centre);
-
-                    PolygonShape wall = new PolygonShape();
-                    wall.setAsBox(tileSize / 2 / PPM, tileSize / 2 / PPM, centre, 0);
-                    FixtureDef fdef = new FixtureDef();
-                    fdef.shape = wall;
-                    world.createBody(bdef).createFixture(fdef).setUserData("wall");
-                    tex = splitTiles[0][8];
-                }
-                cell.setTile(new StaticTiledMapTile(tex));
-                layer.setCell(row, col, cell);
-            }
-        }
-
-        layers.add(layer);
-    }
-
 
 }
