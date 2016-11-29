@@ -77,10 +77,10 @@ public class Hero extends B2DSprite {
     }
 
     public void redefine(Vector2 position){
-        screen.getWorld().destroyBody(b2body);
         for(Fireball f : fireballs){
-            f.dispose();
+            screen.getWorld().destroyBody(f.getBody());
         }
+        screen.getWorld().destroyBody(b2body);
         define(position);
     }
 
@@ -108,8 +108,8 @@ public class Hero extends B2DSprite {
                 changeState(State.MOVING);
             }
         }else{
+            // set game over
             if( animation.getTimesPlayed() > 0 ){
-                System.out.println("OWOWOWOWOWO");
                 setToDestroy();
             }
         }
@@ -117,8 +117,12 @@ public class Hero extends B2DSprite {
         sprite.setPosition(b2body.getPosition().x - sprite.getWidth() / 2,
                 b2body.getPosition().y - sprite.getHeight() / 2);
         animation.update(dt);
+
         for(Fireball fb : fireballs){
             fb.update(dt);
+            if (fb.isDestroyed()){
+                screen.delete(fb);
+            }
         }
 
     }
@@ -130,14 +134,19 @@ public class Hero extends B2DSprite {
 
     public void render(SpriteBatch batch){
         sprite.setRegion(animation.getFrame());
-
         // rotate region 90 first for perf.
         sprite.rotate90(true);
         sprite.draw(batch);
     }
 
     public void shoot(){
-        fireballs.add(new Fireball(screen, b2body.getPosition()));
+        Fireball fb = new Fireball(screen, this);
+        screen.add(fb);
+        fireballs.add(fb);
+    }
+
+    public void destroy(Fireball f){
+        fireballs.removeValue(f, true);
     }
 
     public boolean isDead(){

@@ -66,12 +66,16 @@ public class B2DSprite{
     public void dispose(){
         this.b2body = null;
         this.sprite = null;
+        this.animation = null;
     }
 
     public void setToDestroy(){ setToDestroy = true; }
+    public boolean isSetToDestroy(){ return setToDestroy; }
+    public boolean isDestroyed(){ return destroyed; }
     public Sprite getSprite(){ return this.sprite; }
     public Body getBody() { return b2body; }
     public Vector2 getPosition() { return b2body.getPosition(); }
+
     public float getWidth() { return width; }
     public float getHeight() { return height; }
 }

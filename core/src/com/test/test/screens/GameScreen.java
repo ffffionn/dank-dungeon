@@ -18,6 +18,7 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.test.test.models.B2DSprite;
 import com.test.test.models.Enemy;
 import com.test.test.models.Hero;
 import com.test.test.SpaceAnts;
@@ -61,10 +62,15 @@ public class GameScreen implements Screen {
     private Array<Enemy> enemies;
     private float modifier;
 
+    private Array<B2DSprite> entityList;
+    private Array<B2DSprite> deleteList;
+
     private AssetManager assetManager;
     private LevelDefiner ld;
     private LevelGenerator levelGen;
     private int floor;
+
+    private boolean levelUp;
 
     public GameScreen(SpaceAnts game){
         this.game = game;
@@ -73,6 +79,7 @@ public class GameScreen implements Screen {
         this.cam = new OrthographicCamera();
         cam.setToOrtho(false, V_WIDTH / 2 / PPM, V_HEIGHT / 2 / PPM);
         this.floor = 1;
+        this.levelUp = false;
         world.setContactListener(new WorldContactListener(world, this));
         this.modifier = 1.0f;
         this.assetManager = new AssetManager();
@@ -82,8 +89,10 @@ public class GameScreen implements Screen {
         this.gamePort = new FitViewport(SpaceAnts.V_WIDTH / PPM, SpaceAnts.V_HEIGHT / PPM , cam);
         this.tiles = new Texture(Gdx.files.internal("textures/dungeon_tiles2.png"));
         this.hud = new GameHud(game.batch);
+        this.entityList = new Array<B2DSprite>();
+        this.deleteList = new Array<B2DSprite>();
         this.ld = new LevelDefiner(world, this);
-        this.cursorBody = ld.defineCursor();
+//        this.cursorBody = ld.defineCursor();
         this.levelGen = new LevelGenerator(this, tiles);
         this.player = new Hero(this, new Vector2(0, 0));
         this.mapRenderer = new OrthogonalTiledMapRenderer(map, 1 / PPM);
@@ -104,20 +113,22 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta){
+        if(levelUp){
+            levelUp = false;
+            newFloor();
+        }
         stepWorld();
+        deleteUselessBodies();
         handleInput(delta);
 
         player.update(delta);
-
-//        if (player.isDead()){
-//            game.setScreen(new GameOverScreen());
-//        }
 
         // update enemies
         for( Enemy e : enemies ){
             e.setTarget(player.getPosition());
             e.update(delta);
         }
+
 
         // keep camera centered on player
         cam.position.x = player.getPosition().x;
@@ -140,6 +151,25 @@ public class GameScreen implements Screen {
         game.batch.end();
     }
 
+    private void deleteUselessBodies(){
+        for( B2DSprite entity : entityList ){
+            if (entity.isSetToDestroy() && !entity.isDestroyed()){
+                System.out.println("add to delete");
+                deleteList.add(entity);
+            }
+        }
+
+        for( B2DSprite b : deleteList ){
+            if( b instanceof Enemy ){
+                enemies.removeValue((Enemy) b, true);
+            }
+            world.destroyBody(b.getBody());
+            entityList.removeValue(b, true);
+            System.out.println("body destroyed");
+        }
+        deleteList.clear();
+    }
+
     @Override
     public void show() {
 
@@ -147,56 +177,60 @@ public class GameScreen implements Screen {
 
     public void generateLevel(int level){
         System.out.printf("gen level %d  \n", level);
-
+        defineCursor();
         float seedFloor = (level % 10) / 100.0f;
         float seedCeiling = (level / 100.0f);
+        float seed = MathUtils.random(seedFloor, seedCeiling);
 
         System.out.printf("R - (%f, %f) \n", seedFloor, seedCeiling);
 
-        float seed = MathUtils.random(seedFloor, seedCeiling);
-
         if(floor > 1)levelGen.destroyLevel();
-
         this.map = levelGen.generateLevel(64, 64, seed);
 
-//        this.player = ld.defineHero(Math.round(start.x), Math.round(start.y));
-        System.out.println("hmmm");
+        System.out.println("redefine player");
         player.redefine(levelGen.getHeroStart());
-        System.out.println("yepp!");
-
-//        System.out.println("goal!");
-//
-//        Vector2 goal = levelGen.getGoalTile();
-//        // floats?
-//        ld.defineGoal(Math.round(goal.x), Math.round(goal.y));
-
-        System.out.println("enemies!");
 
         Vector2 start;
-        for(int i=0; i < 20; i++){
+        System.out.println("enemies!");
+        for(int i=0; i < 2; i++){
             start = levelGen.getRandomTile();
             enemies.add(ld.defineEnemy(Math.round(start.x), Math.round(start.y)));
         }
-
-        System.out.println("done!");
+        entityList.addAll(enemies);
 
         mapRenderer.setMap(map);
     }
 
-
     public void levelUp(){
+        levelUp = true;
+    }
+
+    public void newFloor(){
         System.out.println("level up!!");
         System.out.printf(" %d  enemies left \n", enemies.size);
         floor++;
         world.clearForces();
-        for( Enemy e : enemies ){
-            if (!e.isDead()){
-                e.dispose();
-                System.out.println(e.toString());
+        for( B2DSprite entity : entityList ){
+            if (!entity.isDestroyed()){
+                System.out.println(entity.toString());
+                world.destroyBody(entity.getBody());
             }
         }
-        this.enemies = new Array<Enemy>();
+        entityList.clear();
+        enemies.clear();
+        System.out.println("delete cursor");
+        world.destroyBody(cursorBody);
+//        this.enemies = new Array<Enemy>();
         generateLevel(floor);
+        System.out.println("done!");
+    }
+
+    public void delete(B2DSprite b){
+        deleteList.add(b);
+    }
+
+    public void add(B2DSprite b){
+        entityList.add(b);
     }
 
     public void handleInput(float dt){
@@ -208,6 +242,28 @@ public class GameScreen implements Screen {
             cam.zoom += 0.1f;
         }
     }
+
+
+
+    private void defineCursor(){
+        BodyDef bdef = new BodyDef();
+        bdef.type = BodyDef.BodyType.StaticBody;
+        bdef.position.set(0, 0);
+
+        CircleShape shape = new CircleShape();
+        shape.setRadius(3 / PPM);
+
+        FixtureDef fdef = new FixtureDef();
+        fdef.shape = shape;
+        fdef.density = 0f;
+        fdef.friction = 0f;
+        fdef.isSensor = true;
+        fdef.restitution = 0f;
+
+        this.cursorBody = world.createBody(bdef);
+        cursorBody.createFixture(fdef);
+    }
+
 
     private void faceCursor(){
         // get the game-world translation of the mouse position

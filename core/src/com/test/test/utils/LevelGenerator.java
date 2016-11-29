@@ -44,6 +44,7 @@ public class LevelGenerator {
         this.screen = screen;
         this.numRooms = 4;
         this.wallBodies = new Array<Body>();
+        this.map = new TiledMap();
         atlas = screen.getAtlas();
         TextureRegion[][] splitTiles = TextureRegion.split(worldTexture, TILE_SIZE, TILE_SIZE);
         floorTiles = new Array<TextureRegion>();
@@ -64,17 +65,22 @@ public class LevelGenerator {
             System.out.print("a");
             screen.getWorld().destroyBody(b);
         }
+        screen.getMap().getLayers().remove(terrainLayer);
+//        map.getLayers().remove(terrainLayer);
+        System.out.printf(" %d bodies left  -- w\n", screen.getWorld().getBodyCount());
     }
 
     public TiledMap generateLevel(int width, int height, float seed){
         numRooms = (Math.round(seed * 100) % 10) + 1;
         System.out.printf("Generating level with a seed of %f  [%d rooms]  \n", seed, numRooms);
 
-        this.map = new TiledMap();
+//        this.map = new TiledMap();
         this.mapWidth = width;
         this.mapHeight = height;
+
         terrainLayer = new TiledMapTileLayer(mapWidth, mapHeight, TILE_SIZE, TILE_SIZE);
-        placeRooms(numRooms);
+        placeRooms(5);
+//        placeRooms(numRooms);
         createGoal();
         defineBox2d();
         map.getLayers().add(terrainLayer);
@@ -85,8 +91,7 @@ public class LevelGenerator {
     public Vector2 getGoalTile(){
         return rooms.get(rooms.size - 1).getRandomTile();
     }
-    public Vector2 getRandomTile(){ return rooms.get(MathUtils.random(1, rooms.size - 1)).getRandomTile(); }
-
+    public Vector2 getRandomTile(){ return rooms.get(MathUtils.random(0, rooms.size - 1)).getRandomTile(); }
 
     private void placeRooms(int n){
         rooms = new Array<Room>();
@@ -167,6 +172,7 @@ public class LevelGenerator {
         b2body.createFixture(fdef).setUserData("goal");
         this.goal = new B2DSprite(b2body);
         b2body.setUserData(goal);
+//        screen.add(goal);
     }
 
 

@@ -21,34 +21,21 @@ public class Enemy extends B2DSprite {
         target = b2body.getPosition();
     }
 
-    public Enemy(Body body, GameScreen screen, Vector2 target){
-        super(body);
-        this.screen = screen;
-        this.target = target;
-    }
-
     public void update(float dt){
-        super.update(dt);
-
         if( setToDestroy && !destroyed ){
-            screen.getWorld().destroyBody(b2body);
+//            screen.getWorld().destroyBody(b2body);
             destroyed = true;
+            screen.delete(this);
         }else if( !destroyed ){
             velocity = target.cpy().sub(b2body.getPosition()).nor().scl(MAX_SPEED);
             b2body.setLinearVelocity(velocity);
+            // sprite stuff
         }
 
-    }
-
-    public boolean isDead(){
-        return destroyed;
     }
 
     public void setTarget(Vector2 target){
         this.target = target;
     }
 
-    public void dispose(){
-        screen.getWorld().destroyBody(b2body);
-    }
 }

@@ -16,21 +16,25 @@ public class Fireball extends B2DSprite {
     private Vector2 position, velocity;
     private static final float BULLET_SPEED = 1.5f;
     private GameScreen screen;
+    private Hero player;
 
-    public Fireball(GameScreen screen, Vector2 heroPosition){
+    public Fireball(GameScreen screen, Hero player){
         super();
         this.screen = screen;
-        defineFireball(heroPosition);
+        this.player = player;
+        defineFireball(player.getPosition());
         Vector2 target = screen.getCursor().getPosition();
-        position = heroPosition;
+        position = player.getPosition();
         velocity = target.cpy().sub(position).nor().scl(BULLET_SPEED);
         b2body.setLinearVelocity(velocity);
     }
 
     public void update(float delta) {
         if( setToDestroy && !destroyed ){
-            screen.getWorld().destroyBody(b2body);
+//            screen.getWorld().destroyBody(b2body);
             destroyed = true;
+            player.destroy(this);
+            System.out.println("DESTROYY");
         }
     }
 
@@ -55,7 +59,9 @@ public class Fireball extends B2DSprite {
     }
 
     public void dispose(){
-        screen.getWorld().destroyBody(b2body);
-        super.dispose();
+//        screen.getWorld().destroyBody(b2body);
+//        super.dispose();
     }
+
+
 }

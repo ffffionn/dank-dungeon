@@ -29,7 +29,7 @@ public class WorldContactListener implements ContactListener{
         if(fa.getUserData() != null && fb.getUserData() != null){
             if(fa.getUserData().equals("player") && fb.getUserData().equals("enemy") ) {
                 Vector2 v = fa.getBody().getLinearVelocity();
-                fa.getBody().setLinearVelocity(new Vector2(-v.x * 2, -v.y * 2));
+                fa.getBody().setLinearVelocity(new Vector2(-v.x, -v.y));
                 fb.getBody().setLinearVelocity(new Vector2(v.x, v.y));
                 ((Hero) fa.getBody().getUserData()).damage(3);
             }else if(fa.getUserData().equals("enemy") && fb.getUserData().equals("player")){
@@ -47,7 +47,8 @@ public class WorldContactListener implements ContactListener{
                 ((Fireball) fa.getBody().getUserData()).setToDestroy();
             }else if(fa.getUserData().equals("wall") && fb.getUserData().equals("fireball")) {
                 ((Fireball) fb.getBody().getUserData()).setToDestroy();
-            }else if((fa.getUserData().equals("goal") && fb.getUserData().equals("player")) || (fa.getUserData().equals("player") && fb.getUserData().equals("goal"))){
+            }else if((fa.getUserData().equals("goal") && fb.getUserData().equals("player"))
+                    || (fa.getUserData().equals("player") && fb.getUserData().equals("goal"))){
                 screen.levelUp();
             }else{
 

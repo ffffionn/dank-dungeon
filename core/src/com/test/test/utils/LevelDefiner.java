@@ -30,28 +30,6 @@ public class LevelDefiner {
         this.screen = screen;
     }
 
-    public void defineGoal(int x, int y){
-        BodyDef bdef = new BodyDef();
-        bdef.position.set((x + 0.5f) * 20 / PPM, y * 20 / PPM);
-        bdef.type = BodyDef.BodyType.DynamicBody;
-        bdef.linearDamping = 5.0f;
-        bdef.fixedRotation = true;
-        Body b2body = world.createBody(bdef);
-
-        FixtureDef fdef = new FixtureDef();
-        CircleShape shape = new CircleShape();
-        shape.setRadius(5 / PPM);
-        fdef.shape = shape;
-        fdef.friction = 0.75f;
-        fdef.restitution = 0.0f;
-        fdef.isSensor = true;
-
-        b2body.createFixture(fdef).setUserData("goal");
-
-        B2DSprite goal = new B2DSprite(b2body);
-        b2body.setUserData(goal);
-    }
-
     public Enemy defineEnemy(int x, int y){
         BodyDef bdef = new BodyDef();
         bdef.position.set((x + 0.5f) * 20 / PPM, y * 20 / PPM);
