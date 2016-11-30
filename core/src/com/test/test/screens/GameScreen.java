@@ -18,6 +18,7 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.sun.corba.se.impl.presentation.rmi.ExceptionHandlerImpl;
 import com.test.test.models.*;
 import com.test.test.SpaceAnts;
 import com.test.test.scenes.GameHud;
@@ -79,7 +80,7 @@ public class GameScreen implements Screen {
         world.setContactListener(new WorldContactListener(this));
         this.modifier = 1.0f;
         this.assetManager = new AssetManager();
-        this.map = new TiledMap();
+//        this.map = new TiledMap();
         this.enemies = new Array<Enemy>();
         this.atlas = new TextureAtlas("animations/player.pack");
         this.gamePort = new FitViewport(SpaceAnts.V_WIDTH / PPM, SpaceAnts.V_HEIGHT / PPM , cam);
@@ -173,18 +174,22 @@ public class GameScreen implements Screen {
             world.destroyBody(cursorBody);
         }
         defineCursor();
-        System.out.printf("gen level %d  \n", level);
-        float seedFloor = (level % 10) / 100.0f;
-        float seedCeiling = (level / 100.0f);
+        System.out.printf(" ***LEVEL %d*** \n", level);
+        float seedFloor = (level % 3) / 10.0f;
+        float seedCeiling = (level % 10) / 10.0f;
         float seed = MathUtils.random(seedFloor, seedCeiling);
 
         System.out.printf("R - (%f, %f) \n", seedFloor, seedCeiling);
 
+                /* debug */
+//        if(floor > 1 && !(map == null)) levelGen.destroyLevel();
         if(floor > 1) levelGen.destroyLevel();
-        this.map = levelGen.generateLevel(64, 64, seed);
+        this.map = levelGen.generateLevel(Math.round(seed * 100) + 10, Math.round(seed * 100) + 10, seed);
+
+        int numEnemies = Math.round(seed * 100);
 
         player.redefine(levelGen.getHeroStart());
-        enemies = levelGen.spawnEnemies(4);
+        enemies = levelGen.spawnEnemies(numEnemies);
         entityList.addAll(enemies);
 
         mapRenderer.setMap(map);
@@ -195,7 +200,6 @@ public class GameScreen implements Screen {
     }
 
     private void newFloor(){
-        System.out.println("level up!!");
         floor++;
         hud.setFloor(floor);
         world.clearForces();
@@ -301,6 +305,8 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
+        deleteUselessBodies();
+        levelGen.destroyLevel();
         map.dispose();
         mapRenderer.dispose();
         world.dispose();

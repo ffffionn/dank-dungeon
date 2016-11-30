@@ -22,7 +22,7 @@ public class Hero extends B2DSprite {
 
     private float modifier;
     private static float MAX_VELOCITY = 2.5f;
-    private static int MAX_FIREBALLS = 3;
+    private static int MAX_FIREBALLS = 5;
 
     // animation frames
     TextureRegion[] moveAnimation;
@@ -59,7 +59,6 @@ public class Hero extends B2DSprite {
 
     private void define(Vector2 position){
         BodyDef bdef = new BodyDef();
-//        System.out.printf("X: %d  Y: %d  \n", position.x, position.y);
         bdef.position.set((position.x + 0.5f) * 20/ PPM, (position.y + 0.5f) * 20 / PPM);
         bdef.type = BodyDef.BodyType.DynamicBody;
         bdef.linearDamping = 10.0f;
@@ -78,10 +77,6 @@ public class Hero extends B2DSprite {
     }
 
     public void redefine(Vector2 position){
-//        for(Fireball f : fireballs){
-//            screen.getWorld().destroyBody(f.getBody());
-//        }
-        System.out.printf("%d FIRE \n", fireballs.size);
         fireballs.clear();
         screen.getWorld().destroyBody(b2body);
         define(position);
@@ -143,9 +138,11 @@ public class Hero extends B2DSprite {
     }
 
     public void shoot(){
-        Fireball fb = new Fireball(screen, this);
-        screen.add(fb);
-        fireballs.add(fb);
+        if(fireballs.size < MAX_FIREBALLS){
+            Fireball fb = new Fireball(screen, this);
+            screen.add(fb);
+            fireballs.add(fb);
+        }
     }
 
     public boolean isDead(){
@@ -162,7 +159,7 @@ public class Hero extends B2DSprite {
 
     private void die(){
         changeState(State.DEAD);
-        setAnimation(dieAnimation, 1/12f);
+        setAnimation(dieAnimation, 1/8f);
     }
 
     private void handleInput(float dt){

@@ -52,6 +52,7 @@ public class LevelGenerator {
             }
         }
 
+
     }
 
     public void destroyLevel(){
@@ -66,8 +67,8 @@ public class LevelGenerator {
     }
 
     public TiledMap generateLevel(int width, int height, float seed){
-        numRooms = (Math.round(seed * 100) % 10) + 1;
-        System.out.printf("Generating level with a seed of %f  [%d rooms]  \n", seed, numRooms);
+        numRooms = (Math.round(seed * 10) % 10) + 1;
+        System.out.printf("Generating level (W: %d, H: %d) with a seed of %f  [%d rooms]  \n", width, height, seed, numRooms);
 
         this.mapWidth = width;
         this.mapHeight = height;
@@ -81,6 +82,7 @@ public class LevelGenerator {
     }
 
     public Array<Enemy> spawnEnemies(int number){
+        System.out.printf("Spawning %d enemies \n", number);
         Array<Enemy> array = new Array<Enemy>();
         for( int i = 0; i < number; i++){
             array.add( new Enemy(screen, getRandomTile()) );
@@ -114,10 +116,11 @@ public class LevelGenerator {
                     // if so, try again
                     roomIntersects = true;
                     i--;
-                    System.out.println("intersect");
+                    System.out.print("i ");
                     break;
                 }
             }
+
             // if not, add it to the level
             if(!roomIntersects){
                 // add corridors between rooms
@@ -190,6 +193,7 @@ public class LevelGenerator {
         body.createFixture(fdef).setUserData("wall");
         wallBodies.add(body);
         /* SET WALL TEXTURE */
+//        wallTexture = splitTiles[3][17];
     }
 
     private void addToMap(Room room){

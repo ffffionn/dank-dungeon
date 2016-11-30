@@ -37,8 +37,8 @@ public class GameHud {
         table.bottom();
         table.setFillParent(true);
 
-        healthLabel = new Label(String.format("%03d", playerHealth), new Label.LabelStyle(new BitmapFont(), Color.WHITE));
-        floorLabel = new Label(String.format("%03d", floor), new Label.LabelStyle(new BitmapFont(), Color.WHITE));
+        healthLabel = new Label(String.format("Health: %03d", playerHealth), new Label.LabelStyle(new BitmapFont(), Color.WHITE));
+        floorLabel = new Label(String.format("Floor: %03d", floor), new Label.LabelStyle(new BitmapFont(), Color.WHITE));
         scoreLabel = new Label(String.format("%06d", score), new Label.LabelStyle(new BitmapFont(), Color.WHITE));
 
         table.add(floorLabel).expandX().padBottom(5);
@@ -53,11 +53,11 @@ public class GameHud {
 
     public void setFloor(int floor) {
         this.floor = floor;
-        floorLabel.setText(String.format("%03d", this.floor));
+        floorLabel.setText(String.format("Floor: %03d", this.floor));
     }
 
     public void updatePlayerHealth(int newHealth){
         playerHealth = newHealth;
-        healthLabel.setText(String.format("%03d", playerHealth));
+        healthLabel.setText(String.format("Health: %03d", playerHealth));
     }
 }
