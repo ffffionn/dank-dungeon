@@ -18,7 +18,6 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.sun.corba.se.impl.presentation.rmi.ExceptionHandlerImpl;
 import com.test.test.models.*;
 import com.test.test.SpaceAnts;
 import com.test.test.scenes.GameHud;
@@ -176,7 +175,7 @@ public class GameScreen implements Screen {
         defineCursor();
         System.out.printf(" ***LEVEL %d*** \n", level);
         float seedFloor = (level % 3) / 10.0f;
-        float seedCeiling = (level % 10) / 10.0f;
+        float seedCeiling = ((level % 10) + 1) / 10.0f;
         float seed = MathUtils.random(seedFloor, seedCeiling);
 
         System.out.printf("R - (%f, %f) \n", seedFloor, seedCeiling);
@@ -184,7 +183,7 @@ public class GameScreen implements Screen {
                 /* debug */
 //        if(floor > 1 && !(map == null)) levelGen.destroyLevel();
         if(floor > 1) levelGen.destroyLevel();
-        this.map = levelGen.generateLevel(Math.round(seed * 100) + 10, Math.round(seed * 100) + 10, seed);
+        this.map = levelGen.generateLevel(Math.round(seed * 120) + 10, Math.round(seed * 120) + 10, seed);
 
         int numEnemies = Math.round(seed * 100);
 

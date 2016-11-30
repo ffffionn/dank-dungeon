@@ -1,7 +1,6 @@
 package com.test.test.utils;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
@@ -51,8 +50,6 @@ public class LevelGenerator {
                 floorTiles.add(splitTiles[x][y]);
             }
         }
-
-
     }
 
     public void destroyLevel(){
