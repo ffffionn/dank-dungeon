@@ -21,6 +21,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.test.test.models.*;
 import com.test.test.SpaceAnts;
 import com.test.test.scenes.GameHud;
+import com.test.test.utils.CaveGenerator;
 import com.test.test.utils.LevelGenerator;
 import com.test.test.utils.WorldContactListener;
 
@@ -63,7 +64,8 @@ public class GameScreen implements Screen {
     private Array<B2DSprite> deleteList;
 
     private AssetManager assetManager;
-    private LevelGenerator levelGen;
+//    private LevelGenerator levelGen;
+    private CaveGenerator levelGen;
     private int floor;
 
     private boolean levelUp;
@@ -87,7 +89,8 @@ public class GameScreen implements Screen {
         this.hud = new GameHud(game.batch);
         this.entityList = new Array<B2DSprite>();
         this.deleteList = new Array<B2DSprite>();
-        this.levelGen = new LevelGenerator(this, tiles);
+//        this.levelGen = new LevelGenerator(this, tiles);
+        this.levelGen = new CaveGenerator(this, tiles);
         this.player = new Hero(this, new Vector2(0, 0));
         this.mapRenderer = new OrthogonalTiledMapRenderer(map, 1 / PPM);
 
@@ -183,11 +186,13 @@ public class GameScreen implements Screen {
                 /* debug */
 //        if(floor > 1 && !(map == null)) levelGen.destroyLevel();
         if(floor > 1) levelGen.destroyLevel();
-        this.map = levelGen.generateLevel(Math.round(seed * 120) + 10, Math.round(seed * 120) + 10, seed);
+        this.map = levelGen.generateMap(Math.round(seed * 240) + 10, Math.round(seed * 240) + 10, seed);
 
         int numEnemies = Math.round(seed * 100);
+//        int numEnemies = 0;
 
-        player.redefine(levelGen.getHeroStart());
+        player.redefine(levelGen.getRandomPlace());
+//        player.redefine(levelGen.getHeroStart());
         enemies = levelGen.spawnEnemies(numEnemies);
         entityList.addAll(enemies);
 
@@ -305,7 +310,7 @@ public class GameScreen implements Screen {
     @Override
     public void dispose() {
         deleteUselessBodies();
-        levelGen.destroyLevel();
+//        levelGen.destroyLevel();
         map.dispose();
         mapRenderer.dispose();
         world.dispose();
