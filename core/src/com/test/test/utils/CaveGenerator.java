@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Queue;
 import com.test.test.models.B2DSprite;
 import com.test.test.models.Enemy;
 import com.test.test.screens.GameScreen;
@@ -21,14 +22,17 @@ import static com.test.test.SpaceAnts.PPM;
  */
 public class CaveGenerator {
 
-
-    private static final int MAX_ROOM_SIZE = 12;
-    private static final int MIN_ROOM_SIZE = 4;
     private static final int TILE_SIZE = 20;
+
+    private static final float INITIAL_WALL_CHANCE = 0.40f;
+    private static final float MINIMUM_AREA_COVERAGE = 0.45f;
+
+    private static final int BIRTH_LIMIT = 6;
+    private static final int SURVIVE_LIMIT = 3;
+    private static final int SIMULATION_STEPS = 6;
 
     private int mapWidth;
     private int mapHeight;
-    private int numRooms;
 
     private TiledMapTileLayer terrainLayer;
     private GameScreen screen;
@@ -38,25 +42,16 @@ public class CaveGenerator {
     private Array<TextureRegion> floorTiles;
     private Array<Body> wallBodies;
 
-    private int birthLimit;
-    private int deathLimit;
-    private int numberOfSteps;
-
-    private boolean[][] cellmap;
+    private boolean[][] caveCells;
 
     public CaveGenerator(GameScreen screen, Texture worldTileSheet){
         this.screen = screen;
-        this.numRooms = 4;
         this.wallBodies = new Array<Body>();
         this.map = new TiledMap();
-        floorTiles = new Array<TextureRegion>();
-
-        this.birthLimit = 5;
-        this.deathLimit = 3;
-        this.numberOfSteps = 4;
+        this.floorTiles = new Array<TextureRegion>();
 
         TextureRegion[][] splitTiles = TextureRegion.split(worldTileSheet, TILE_SIZE, TILE_SIZE);
-        for(int x=1; x <= 2; x++){
+        for(int x = 1; x <= 2; x++){
             for( int y = 1; y <= 2; y++){
                 floorTiles.add(splitTiles[x][y]);
             }
@@ -64,16 +59,19 @@ public class CaveGenerator {
     }
 
     public TiledMap generateMap(int width, int height, float seed){
-        //Create a new map
+        System.out.printf("Generating new cave - %d x %d  \n", width, height);
+
         mapHeight = height;
         mapWidth = width;
-        this.cellmap = new boolean[mapWidth][mapHeight];
-        //Set up the map with random values
-        cellmap = initialiseMap(cellmap);
-        //And now run the simulation for a set number of steps
-        for(int i=0; i< numberOfSteps; i++){
-            cellmap = doSimulationStep(cellmap);
-        }
+
+        boolean[][] optimisedCave;
+        do{
+            initialiseMap();
+            simulateCave();
+            optimisedCave = floodFill();
+        }while( numFloorTiles(optimisedCave) < Math.round(mapWidth * mapHeight * MINIMUM_AREA_COVERAGE));
+
+        caveCells = optimisedCave;
 
         defineLevel();
         createGoal();
@@ -82,7 +80,6 @@ public class CaveGenerator {
     }
 
     public void destroyLevel(){
-        System.out.printf("Removing %d walls \n", wallBodies.size);
         for(Body b : wallBodies){
             screen.getWorld().destroyBody(b);
         }
@@ -92,42 +89,141 @@ public class CaveGenerator {
         System.out.printf("-- %d bodies left after level tear down --\n", screen.getWorld().getBodyCount());
         for(int x=0; x < mapWidth; x++){
             for(int y=0; y < mapHeight; y++){
-                cellmap[x][y] = false;
+                caveCells[x][y] = false;
             }
         }
     }
 
-    public boolean[][] initialiseMap(boolean[][] map){
-        float chanceToStartAlive = 0.45f;
-
-        for(int x=0; x < mapWidth; x++){
-            for(int y=0; y < mapHeight; y++){
-                if(random() < chanceToStartAlive){
-                    map[x][y] = true;
+    /**
+     * Counts the number of floor tiles on a given cave map.
+     * @param map The 2D array of cells to check.
+     * @return Number of floor tiles in the map.
+     */
+    private int numFloorTiles(boolean[][] map) {
+        int count = 0;
+        for (int x = 0; x < mapWidth; x++) {
+            for (int y = 0; y < mapHeight; y++) {
+                if (!map[x][y]) {
+                    count++;
                 }
             }
         }
-        return map;
+        return count;
     }
 
-    public boolean[][] doSimulationStep(boolean[][] oldMap){
+    /**
+     * Fill the matrix with walls given random chance.
+     */
+    private void initialiseMap(){
+        caveCells = new boolean[mapWidth][mapHeight];
+        for(int x = 0; x < mapWidth; x++){
+            for(int y = 0; y < mapHeight; y++){
+                if(random() < INITIAL_WALL_CHANCE){
+                    caveCells[x][y] = true;
+                }
+            }
+        }
+    }
+
+    /**
+     * Step the cave cellular automata simulation for the desired number of steps.
+     */
+    private void simulateCave(){
+        for(int i=0; i< SIMULATION_STEPS; i++){
+            boolean[][] newMap = new boolean[mapWidth][mapHeight];
+
+            for(int x = 0; x < mapWidth; x++){
+                for(int y = 0; y < mapHeight; y++){
+                    int surroundingWalls = this.countAliveNeighbours(caveCells, x, y, 1);
+                    if(caveCells[x][y]){
+                        if(surroundingWalls < SURVIVE_LIMIT) {
+                            newMap[x][y] = false;
+                        }else{
+                            newMap[x][y] = true;
+                        }
+                    }else{   // floor cell
+                        if(surroundingWalls >= BIRTH_LIMIT){
+                            newMap[x][y] = true;
+                        }else{
+                            newMap[x][y] = false;
+                        }
+                    }
+                }
+            }
+            caveCells = newMap;
+        }
+    }
+
+    /**
+     * Returns a copy of the current cave with one single cavern. (All areas reachable)
+     * @return New 2D array of boolean cells for the cave
+     */
+    private boolean[][] floodFill(){
+        boolean[][] cavern = new boolean[mapWidth][mapHeight];
+        // initialise cavern to all walls
+        for(int x = 0; x < mapWidth; x++){
+            for(int y = 0; y < mapHeight; y++) {
+                cavern[x][y] = true;
+            }
+        }
+
+        Queue<Cell> cellQueue = new Queue<Cell>();
+        cellQueue.addFirst(new Cell(getRandomPlace()));
+        Cell cell;
+
+        System.out.println("Begin loop");
+        while(cellQueue.size > 0){
+            cell = cellQueue.removeFirst();
+            if(cavern[cell.x][cell.y]){
+                cavern[cell.x][cell.y] = false;
+
+                // if neighbours are in bounds, are floor tiles and not already checked - add them
+                if(cell.x > 0 && !caveCells[cell.x - 1][cell.y] && cavern[cell.x - 1][cell.y]){
+                    cellQueue.addLast(new Cell(new Vector2(cell.x - 1, cell.y)));
+                }
+                if(cell.x != (mapWidth - 1) && !caveCells[cell.x + 1][cell.y] && cavern[cell.x + 1][cell.y]){
+                    cellQueue.addLast(new Cell(new Vector2(cell.x + 1, cell.y)));
+                }
+                if(cell.y > 0 && !caveCells[cell.x][cell.y - 1] && cavern[cell.x][cell.y - 1]){
+                    cellQueue.addLast(new Cell(new Vector2(cell.x, cell.y - 1)));
+                }
+                if(cell.y != (mapHeight - 1) && !caveCells[cell.x][cell.y + 1] && cavern[cell.x][cell.y + 1]){
+                    cellQueue.addLast(new Cell(new Vector2(cell.x, cell.y + 1)));
+                }
+            }
+
+        }
+
+        return cavern;
+    }
+
+    private class Cell{
+        private int x;
+        private int y;
+
+        private Cell(Vector2 position){
+            x = Math.round(position.x);
+            y = Math.round(position.y);
+//            System.out.printf("%s  ->  (%d, %d) \n", position, x, y);
+        }
+    }
+
+    private boolean[][] doSimulationStep(boolean[][] oldMap){
         boolean[][] newMap = new boolean[mapWidth][mapHeight];
-        //Loop over each row and column of the map
-        for(int x=0; x< oldMap.length; x++){
-            for(int y=0; y< oldMap[x].length; y++){
-                int nbs = this.countAliveNeighbours(oldMap, x, y);
+
+        for(int x = 0; x < mapWidth; x++){
+            for(int y = 0; y < mapHeight; y++){
+                int surroundingWalls = this.countAliveNeighbours(oldMap, x, y, 1);
                 if(oldMap[x][y]){
-                    if(nbs < deathLimit){
+                    if(surroundingWalls < SURVIVE_LIMIT ){
                         newMap[x][y] = false;
-n                    else{
+                    }else{
                         newMap[x][y] = true;
                     }
-                } //Otherwise, if the cell is dead now, check if it has the right number of neighbours to be 'born'
-                else{
-                    if(nbs > birthLimit){
+                }else{
+                    if(surroundingWalls >= BIRTH_LIMIT){
                         newMap[x][y] = true;
-                    }
-                    else{
+                    }else{
                         newMap[x][y] = false;
                     }
                 }
@@ -136,40 +232,42 @@ n                    else{
         return newMap;
     }
 
-    public int countAliveNeighbours(boolean[][] map, int x, int y){
+    /**
+     * Counts the number of walls surrounding a cell in the given radius.
+     */
+    private int countAliveNeighbours(boolean[][] map, int x, int y, int radius){
         int count = 0;
-        for(int i=-1; i<2; i++){
-            for(int j=-1; j<2; j++){
-                int neighbour_x = x+i;
-                int neighbour_y = y+j;
-                //If we're looking at the middle point
-                if(i == 0 && j == 0){
-                    //Do nothing, we don't want to add ourselves in!
-                }
-                //In case the index we're looking at it off the edge of the map
-                else if(neighbour_x < 0 || neighbour_y < 0 || neighbour_x >= map.length || neighbour_y >= map[0].length){
-                    count = count + 1;
-                }
-                //Otherwise, a normal check of the neighbour
-                else if(map[neighbour_x][neighbour_y]){
-                    count = count + 1;
+        for(int iX = x - radius; iX <= (x + radius); iX++){
+            for(int iY = y - radius; iY <= (y + radius); iY++){
+                // We don't count the (x,y) square
+                if(!(iX == x && iY == y)){
+                    // in case we are checking outside array bounds, count as wall.
+                    if(iX < 0 || iY < 0 || iX >= map.length || iY >= map[0].length){
+                        count = count + 1;
+                    }else if(map[iX][iY]){
+                        count = count + 1;
+                    }
                 }
             }
         }
         return count;
     }
 
-    public void defineLevel(){
+    /**
+     * Creates the terrain bodies and textures for the cave.
+     */
+    private void defineLevel(){
         terrainLayer = new TiledMapTileLayer(mapWidth, mapHeight, TILE_SIZE, TILE_SIZE);
         for(int x = 0; x < mapWidth; x++){
             for(int y = 0; y < mapHeight; y++){
-                if(cellmap[x][y]){
+                if(!caveCells[x][y]){
                     TiledMapTileLayer.Cell cell = new TiledMapTileLayer.Cell();
                     cell.setTile(new StaticTiledMapTile(randomFloorTile()));
                     terrainLayer.setCell(x, y, cell);
                 }else{ // is wall
                     placeWall(x, y);
                 }
+                // place surrounding wall
                 if(y == 0){
                     placeWall(x, y - 1);
                 }
@@ -186,8 +284,12 @@ n                    else{
         }
     }
 
+    /**
+     * Spawns the given number of enemies in random positions in the cave floor.
+     * @param number Number of enemies to spawn.
+     * @return An Array of Enemies.
+     */
     public Array<Enemy> spawnEnemies(int number){
-        System.out.printf("Spawning %d enemies \n", number);
         Array<Enemy> array = new Array<Enemy>();
         for( int i = 0; i < number; i++){
             array.add( new Enemy(screen, getRandomPlace()) );
@@ -196,39 +298,53 @@ n                    else{
     }
 
 
-    public Vector2 getTreasureSpot(){
-        //adjacent wall tiles
-        int treasureHiddenLimit = 6;
-        for (int x=0; x < mapWidth; x++){
-            for (int y=0; y < mapHeight; y++){
-                if(cellmap[x][y]){
-                    int nbs = countAliveNeighbours(cellmap, x, y);
-                    if(nbs >= treasureHiddenLimit){
-                        return new Vector2(x, y);
-                    }
+    /**
+     * Gets a random floor tile that is surrounded by a given number of walls.
+     * @param rarity How many walls need to be surrounding the tile.
+     * @return A Vector2 of the position.
+     */
+    public Vector2 getTreasureSpot(int rarity){
+        Vector2 position;
+        boolean spotFound = false;
+        int x, y;
+        do{
+            position = getRandomPlace();
+            x = Math.round(position.x);
+            y = Math.round(position.y);
+            if(!caveCells[x][y]){
+                int surroundingWalls = countAliveNeighbours(caveCells, x, y, 1);
+                if(surroundingWalls >= rarity){
+                    spotFound = true;
                 }
             }
-        }
-        return new Vector2(0,0);
+        }while(!spotFound);
+        return position;
     }
 
+    /**
+     * Finds a random floor tile in the cave.
+     * @return A Vector2 of the floor tile.
+     */
     public Vector2 getRandomPlace(){
         int randomX, randomY;
-        System.out.println(new Vector2(mapWidth, mapHeight));
-
         while(true){
             randomX = random(mapWidth - 1);
             randomY = random(mapHeight - 1);
-            System.out.println(new Vector2(randomX, randomY));
-            if(cellmap[randomX][randomY]){
+            if(!caveCells[randomX][randomY]){
                 return new Vector2((float) randomX, (float) randomY);
             }
         }
     }
 
+    /**
+     * Create the cave level exit, ensuring to be at least a certain distance from the player.
+     */
     private void createGoal(){
         BodyDef bdef = new BodyDef();
-        Vector2 goalPosition = getTreasureSpot();
+
+        Vector2 goalPosition = getTreasureSpot(5);
+
+
         bdef.position.set((goalPosition.x + 0.5f) * 20 / PPM, (goalPosition.y + 0.5f) * 20 / PPM);
         bdef.type = BodyDef.BodyType.DynamicBody;
         bdef.linearDamping = 5.0f;

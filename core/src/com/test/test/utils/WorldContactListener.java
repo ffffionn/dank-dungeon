@@ -31,7 +31,7 @@ public class WorldContactListener implements ContactListener{
                 ((Hero) fa.getBody().getUserData()).damage(3);
             }else if(fa.getUserData().equals("enemy") && fb.getUserData().equals("player")){
                 Vector2 v = fb.getBody().getLinearVelocity();
-                fb.getBody().setLinearVelocity(new Vector2(-v.x * 2, -v.y * 2));
+                fb.getBody().setLinearVelocity(new Vector2(-v.x, -v.y));
                 fa.getBody().setLinearVelocity(new Vector2(v.x, v.y));
                 ((Hero) fb.getBody().getUserData()).damage(3);
             }else if(fa.getUserData().equals("enemy") && fb.getUserData().equals("fireball")) {

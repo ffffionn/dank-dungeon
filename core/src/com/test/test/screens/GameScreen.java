@@ -63,8 +63,8 @@ public class GameScreen implements Screen {
     private Array<B2DSprite> entityList;
     private Array<B2DSprite> deleteList;
 
+    // tools
     private AssetManager assetManager;
-//    private LevelGenerator levelGen;
     private CaveGenerator levelGen;
     private int floor;
 
@@ -89,7 +89,6 @@ public class GameScreen implements Screen {
         this.hud = new GameHud(game.batch);
         this.entityList = new Array<B2DSprite>();
         this.deleteList = new Array<B2DSprite>();
-//        this.levelGen = new LevelGenerator(this, tiles);
         this.levelGen = new CaveGenerator(this, tiles);
         this.player = new Hero(this, new Vector2(0, 0));
         this.mapRenderer = new OrthogonalTiledMapRenderer(map, 1 / PPM);
@@ -157,6 +156,8 @@ public class GameScreen implements Screen {
 
         for( B2DSprite b : deleteList ){
             if( b instanceof Enemy ){
+                // give the player score based on the enemy
+                hud.updateScore(((Enemy) b).getScoreValue());
                 enemies.removeValue((Enemy) b, true);
             }
             world.destroyBody(b.getBody());
@@ -168,7 +169,6 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
-        System.out.println("SHOW");
     }
 
     public void generateLevel(int level){
@@ -181,18 +181,16 @@ public class GameScreen implements Screen {
         float seedCeiling = ((level % 10) + 1) / 10.0f;
         float seed = MathUtils.random(seedFloor, seedCeiling);
 
-        System.out.printf("R - (%f, %f) \n", seedFloor, seedCeiling);
 
-                /* debug */
-//        if(floor > 1 && !(map == null)) levelGen.destroyLevel();
         if(floor > 1) levelGen.destroyLevel();
-        this.map = levelGen.generateMap(Math.round(seed * 240) + 10, Math.round(seed * 240) + 10, seed);
+        this.map = levelGen.generateMap(Math.round(seed * 128) + 10, Math.round(seed * 128) + 10, seed);
 
-        int numEnemies = Math.round(seed * 100);
+        int numEnemies = Math.round(seed * 150);
 //        int numEnemies = 0;
 
+        System.out.printf("Picking seed (%f) from between - (%f, %f) \n", seed, seedFloor, seedCeiling);
+
         player.redefine(levelGen.getRandomPlace());
-//        player.redefine(levelGen.getHeroStart());
         enemies = levelGen.spawnEnemies(numEnemies);
         entityList.addAll(enemies);
 
@@ -230,6 +228,9 @@ public class GameScreen implements Screen {
         }
         if (Gdx.input.isKeyPressed(Input.Keys.E)){
             cam.zoom += 0.1f;
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.TAB)){
+            levelUp();
         }
     }
 
@@ -310,7 +311,7 @@ public class GameScreen implements Screen {
     @Override
     public void dispose() {
         deleteUselessBodies();
-//        levelGen.destroyLevel();
+        levelGen.destroyLevel();
         map.dispose();
         mapRenderer.dispose();
         world.dispose();

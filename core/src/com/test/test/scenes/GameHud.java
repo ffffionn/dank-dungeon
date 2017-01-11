@@ -60,4 +60,9 @@ public class GameHud {
         playerHealth = newHealth;
         healthLabel.setText(String.format("Health: %03d", playerHealth));
     }
+
+    public void updateScore(int adjustment){
+        score += adjustment;
+        scoreLabel.setText(String.format("%06d", score));
+    }
 }

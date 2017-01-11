@@ -15,6 +15,7 @@ import static com.test.test.SpaceAnts.PPM;
 public class Enemy extends B2DSprite {
 
     protected static final float MAX_SPEED = 0.75f;
+    protected static final int SCORE_VALUE = 20;
 
     protected GameScreen screen;
     protected Vector2 target, velocity;
@@ -30,7 +31,6 @@ public class Enemy extends B2DSprite {
     public void update(float dt){
         if( setToDestroy && !destroyed ){
             destroyed = true;
-//            screen.delete(this);
         }else if( !destroyed ){
             velocity = target.cpy().sub(b2body.getPosition()).nor().scl(MAX_SPEED);
             b2body.setLinearVelocity(velocity);
@@ -38,7 +38,7 @@ public class Enemy extends B2DSprite {
         }
     }
 
-    private void define(Vector2 startPoint){
+    protected void define(Vector2 startPoint){
 
         BodyDef bdef = new BodyDef();
         bdef.position.set((startPoint.x + 0.5f) * 20 / PPM, startPoint.y * 20 / PPM);
@@ -60,6 +60,10 @@ public class Enemy extends B2DSprite {
 
     public void setTarget(Vector2 target){
         this.target = target;
+    }
+
+    public int getScoreValue(){
+        return SCORE_VALUE;
     }
 
 }
