@@ -81,7 +81,6 @@ public class GameScreen implements Screen {
         world.setContactListener(new WorldContactListener(this));
         this.modifier = 1.0f;
         this.assetManager = new AssetManager();
-//        this.map = new TiledMap();
         this.enemies = new Array<Enemy>();
         this.atlas = new TextureAtlas("animations/player.pack");
         this.gamePort = new FitViewport(SpaceAnts.V_WIDTH / PPM, SpaceAnts.V_HEIGHT / PPM , cam);
@@ -177,7 +176,7 @@ public class GameScreen implements Screen {
         }
         defineCursor();
         System.out.printf(" ***LEVEL %d*** \n", level);
-        float seedFloor = (level % 3) / 10.0f;
+        float seedFloor = (level % 5) / 10.0f;
         float seedCeiling = ((level % 10) + 1) / 10.0f;
         float seed = MathUtils.random(seedFloor, seedCeiling);
 
