@@ -43,7 +43,7 @@ public class Enemy extends B2DSprite {
         BodyDef bdef = new BodyDef();
         bdef.position.set((startPoint.x + 0.5f) * 20 / PPM, startPoint.y * 20 / PPM);
         bdef.type = BodyDef.BodyType.DynamicBody;
-        bdef.linearDamping = 5.0f;
+        bdef.linearDamping = 6.0f;
         bdef.fixedRotation = true;
         this.b2body = screen.getWorld().createBody(bdef);
 

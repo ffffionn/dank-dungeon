@@ -22,7 +22,6 @@ import com.test.test.models.*;
 import com.test.test.SpaceAnts;
 import com.test.test.scenes.GameHud;
 import com.test.test.utils.CaveGenerator;
-import com.test.test.utils.LevelGenerator;
 import com.test.test.utils.WorldContactListener;
 
 import static com.test.test.SpaceAnts.PPM;
@@ -117,6 +116,7 @@ public class GameScreen implements Screen {
         handleInput(delta);
 
         player.update(delta);
+        updateCursorBody();
 
         // update enemies
         for( Enemy e : enemies ){
@@ -159,6 +159,9 @@ public class GameScreen implements Screen {
                 hud.updateScore(((Enemy) b).getScoreValue());
                 enemies.removeValue((Enemy) b, true);
             }
+            if( b instanceof Barrier){
+                // start cooldown?
+            }
             world.destroyBody(b.getBody());
             b.dispose();
         }
@@ -170,11 +173,16 @@ public class GameScreen implements Screen {
     public void show() {
     }
 
+    private void updateCursorBody(){
+        Vector3 v3 = cam.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+        cursorBody.setTransform(new Vector2(v3.x, v3.y), 0);
+    }
+
     public void generateLevel(int level){
         if(cursorBody != null){
             world.destroyBody(cursorBody);
         }
-        defineCursor();
+        defineCursorBody();
         System.out.printf(" ***LEVEL %d*** \n", level);
         float seedFloor = (level % 5) / 10.0f;
         float seedCeiling = ((level % 10) + 1) / 10.0f;
@@ -182,10 +190,10 @@ public class GameScreen implements Screen {
 
 
         if(floor > 1) levelGen.destroyLevel();
-        this.map = levelGen.generateMap(Math.round(seed * 128) + 10, Math.round(seed * 128) + 10, seed);
+        this.map = levelGen.generateCave(Math.round(seed * 64) + 10, Math.round(seed * 64) + 10, seed);
 
         int numEnemies = Math.round(seed * 150);
-//        int numEnemies = 0;
+        numEnemies = 0;
 
         System.out.printf("Picking seed (%f) from between - (%f, %f) \n", seed, seedFloor, seedCeiling);
 
@@ -219,9 +227,6 @@ public class GameScreen implements Screen {
     }
 
     public void handleInput(float dt){
-        if(!player.isDead()){
-            faceCursor();
-        }
         if (Gdx.input.isKeyPressed(Input.Keys.Q)){
             cam.zoom -= 0.1f;
         }
@@ -233,7 +238,7 @@ public class GameScreen implements Screen {
         }
     }
 
-    private void defineCursor(){
+    private void defineCursorBody(){
         BodyDef bdef = new BodyDef();
         bdef.type = BodyDef.BodyType.StaticBody;
         bdef.position.set(0, 0);
@@ -251,22 +256,6 @@ public class GameScreen implements Screen {
         this.cursorBody = world.createBody(bdef);
         cursorBody.createFixture(fdef);
     }
-
-
-    private void faceCursor(){
-        // get the game-world translation of the mouse position
-        Vector3 v3 = cam.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
-        float x = v3.x;
-        float y = v3.y;
-        float angle = MathUtils.atan2(y - player.getPosition().y, x - player.getPosition().x);
-
-        cursorBody.setTransform(new Vector2(x, y), 0);
-        player.getBody().setTransform(player.getPosition(),
-                                   MathUtils.atan2(y - player.getPosition().y,
-                                                   x - player.getPosition().x));
-        player.getSprite().setRotation(angle * MathUtils.radiansToDegrees);
-    }
-
 
     private static final float STEP_TIME = 1f / 60f;
     private static final int VELOCITY_ITERATIONS = 6;
@@ -333,5 +322,6 @@ public class GameScreen implements Screen {
     }
 
     public Body getCursor() { return this.cursorBody; }
+    public OrthographicCamera getCam() { return this.cam; }
 
 }

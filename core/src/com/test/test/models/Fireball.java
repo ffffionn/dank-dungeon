@@ -13,17 +13,16 @@ import static com.test.test.SpaceAnts.PPM;
  */
 public class Fireball extends B2DSprite {
 
-    private static final float BULLET_SPEED = 2.5f;
-    private Vector2 position, velocity;
+    private static final float BULLET_SPEED = 1.75f;
+    private Vector2 velocity;
     private GameScreen screen;
 
-    public Fireball(GameScreen screen, Hero player){
+    public Fireball(GameScreen screen, Vector2 playerPosition){
         super();
         this.screen = screen;
-        defineFireball(player.getPosition());
+        defineFireball(playerPosition);
         Vector2 target = screen.getCursor().getPosition();
-//        position = player.getPosition();
-        velocity = target.cpy().sub(player.getPosition()).nor().scl(BULLET_SPEED);
+        velocity = target.cpy().sub(playerPosition).nor().scl(BULLET_SPEED);
         b2body.setLinearVelocity(velocity);
     }
 

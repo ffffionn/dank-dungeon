@@ -44,6 +44,9 @@ public class WorldContactListener implements ContactListener{
                 ((Fireball) fa.getBody().getUserData()).setToDestroy();
             }else if(fa.getUserData().equals("wall") && fb.getUserData().equals("fireball")) {
                 ((Fireball) fb.getBody().getUserData()).setToDestroy();
+            }else if(fa.getUserData().equals("barrier") && fb.getUserData().equals("fireball")) {
+                ((Fireball) fb.getBody().getUserData()).setToDestroy();
+                System.out.println("SHIELD HIT");
             }else if((fa.getUserData().equals("goal") && fb.getUserData().equals("player"))
                     || (fa.getUserData().equals("player") && fb.getUserData().equals("goal"))){
                 screen.levelUp();
