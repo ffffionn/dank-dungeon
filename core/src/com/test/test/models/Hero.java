@@ -5,7 +5,9 @@ import static com.test.test.SpaceAnts.PPM;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.*;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 import com.test.test.screens.GameScreen;
@@ -14,21 +16,25 @@ import com.test.test.screens.GameScreen;
  * Created by Fionn on 22/10/2016.
  */
 public class Hero extends B2DSprite {
-    public enum State { STANDING, MOVING, ATTACKING, DEAD }
-    public State currentState;
-    public State previousState;
+    public enum State { STANDING, MOVING, ATTACKING, DEAD, BLOCKING }
+
+    private State currentState;
+    private State previousState;
+
     private Array<Fireball> fireballs;
     private GameScreen screen;
+
+    private Barrier shield;
 
     private float modifier;
     private static float MAX_VELOCITY = 2.5f;
     private static int MAX_FIREBALLS = 5;
 
     // animation frames
-    TextureRegion[] moveAnimation;
-    TextureRegion[] standAnimation;
-    TextureRegion[] castAnimation;
-    TextureRegion[] dieAnimation;
+    private TextureRegion[] moveAnimation;
+    private TextureRegion[] standAnimation;
+    private TextureRegion[] castAnimation;
+    private TextureRegion[] dieAnimation;
 
 
     public Hero(GameScreen screen, Vector2 position){
@@ -39,6 +45,7 @@ public class Hero extends B2DSprite {
         fireballs = new Array<Fireball>(MAX_FIREBALLS);
         modifier = 1.0f;
         health = 100;
+        this.shield = new Barrier(screen, this);
 
         define(position);
 
@@ -59,7 +66,7 @@ public class Hero extends B2DSprite {
 
     private void define(Vector2 position){
         BodyDef bdef = new BodyDef();
-        bdef.position.set((position.x + 0.5f) * 20/ PPM, (position.y + 0.5f) * 20 / PPM);
+        bdef.position.set((position.x + 0.5f) * 20 / PPM, (position.y + 0.5f) * 20 / PPM);
         bdef.type = BodyDef.BodyType.DynamicBody;
         bdef.linearDamping = 10.0f;
         bdef.fixedRotation = true;
@@ -92,19 +99,19 @@ public class Hero extends B2DSprite {
 
     public void update(float dt){
         if( currentState != State.DEAD){
-            handleInput(dt);
-
             if( Math.abs(b2body.getLinearVelocity().x) < 0.1f && Math.abs(b2body.getLinearVelocity().y) < 0.1f ){
                 if( previousState != State.STANDING) {
-                    changeState(State.STANDING);
+//                    changeState(State.STANDING);
                 }
                 setAnimation(standAnimation, 1/12f);
             }else{
                 if( previousState != State.MOVING){
                     setAnimation(moveAnimation, 1/12f);
                 }
-                changeState(State.MOVING);
+//                changeState(State.MOVING);
             }
+            faceCursor();
+            handleInput(dt);
         }else{
             // set game over
             if( animation.getTimesPlayed() > 0 ){
@@ -123,6 +130,17 @@ public class Hero extends B2DSprite {
                 fb.update(dt);
             }
         }
+        if(currentState == State.BLOCKING){
+            shield.update(angleToCursor());
+        }
+    }
+
+    public State getCurrentState(){
+        return this.currentState;
+    }
+
+    public State getPreviousState(){
+        return this.previousState;
     }
 
     public void changeState(State s){
@@ -139,7 +157,7 @@ public class Hero extends B2DSprite {
 
     public void shoot(){
         if(fireballs.size < MAX_FIREBALLS){
-            Fireball fb = new Fireball(screen, this);
+            Fireball fb = new Fireball(screen, getPosition());
             screen.add(fb);
             fireballs.add(fb);
         }
@@ -159,10 +177,51 @@ public class Hero extends B2DSprite {
 
     private void die(){
         changeState(State.DEAD);
-        setAnimation(dieAnimation, 1/8f);
+        setAnimation(dieAnimation, 1/10f);
+    }
+
+    private void faceCursor(){
+        Vector3 v3 = screen.getCam().unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+        screen.getCursor().setTransform(new Vector2(v3.x, v3.y), 0);
+        b2body.setTransform(b2body.getPosition(),
+                MathUtils.atan2(v3.y - b2body.getPosition().y,
+                                v3.x - b2body.getPosition().x));
+        sprite.setRotation(angleToCursor() * MathUtils.radiansToDegrees);
+    }
+
+    public float angleToCursor(){
+        // get the game-world translation of the mouse position
+        Vector3 v3 = screen.getCam().unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+        return MathUtils.atan2(v3.y - b2body.getPosition().y, v3.x - b2body.getPosition().x);
+    }
+
+    private void block(){
+        System.out.println("BLOCK!");
+        changeState(State.BLOCKING);
+        shield.raise(sprite.getRotation());
+//        b2body.setAwake(false);
+    }
+
+
+    private void unblock(){
+        System.out.println("UNBLOCK!");
+        changeState(State.STANDING);
+        shield.setToDestroy();
+//        b2body.setAwake(true);
     }
 
     private void handleInput(float dt){
+
+        if(Gdx.input.isKeyPressed(Input.Keys.SPACE)){
+            if( currentState != State.BLOCKING ){
+                block();
+            }
+        }else{
+            if(currentState == State.BLOCKING){
+                unblock();
+            }
+        }
+
         if (Gdx.input.isKeyPressed(Input.Keys.W) && b2body.getLinearVelocity().y <= MAX_VELOCITY) {
             b2body.applyLinearImpulse(new Vector2(0, 0.2f * modifier), b2body.getWorldCenter(), true);
         }
@@ -178,7 +237,7 @@ public class Hero extends B2DSprite {
         if (Gdx.input.justTouched()) shoot();
 
         if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
-            modifier = 3.0f;
+            modifier = 1.8f;
         }else{
             modifier = 1.0f;
         }

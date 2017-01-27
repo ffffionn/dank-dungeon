@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
@@ -24,9 +23,9 @@ public class CaveGenerator {
 
     private static final int TILE_SIZE = 20;
 
+    // cellular automata constants
     private static final float INITIAL_WALL_CHANCE = 0.40f;
     private static final float MINIMUM_AREA_COVERAGE = 0.45f;
-
     private static final int BIRTH_LIMIT = 6;
     private static final int SURVIVE_LIMIT = 3;
     private static final int SIMULATION_STEPS = 6;
@@ -42,6 +41,7 @@ public class CaveGenerator {
     private Array<TextureRegion> floorTiles;
     private Array<Body> wallBodies;
 
+    // current matrix of the cave cells
     private boolean[][] caveCells;
 
     public CaveGenerator(GameScreen screen, Texture worldTileSheet){
@@ -58,7 +58,14 @@ public class CaveGenerator {
         }
     }
 
-    public TiledMap generateMap(int width, int height, float seed){
+    /**
+     * Generates a map with given dimensions.
+     * @param width Width of the cavern in tiles.
+     * @param height Height of the cavern in tiles.
+     * @param seed
+     * @return A TiledMap with the new cavern as a Layer.
+     */
+    public TiledMap generateCave(int width, int height, float seed){
         System.out.printf("Generating new cave - %d x %d  \n", width, height);
 
         mapHeight = height;
@@ -79,6 +86,9 @@ public class CaveGenerator {
         return map;
     }
 
+    /**
+     * Tear down the current level, including any box2d bodies created for cave walls.
+     */
     public void destroyLevel(){
         for(Body b : wallBodies){
             screen.getWorld().destroyBody(b);
@@ -136,17 +146,11 @@ public class CaveGenerator {
                 for(int y = 0; y < mapHeight; y++){
                     int surroundingWalls = this.countAliveNeighbours(caveCells, x, y, 1);
                     if(caveCells[x][y]){
-                        if(surroundingWalls < SURVIVE_LIMIT) {
-                            newMap[x][y] = false;
-                        }else{
-                            newMap[x][y] = true;
-                        }
-                    }else{   // floor cell
-                        if(surroundingWalls >= BIRTH_LIMIT){
-                            newMap[x][y] = true;
-                        }else{
-                            newMap[x][y] = false;
-                        }
+                        // keep wall if surrounded by minimum number of walls
+                        newMap[x][y] = (surroundingWalls >= SURVIVE_LIMIT);
+                    }else{
+                        // create wall if surrounded by minimum number of walls
+                        newMap[x][y] = (surroundingWalls >= BIRTH_LIMIT);
                     }
                 }
             }
@@ -160,7 +164,7 @@ public class CaveGenerator {
      */
     private boolean[][] floodFill(){
         boolean[][] cavern = new boolean[mapWidth][mapHeight];
-        // initialise cavern to all walls
+        // initialise new cavern to all walls
         for(int x = 0; x < mapWidth; x++){
             for(int y = 0; y < mapHeight; y++) {
                 cavern[x][y] = true;
@@ -171,7 +175,6 @@ public class CaveGenerator {
         cellQueue.addFirst(new Cell(getRandomPlace()));
         Cell cell;
 
-        System.out.println("Begin loop");
         while(cellQueue.size > 0){
             cell = cellQueue.removeFirst();
             if(cavern[cell.x][cell.y]){
