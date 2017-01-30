@@ -16,7 +16,7 @@ import com.test.test.screens.GameScreen;
  * Created by Fionn on 22/10/2016.
  */
 public class Hero extends B2DSprite {
-    public enum State { STANDING, MOVING, ATTACKING, DEAD, BLOCKING }
+    public enum State { STANDING, MOVING, DEAD, BLOCKING, SPRINTING }
 
     private State currentState;
     private State previousState;
@@ -28,6 +28,7 @@ public class Hero extends B2DSprite {
 
     private float modifier;
     private static float MAX_VELOCITY = 2.5f;
+    private static float RUN_MODIFIER = 1.35f;
     private static int MAX_FIREBALLS = 5;
 
     // animation frames
@@ -74,7 +75,7 @@ public class Hero extends B2DSprite {
 
         FixtureDef fdef = new FixtureDef();
         CircleShape shape = new CircleShape();
-        shape.setRadius(7 / PPM);
+        shape.setRadius(5.5f / PPM);
         fdef.shape = shape;
         fdef.friction = 0.75f;
         fdef.restitution = 0.0f;
@@ -112,6 +113,12 @@ public class Hero extends B2DSprite {
             }
             faceCursor();
             handleInput(dt);
+            if(currentState == State.BLOCKING){
+                shield.update(angleToCursor());
+                if( modifier > 1.0f ){
+                    System.out.println("!!!!!!!!!!!!");
+                }
+            }
         }else{
             // set game over
             if( animation.getTimesPlayed() > 0 ){
@@ -129,10 +136,6 @@ public class Hero extends B2DSprite {
             }else{
                 fb.update(dt);
             }
-        }
-        if(currentState == State.BLOCKING){
-//            shield.update(angleToCursor());
-            shield.update(sprite.getRotation() * MathUtils.degreesToRadians);
         }
     }
 
@@ -193,15 +196,12 @@ public class Hero extends B2DSprite {
         return MathUtils.atan2((mouse.y - center.y), (mouse.x - center.x));
     }
 
-    private void block(){
-        System.out.println("BLOCK!");
+    public void block(){
         changeState(State.BLOCKING);
         shield.raise(angleToCursor());
     }
 
-
-    private void unblock(){
-        System.out.println("UNBLOCK!");
+    public void unblock(){
         changeState(State.STANDING);
         shield.setToDestroy();
     }
@@ -209,7 +209,7 @@ public class Hero extends B2DSprite {
     private void handleInput(float dt){
 
         if(Gdx.input.isKeyPressed(Input.Keys.SPACE)){
-            if( currentState != State.BLOCKING ){
+            if( currentState == State.STANDING ){
                 block();
             }
         }else{
@@ -230,13 +230,24 @@ public class Hero extends B2DSprite {
         if (Gdx.input.isKeyPressed(Input.Keys.S) && b2body.getLinearVelocity().y >= -MAX_VELOCITY) {
             b2body.applyLinearImpulse(new Vector2(0, -0.2f * modifier), b2body.getWorldCenter(), true);
         }
-        if (Gdx.input.justTouched()) shoot();
-
+        if(Gdx.input.justTouched()){
+            if( currentState != State.BLOCKING){
+                shoot();
+            }
+        }
         if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+            if(currentState == State.BLOCKING){
+                unblock();
+            }
+            changeState(State.SPRINTING);
             modifier = 1.8f;
         }else{
-            modifier = 1.0f;
+            if( currentState == State.SPRINTING){
+                changeState(State.STANDING);
+                modifier = 1.0f;
+            }
         }
+//        if(Gdx.input.)
 
         if(Gdx.input.isKeyJustPressed(Input.Keys.ENTER)){
             System.out.printf("box2d <%s>  -   sprite <%f, %f>  \n", b2body.getPosition().toString(),

@@ -72,6 +72,8 @@ public class CaveGenerator {
         mapWidth = width;
 
         boolean[][] optimisedCave;
+
+        // keep generating caves until one has a floor area of over 45%
         do{
             initialiseMap();
             simulateCave();
@@ -200,41 +202,6 @@ public class CaveGenerator {
         return cavern;
     }
 
-    private class Cell{
-        private int x;
-        private int y;
-
-        private Cell(Vector2 position){
-            x = Math.round(position.x);
-            y = Math.round(position.y);
-//            System.out.printf("%s  ->  (%d, %d) \n", position, x, y);
-        }
-    }
-
-    private boolean[][] doSimulationStep(boolean[][] oldMap){
-        boolean[][] newMap = new boolean[mapWidth][mapHeight];
-
-        for(int x = 0; x < mapWidth; x++){
-            for(int y = 0; y < mapHeight; y++){
-                int surroundingWalls = this.countAliveNeighbours(oldMap, x, y, 1);
-                if(oldMap[x][y]){
-                    if(surroundingWalls < SURVIVE_LIMIT ){
-                        newMap[x][y] = false;
-                    }else{
-                        newMap[x][y] = true;
-                    }
-                }else{
-                    if(surroundingWalls >= BIRTH_LIMIT){
-                        newMap[x][y] = true;
-                    }else{
-                        newMap[x][y] = false;
-                    }
-                }
-            }
-        }
-        return newMap;
-    }
-
     /**
      * Counts the number of walls surrounding a cell in the given radius.
      */
@@ -270,7 +237,7 @@ public class CaveGenerator {
                 }else{ // is wall
                     placeWall(x, y);
                 }
-                // place surrounding wall
+                // place border walls
                 if(y == 0){
                     placeWall(x, y - 1);
                 }
@@ -299,7 +266,6 @@ public class CaveGenerator {
         }
         return array;
     }
-
 
     /**
      * Gets a random floor tile that is surrounded by a given number of walls.
@@ -339,6 +305,10 @@ public class CaveGenerator {
         }
     }
 
+    public Vector2 cellToWorldPosition(Vector2 cellPosition){
+        return new Vector2((cellPosition.x + 0.5f) * 20 / PPM, (cellPosition.y + 0.5f) * 20 / PPM);
+    }
+
     /**
      * Create the cave level exit, ensuring to be at least a certain distance from the player.
      */
@@ -346,7 +316,6 @@ public class CaveGenerator {
         BodyDef bdef = new BodyDef();
 
         Vector2 goalPosition = getTreasureSpot(5);
-
 
         bdef.position.set((goalPosition.x + 0.5f) * 20 / PPM, (goalPosition.y + 0.5f) * 20 / PPM);
         bdef.type = BodyDef.BodyType.DynamicBody;
@@ -367,21 +336,24 @@ public class CaveGenerator {
         b2body.setUserData(goal);
     }
 
-
     private void placeWall(int x, int y){
         Vector2 centre = new Vector2((x + 0.5f) * TILE_SIZE / 2 / PPM,
                 (y + 0.5f) * TILE_SIZE / 2 / PPM);
         BodyDef bdef = new BodyDef();
+        PolygonShape wall = new PolygonShape();
+        FixtureDef fdef = new FixtureDef();
+
         bdef.type = BodyDef.BodyType.StaticBody;
         bdef.position.set(centre);
-        PolygonShape wall = new PolygonShape();
         wall.setAsBox(TILE_SIZE / 2 / PPM, TILE_SIZE / 2 / PPM, centre, 0);
-        FixtureDef fdef = new FixtureDef();
         fdef.shape = wall;
 
         Body body = screen.getWorld().createBody(bdef);
         body.createFixture(fdef).setUserData("wall");
         wallBodies.add(body);
+
+
+        wall.dispose();
         /* SET WALL TEXTURE */
 //        wallTexture = splitTiles[3][17];
     }
@@ -390,4 +362,19 @@ public class CaveGenerator {
     private TextureRegion randomFloorTile(){
         return floorTiles.random();
     }
+
+
+    /**
+     * Cell class - just a wrapper for a Vector2.
+     */
+    private class Cell{
+        private int x;
+        private int y;
+
+        private Cell(Vector2 position){
+            x = Math.round(position.x);
+            y = Math.round(position.y);
+        }
+    }
+
 }

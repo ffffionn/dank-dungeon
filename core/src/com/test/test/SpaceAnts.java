@@ -19,10 +19,7 @@ public class SpaceAnts extends Game {
 
     public static int V_WIDTH = 800;
     public static int V_HEIGHT = 480;
-
     public static final float PPM = 100;
-
-    public static OrthographicCamera cam;
 
     public SpriteBatch batch;
 
@@ -34,7 +31,6 @@ public class SpaceAnts extends Game {
     private ExecutorService pool = Executors.newFixedThreadPool(NUM_THREADS);
 	private List<GameWorker> workers;
 	private ConcurrentLinkedQueue<Runnable> tasks;
-
     private FPSLogger log;
 
 	@Override

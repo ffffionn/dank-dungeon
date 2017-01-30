@@ -1,6 +1,5 @@
 package com.test.test.models;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
@@ -24,20 +23,11 @@ public class Barrier extends B2DSprite{
     }
 
     public void update(float rotation) {
-        if( setToDestroy && !destroyed ){
-            System.out.println("destroy set");
-            destroyed = true;
-        }
-        b2body.setTransform(hero.getPosition(), rotation);
-        if(rotation < 0){
-            rotation += (MathUtils.PI * 2);
-        }
-//        System.out.printf("rotating %f \n", rotation);
+        b2body.setTransform(hero.getPosition(), 0);
     }
 
     private void rotateShield(float rotation){
         b2body.setTransform(b2body.getPosition(), rotation);
-//        b2body.get
     }
 
     public void raise(float initialRotation){
@@ -47,50 +37,43 @@ public class Barrier extends B2DSprite{
     }
 
     private void defineShield(Vector2 position, float rotation) {
-        System.out.printf("creating shield at %s  - hero is %s  \n", position.toString(), hero.getPosition());
         BodyDef bdef = new BodyDef();
-//        bdef.position = position;
         bdef.position.set(position.x, position.y);
+//        bdef.angle = rotation;
         bdef.type = BodyDef.BodyType.StaticBody;
         bdef.linearDamping = 10.0f;
         bdef.fixedRotation = true;
         b2body = screen.getWorld().createBody(bdef);
 
-        float px = position.x + (MathUtils.cos(rotation) * (2.5f / PPM));
-        float py = position.y + (MathUtils.sin(rotation) * (2.5f / PPM));
+        float px = (MathUtils.cos(rotation) * (9.5f)) / PPM;
+        float py = (MathUtils.sin(rotation) * (9.5f)) / PPM;
         float angleOffset = MathUtils.PI / 4;
         Vector2 p1 = new Vector2(px, py);
 
-        px = position.x + (MathUtils.cos(rotation - angleOffset) * (2.5f / PPM));
-        py = position.y + (MathUtils.cos(rotation - angleOffset) * (2.5f / PPM));
+        px = (MathUtils.cos(rotation - angleOffset) * (9.5f)) / PPM;
+        py = (MathUtils.sin(rotation - angleOffset) * (9.5f)) / PPM;
         Vector2 p2 = new Vector2(px, py);
 
-        px = position.x + (MathUtils.cos(rotation + angleOffset) * (2.5f / PPM));
-        py = position.y + (MathUtils.cos(rotation + angleOffset) * (2.5f / PPM));
+        px = (MathUtils.cos(rotation + angleOffset) * (9.5f)) / PPM;
+        py = (MathUtils.sin(rotation + angleOffset) * (9.5f)) / PPM;
         Vector2 p3 = new Vector2(px, py);
 
-        System.out.printf("Barrier points at: <%s> - <%s> - <%s>  \n", p1.toString(), p2.toString(), p3.toString());
-        System.out.printf(" %f  - %f - %f  \n", rotation - angleOffset, rotation, rotation + angleOffset);
-
         FixtureDef fdef = new FixtureDef();
+
         EdgeShape shape = new EdgeShape();
         shape.set(p1, p2);
-        shape.setRadius(1.0f / PPM);
-
         fdef.shape = shape;
-        fdef.isSensor = true;
-        fdef.friction = 0.75f;
-        fdef.restitution = 0.0f;
+//        fdef.isSensor = true;
         b2body.createFixture(fdef).setUserData("barrier");
 
+        shape.dispose();
         //create other edge
+        shape = new EdgeShape();
         shape.set(p1, p3);
         fdef.shape = shape;
 
         b2body.createFixture(fdef).setUserData("barrier");
-
         b2body.setUserData(this);
-
         shape.dispose();
     }
 

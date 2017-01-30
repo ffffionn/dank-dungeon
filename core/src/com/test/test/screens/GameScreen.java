@@ -17,6 +17,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.test.test.models.*;
 import com.test.test.SpaceAnts;
@@ -82,7 +83,7 @@ public class GameScreen implements Screen {
         this.assetManager = new AssetManager();
         this.enemies = new Array<Enemy>();
         this.atlas = new TextureAtlas("animations/player.pack");
-        this.gamePort = new FitViewport(SpaceAnts.V_WIDTH / PPM, SpaceAnts.V_HEIGHT / PPM , cam);
+        this.gamePort = new StretchViewport(SpaceAnts.V_WIDTH / PPM, SpaceAnts.V_HEIGHT / PPM , cam);
         this.tiles = new Texture(Gdx.files.internal("textures/dungeon_tiles2.png"));
         this.hud = new GameHud(game.batch);
         this.entityList = new Array<B2DSprite>();
@@ -123,7 +124,6 @@ public class GameScreen implements Screen {
             e.setTarget(player.getPosition());
             e.update(delta);
         }
-
 
         // keep camera centered on player
         cam.position.x = player.getPosition().x;
@@ -178,7 +178,7 @@ public class GameScreen implements Screen {
         cursorBody.setTransform(new Vector2(v3.x, v3.y), 0);
     }
 
-    public void generateLevel(int level){
+    private void generateLevel(int level){
         if(cursorBody != null){
             world.destroyBody(cursorBody);
         }
@@ -193,7 +193,7 @@ public class GameScreen implements Screen {
         this.map = levelGen.generateCave(Math.round(seed * 64) + 10, Math.round(seed * 64) + 10, seed);
 
         int numEnemies = Math.round(seed * 150);
-        numEnemies = 0;
+        numEnemies = 10;
 
         System.out.printf("Picking seed (%f) from between - (%f, %f) \n", seed, seedFloor, seedCeiling);
 
@@ -211,6 +211,7 @@ public class GameScreen implements Screen {
     private void newFloor(){
         floor++;
         hud.setFloor(floor);
+        player.unblock();
         world.clearForces();
         for( B2DSprite entity : entityList ){
             if (!entity.isDestroyed()){
@@ -236,6 +237,9 @@ public class GameScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.TAB)){
             levelUp();
         }
+        if(Gdx.input.isKeyJustPressed(Input.Keys.Z)){
+            System.out.println(player.getCurrentState().toString());
+        }
     }
 
     private void defineCursorBody(){
@@ -258,9 +262,8 @@ public class GameScreen implements Screen {
     }
 
     private static final float STEP_TIME = 1f / 60f;
-    private static final int VELOCITY_ITERATIONS = 6;
-    private static final int POSITION_ITERATIONS = 2;
-
+    private static final int VELOCITY_ITERATIONS = 8;
+    private static final int POSITION_ITERATIONS = 3;
     private float accumulator = 0;
 
     private void stepWorld() {

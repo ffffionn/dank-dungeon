@@ -62,6 +62,10 @@ public class Enemy extends B2DSprite {
         this.target = target;
     }
 
+    public Vector2 getPosition(){
+        return b2body.getPosition();
+    }
+
     public int getScoreValue(){
         return SCORE_VALUE;
     }
