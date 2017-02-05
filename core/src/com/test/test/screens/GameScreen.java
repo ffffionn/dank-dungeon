@@ -84,7 +84,8 @@ public class GameScreen implements Screen {
         this.enemies = new Array<Enemy>();
         this.atlas = new TextureAtlas("animations/player.pack");
         this.gamePort = new StretchViewport(SpaceAnts.V_WIDTH / PPM, SpaceAnts.V_HEIGHT / PPM , cam);
-        this.tiles = new Texture(Gdx.files.internal("textures/dungeon_tiles2.png"));
+//        this.tiles = new Texture(Gdx.files.internal("textures/dungeon_tiles2.png"));
+        this.tiles = new Texture("textures/dungeon_tiles2.png");
         this.hud = new GameHud(game.batch);
         this.entityList = new Array<B2DSprite>();
         this.deleteList = new Array<B2DSprite>();
@@ -131,7 +132,7 @@ public class GameScreen implements Screen {
         cam.update();
         mapRenderer.setView(cam);
 
-        // openGL
+        // draw the game
         Gdx.gl.glClearColor(100f / 255f, 100f / 255f, 100f / 255f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
@@ -143,6 +144,9 @@ public class GameScreen implements Screen {
         game.batch.setProjectionMatrix(cam.combined);
         game.batch.begin();
         player.render(game.batch);
+        for(B2DSprite sprite : entityList){
+//            sprite.render(game.batch);
+        }
         game.batch.end();
     }
 
@@ -193,7 +197,7 @@ public class GameScreen implements Screen {
         this.map = levelGen.generateCave(Math.round(seed * 64) + 10, Math.round(seed * 64) + 10, seed);
 
         int numEnemies = Math.round(seed * 150);
-        numEnemies = 10;
+        numEnemies = 1;
 
         System.out.printf("Picking seed (%f) from between - (%f, %f) \n", seed, seedFloor, seedCeiling);
 

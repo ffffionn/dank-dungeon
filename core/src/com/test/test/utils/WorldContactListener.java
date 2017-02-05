@@ -53,6 +53,13 @@ public class WorldContactListener implements ContactListener{
             }else if(fa.getUserData().equals("barrier") && fb.getUserData().equals("enemy")){
                 Vector2 v = fb.getBody().getLinearVelocity();
                 fb.getBody().setLinearVelocity(new Vector2(v.x * -5, v.y * -5));
+                System.out.println("enemy B");
+                ((Enemy) fb.getBody().getUserData()).stun();
+            }else if(fb.getUserData().equals("barrier") && fa.getUserData().equals("enemy")){
+                System.out.println("enemy A");
+                Vector2 v = fa.getBody().getLinearVelocity();
+                fa.getBody().setLinearVelocity(new Vector2(v.x * -5, v.y * -5));
+                ((Enemy) fa.getBody().getUserData()).stun();
             }else if((fa.getUserData().equals("goal") && fb.getUserData().equals("player"))
                     || (fa.getUserData().equals("player") && fb.getUserData().equals("goal"))){
                 screen.levelUp();

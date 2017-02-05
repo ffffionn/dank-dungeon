@@ -10,78 +10,43 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Timer;
+import com.sun.corba.se.impl.presentation.rmi.ExceptionHandlerImpl;
 import com.test.test.screens.GameScreen;
 
 /**
  * Created by Fionn on 22/10/2016.
  */
 public class Hero extends B2DSprite {
-    public enum State { STANDING, MOVING, DEAD, BLOCKING, SPRINTING }
 
-    private State currentState;
-    private State previousState;
+    protected HeroState currentState;
+    protected HeroState previousState;
+    protected Array<Fireball> fireballs;
+    protected GameScreen screen;
+    protected Barrier shield;
 
-    private Array<Fireball> fireballs;
-    private GameScreen screen;
-
-    private Barrier shield;
-
-    private float modifier;
-    private static float MAX_VELOCITY = 2.5f;
-    private static float RUN_MODIFIER = 1.35f;
-    private static int MAX_FIREBALLS = 5;
-
-    // animation frames
-    private TextureRegion[] moveAnimation;
-    private TextureRegion[] standAnimation;
-    private TextureRegion[] castAnimation;
-    private TextureRegion[] dieAnimation;
+    // hero attributes
+    public static final float MAX_VELOCITY = 2.5f;
+    public static final int MAX_HEALTH = 100;
+    protected static int MAX_FIREBALLS = 5;
+    protected static final float INVINCIBILITY_TIMER = 1.5f;
+    protected boolean invincible;
 
 
     public Hero(GameScreen screen, Vector2 position){
         super();
         this.screen = screen;
-        currentState = State.STANDING;
-        previousState = State.STANDING;
-        fireballs = new Array<Fireball>(MAX_FIREBALLS);
-        modifier = 1.0f;
-        health = 100;
+        this.currentState = HeroState.standing;
+        this.previousState = HeroState.standing;
+        this.fireballs = new Array<Fireball>(MAX_FIREBALLS);
+        this.health = MAX_HEALTH;
         this.shield = new Barrier(screen, this);
+        this.invincible = false;
 
         define(position);
 
         // define animations
-        TextureAtlas.AtlasRegion region;
-        region = screen.getAtlas().findRegion("player-move");
-        moveAnimation = region.split(64, 64)[0];
-        region = screen.getAtlas().findRegion("player-cast");
-        castAnimation = region.split(64, 64)[0];
-        region = screen.getAtlas().findRegion("player-die");
-        dieAnimation = region.split(64, 64)[0];
-        region = screen.getAtlas().findRegion("player-strafe");
-        standAnimation = region.split(64, 64)[0];
-
-        setTexture(moveAnimation[0]);
-        setAnimation(moveAnimation, 1 / 12f);
-    }
-
-    private void define(Vector2 position){
-        BodyDef bdef = new BodyDef();
-        bdef.position.set((position.x + 0.5f) * 20 / PPM, (position.y + 0.5f) * 20 / PPM);
-        bdef.type = BodyDef.BodyType.DynamicBody;
-        bdef.linearDamping = 10.0f;
-        bdef.fixedRotation = true;
-        b2body = screen.getWorld().createBody(bdef);
-
-        FixtureDef fdef = new FixtureDef();
-        CircleShape shape = new CircleShape();
-        shape.setRadius(5.5f / PPM);
-        fdef.shape = shape;
-        fdef.friction = 0.75f;
-        fdef.restitution = 0.0f;
-
-        b2body.createFixture(fdef).setUserData("player");
-        b2body.setUserData(this);
+        HeroState.defineAnimations(screen.getAtlas());
     }
 
     public void redefine(Vector2 position){
@@ -99,37 +64,22 @@ public class Hero extends B2DSprite {
     }
 
     public void update(float dt){
-        if( currentState != State.DEAD){
-            if( Math.abs(b2body.getLinearVelocity().x) < 0.1f && Math.abs(b2body.getLinearVelocity().y) < 0.1f ){
-                if( previousState != State.STANDING) {
-//                    changeState(State.STANDING);
-                }
-                setAnimation(standAnimation, 1/12f);
-            }else{
-                if( previousState != State.MOVING){
-                    setAnimation(moveAnimation, 1/12f);
-                }
-//                changeState(State.MOVING);
-            }
+        if(!isDead()){
             faceCursor();
-            handleInput(dt);
-            if(currentState == State.BLOCKING){
-                shield.update(angleToCursor());
-                if( modifier > 1.0f ){
-                    System.out.println("!!!!!!!!!!!!");
-                }
-            }
-        }else{
-            // set game over
-            if( animation.getTimesPlayed() > 0 ){
+            shield.update();
+            currentState.handleInput(this);
+        }else{  // player is dead
+            // set game over animation
+            if( animation.getTimesPlayed() == 1 ){
+                System.out.println("game over --------");
                 setToDestroy();
             }
         }
 
-        sprite.setPosition(b2body.getPosition().x - sprite.getWidth() / 2,
-                b2body.getPosition().y - sprite.getHeight() / 2);
         animation.update(dt);
 
+        sprite.setPosition(b2body.getPosition().x - sprite.getWidth() / 2,
+                b2body.getPosition().y - sprite.getHeight() / 2);
         for(Fireball fb : fireballs){
             if (fb.isDestroyed()){
                 fireballs.removeValue(fb, true);
@@ -139,19 +89,84 @@ public class Hero extends B2DSprite {
         }
     }
 
-    public State getCurrentState(){
+    public void block(){
+        changeState(HeroState.blocking);
+        shield.raise();
+    }
+
+    public void unblock(){
+        if( currentState != HeroState.blocking){
+            System.out.println("ERROR!");
+        }
+        System.out.println("unblock..");
+        changeState(getPreviousState());
+        shield.setToDestroy();
+    }
+
+    /**
+     * Fires a fireball to direction the hero is facing.
+     */
+    public void shoot(){
+        if(fireballs.size < MAX_FIREBALLS){
+            Fireball fb = new Fireball(screen, getPosition());
+            setAnimation(HeroState.castAnimation2, 1/24f);
+            screen.add(fb);
+            fireballs.add(fb);
+        }
+    }
+
+    public boolean isDead(){
+        return currentState == HeroState.dead;
+    }
+
+    /**
+     * Damages the hero by the given amount.
+     * @param hp Amount of hero health to reduce
+     */
+    public void damage(int hp){
+        if(!invincible){
+            this.health -= hp;
+            if (health < 0){
+                die();
+            }else{
+                invincible = true;
+                Timer.schedule(new Timer.Task() {
+                    @Override
+                    public void run() {
+                        invincible = false;
+                        System.out.println("--vulnerable--");
+                    }
+                }, INVINCIBILITY_TIMER);
+            }
+            screen.getHud().updatePlayerHealth(this.health);
+        }else{
+            System.out.println("INVINCIBLE!");
+        }
+    }
+
+    public HeroState getCurrentState(){
         return this.currentState;
     }
 
-    public State getPreviousState(){
+    public HeroState getPreviousState(){
         return this.previousState;
     }
 
-    public void changeState(State s){
+    /**
+     * Change the hero's state to a new HeroState.
+     * @param s The new HeroState.
+     */
+    public void changeState(HeroState s){
         previousState = currentState;
         currentState = s;
+        s.enter(this);
+        System.out.printf("**STATE:\t%s  ->  %s\n", previousState.toString(), currentState.toString());
     }
 
+    /**
+     * Draw the hero.
+     * @param batch
+     */
     public void render(SpriteBatch batch){
         sprite.setRegion(animation.getFrame());
         // rotate region 90 first for perf.
@@ -159,99 +174,49 @@ public class Hero extends B2DSprite {
         sprite.draw(batch);
     }
 
-    public void shoot(){
-        if(fireballs.size < MAX_FIREBALLS){
-            Fireball fb = new Fireball(screen, getPosition());
-            screen.add(fb);
-            fireballs.add(fb);
-        }
-    }
-
-    public boolean isDead(){
-        return currentState == State.DEAD;
-    }
-
-    public void damage(int hp){
-        this.health -= hp;
-        if (health < 0){
-            die();
-        }
-        screen.getHud().updatePlayerHealth(this.health);
-    }
-
     private void die(){
-        changeState(State.DEAD);
-        setAnimation(dieAnimation, 1/10f);
+        changeState(HeroState.dead);
     }
 
+    /**
+     * Rotate the Box2D body and sprite to face the cursor.
+     */
     private void faceCursor(){
         float angle = angleToCursor();
         b2body.setTransform(b2body.getPosition(), angle);
-        sprite.setRotation(angleToCursor() * MathUtils.radiansToDegrees);
+        sprite.setRotation(angle * MathUtils.radiansToDegrees);
     }
 
+    /**
+     * Get the angle (in radians) from the hero to the cursor.
+     * @return
+     */
     public float angleToCursor(){
         Vector2 mouse = screen.getCursor().getPosition();
         Vector2 center = b2body.getPosition();
         return MathUtils.atan2((mouse.y - center.y), (mouse.x - center.x));
     }
 
-    public void block(){
-        changeState(State.BLOCKING);
-        shield.raise(angleToCursor());
-    }
+    /**
+     * Create the body and fixtures for the Box2D world.
+     * @param position World position to place the hero.
+     */
+    private void define(Vector2 position){
+        BodyDef bdef = new BodyDef();
+        bdef.position.set((position.x + 0.5f) * 20 / PPM, (position.y + 0.5f) * 20 / PPM);
+        bdef.type = BodyDef.BodyType.DynamicBody;
+        bdef.linearDamping = 10.0f;
+        bdef.fixedRotation = true;
+        b2body = screen.getWorld().createBody(bdef);
 
-    public void unblock(){
-        changeState(State.STANDING);
-        shield.setToDestroy();
-    }
+        FixtureDef fdef = new FixtureDef();
+        CircleShape shape = new CircleShape();
+        shape.setRadius(5.5f / PPM);
+        fdef.shape = shape;
+        fdef.friction = 0.75f;
+        fdef.restitution = 0.0f;
 
-    private void handleInput(float dt){
-
-        if(Gdx.input.isKeyPressed(Input.Keys.SPACE)){
-            if( currentState == State.STANDING ){
-                block();
-            }
-        }else{
-            if(currentState == State.BLOCKING){
-                unblock();
-            }
-        }
-
-        if (Gdx.input.isKeyPressed(Input.Keys.W) && b2body.getLinearVelocity().y <= MAX_VELOCITY) {
-            b2body.applyLinearImpulse(new Vector2(0, 0.2f * modifier), b2body.getWorldCenter(), true);
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.D) && b2body.getLinearVelocity().x <= MAX_VELOCITY) {
-            b2body.applyLinearImpulse(new Vector2(0.2f * modifier, 0), b2body.getWorldCenter(), true);
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.A) && b2body.getLinearVelocity().x >= -MAX_VELOCITY) {
-            b2body.applyLinearImpulse(new Vector2(-0.2f * modifier, 0), b2body.getWorldCenter(), true);
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.S) && b2body.getLinearVelocity().y >= -MAX_VELOCITY) {
-            b2body.applyLinearImpulse(new Vector2(0, -0.2f * modifier), b2body.getWorldCenter(), true);
-        }
-        if(Gdx.input.justTouched()){
-            if( currentState != State.BLOCKING){
-                shoot();
-            }
-        }
-        if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
-            if(currentState == State.BLOCKING){
-                unblock();
-            }
-            changeState(State.SPRINTING);
-            modifier = 1.8f;
-        }else{
-            if( currentState == State.SPRINTING){
-                changeState(State.STANDING);
-                modifier = 1.0f;
-            }
-        }
-//        if(Gdx.input.)
-
-        if(Gdx.input.isKeyJustPressed(Input.Keys.ENTER)){
-            System.out.printf("box2d <%s>  -   sprite <%f, %f>  \n", b2body.getPosition().toString(),
-                    sprite.getOriginX(), sprite.getOriginY());
-        }
+        b2body.createFixture(fdef).setUserData("player");
+        b2body.setUserData(this);
     }
 }

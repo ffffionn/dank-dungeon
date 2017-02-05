@@ -5,6 +5,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.utils.Timer;
 import com.test.test.screens.GameScreen;
 
 import static com.test.test.SpaceAnts.PPM;
@@ -17,6 +18,8 @@ public class Enemy extends B2DSprite {
     protected static final float MAX_SPEED = 0.75f;
     protected static final int SCORE_VALUE = 20;
 
+    protected boolean stunned;
+
     protected GameScreen screen;
     protected Vector2 target, velocity;
 
@@ -26,16 +29,38 @@ public class Enemy extends B2DSprite {
         this.screen = screen;
         define(startPosition);
         target = b2body.getPosition();
+        stunned = false;
     }
 
     public void update(float dt){
         if( setToDestroy && !destroyed ){
             destroyed = true;
-        }else if( !destroyed ){
-            velocity = target.cpy().sub(b2body.getPosition()).nor().scl(MAX_SPEED);
-            b2body.setLinearVelocity(velocity);
+        }else if( !destroyed && !stunned ){
+            move();
             // sprite stuff
         }
+    }
+
+    public void stun(){
+        if(!stunned){
+            stunned = true;
+            System.out.println("STUN!");
+            System.out.println(Thread.currentThread().toString());
+
+            Timer.schedule(new Timer.Task() {
+                @Override
+                public void run() {
+                    stunned = false;
+                    System.out.println(Thread.currentThread().toString());
+                }
+            }, 1.0f);
+        }
+    }
+
+    protected void move(){
+        // move towards player position
+        velocity = target.cpy().sub(b2body.getPosition()).nor().scl(MAX_SPEED);
+        b2body.setLinearVelocity(velocity);
     }
 
     protected void define(Vector2 startPoint){

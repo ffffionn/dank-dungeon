@@ -3,7 +3,7 @@ package com.test.test.utils;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 /**
- * Created by Fionn on 20/11/2016.
+ * Custom animation class. Can specify looped or
  */
 public class Animation {
 

@@ -14,40 +14,48 @@ public class Barrier extends B2DSprite{
 
     private GameScreen screen;
     private Hero hero;
+    private boolean defined;
 
     public Barrier(GameScreen screen, Hero hero){
         super();
         this.screen = screen;
         this.hero = hero;
-        setToDestroy = false;
+        defined = false;
     }
 
-    public void update(float rotation) {
-        b2body.setTransform(hero.getPosition(), 0);
+    public void update() {
+        if(defined){
+            b2body.setTransform(hero.getPosition(), hero.angleToCursor());
+        }
     }
 
-    private void rotateShield(float rotation){
-        b2body.setTransform(b2body.getPosition(), rotation);
-    }
-
-    public void raise(float initialRotation){
-        defineShield(hero.getPosition(), initialRotation);
+    public void raise(){
+        defineShield(hero.getPosition(), hero.angleToCursor());
         setToDestroy = false;
         screen.add(this);
+        defined = true;
     }
 
     private void defineShield(Vector2 position, float rotation) {
+//        System.out.printf("Initial Rotation - %f \n", rotation);
         BodyDef bdef = new BodyDef();
         bdef.position.set(position.x, position.y);
-//        bdef.angle = rotation;
+        bdef.angle = rotation;
         bdef.type = BodyDef.BodyType.StaticBody;
         bdef.linearDamping = 10.0f;
         bdef.fixedRotation = true;
         b2body = screen.getWorld().createBody(bdef);
 
+        // create the points for the barrier
+
+        // points made relative to body
+        rotation = 0.0f;
+        System.out.printf("COS/SIN - %f / %f\n", MathUtils.cos(rotation), MathUtils.sin(rotation));
+
+        float angleOffset = MathUtils.PI / 4;
+
         float px = (MathUtils.cos(rotation) * (9.5f)) / PPM;
         float py = (MathUtils.sin(rotation) * (9.5f)) / PPM;
-        float angleOffset = MathUtils.PI / 4;
         Vector2 p1 = new Vector2(px, py);
 
         px = (MathUtils.cos(rotation - angleOffset) * (9.5f)) / PPM;
@@ -63,7 +71,6 @@ public class Barrier extends B2DSprite{
         EdgeShape shape = new EdgeShape();
         shape.set(p1, p2);
         fdef.shape = shape;
-//        fdef.isSensor = true;
         b2body.createFixture(fdef).setUserData("barrier");
 
         shape.dispose();
@@ -77,4 +84,9 @@ public class Barrier extends B2DSprite{
         shape.dispose();
     }
 
+    @Override
+    public void setToDestroy() {
+        super.setToDestroy();
+        defined = false;
+    }
 }
