@@ -53,8 +53,9 @@ public class GameHud {
         pixmap.setColor(Color.WHITE);
         pixmap.fill();
         skin.add("white", new Texture(pixmap));
+        skin.add("font", new BitmapFont(Gdx.files.internal("fonts/segoe-ui.fnt")));
+        // create the health and mana bars
 
-        //
         TextureRegionDrawable textureBar = new TextureRegionDrawable(new TextureRegion(new Texture(Gdx.files.internal("textures/health.png"))));
 
         ProgressBar.ProgressBarStyle barStyle = new ProgressBar.ProgressBarStyle(skin.newDrawable("white", Color.DARK_GRAY), textureBar);
@@ -78,6 +79,7 @@ public class GameHud {
         table.add(scoreLabel).expandX().padBottom(5);
         table.add(healthLabel).expandX().padBottom(5);
 
+        table.left();
         stage.addActor(table);
     }
 

@@ -42,7 +42,7 @@ public class Fireball extends B2DSprite {
 
         FixtureDef fdef = new FixtureDef();
         CircleShape shape = new CircleShape();
-        shape.setRadius(2 / PPM);
+        shape.setRadius(2.8f / PPM);
         fdef.shape = shape;
         fdef.friction = 0.0f;
         fdef.restitution = 0.0f;

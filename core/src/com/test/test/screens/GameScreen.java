@@ -58,15 +58,16 @@ public class GameScreen implements Screen {
 
     private Texture tiles;
     private Array<Enemy> enemies;
-    private float modifier;
 
     private Array<B2DSprite> entityList;
     private Array<B2DSprite> deleteList;
 
     // tools
     private AssetManager assetManager;
-    private CaveGenerator levelGen;
+    private CaveGenerator caveGen;
     private int floor;
+
+    public static final int TILE_SIZE = 24;
 
     private boolean levelUp;
 
@@ -79,17 +80,16 @@ public class GameScreen implements Screen {
         this.floor = 1;
         this.levelUp = false;
         world.setContactListener(new WorldContactListener(this));
-        this.modifier = 1.0f;
         this.assetManager = new AssetManager();
         this.enemies = new Array<Enemy>();
         this.atlas = new TextureAtlas("animations/player.pack");
         this.gamePort = new StretchViewport(SpaceAnts.V_WIDTH / PPM, SpaceAnts.V_HEIGHT / PPM , cam);
-//        this.tiles = new Texture(Gdx.files.internal("textures/dungeon_tiles2.png"));
-        this.tiles = new Texture("textures/dungeon_tiles2.png");
+//        this.tiles = new Texture("textures/dungeon_tiles2.png");
+        this.tiles = new Texture("textures/dungeontiles-dark.png");
         this.hud = new GameHud(game.batch);
         this.entityList = new Array<B2DSprite>();
         this.deleteList = new Array<B2DSprite>();
-        this.levelGen = new CaveGenerator(this, tiles);
+        this.caveGen = new CaveGenerator(this, tiles);
         this.player = new Hero(this, new Vector2(0, 0));
         this.mapRenderer = new OrthogonalTiledMapRenderer(map, 1 / PPM);
 
@@ -97,14 +97,8 @@ public class GameScreen implements Screen {
 
         // set camera
         cam.position.set(gamePort.getWorldWidth() / PPM, gamePort.getWorldHeight() / 2 / PPM, 0);
-        cam.zoom -= 0.6;
+        cam.zoom -= 0.6f;
         mapRenderer.setView(cam);
-
-        // set player animation frames
-        TextureAtlas.AtlasRegion region = atlas.findRegion("player-move");
-        TextureRegion[] moveFrames = region.split(64, 64)[0];
-        player.setTexture(moveFrames[0]);
-        player.setAnimation(moveFrames, 1 / 12f);
     }
 
     @Override
@@ -187,24 +181,22 @@ public class GameScreen implements Screen {
             world.destroyBody(cursorBody);
         }
         defineCursorBody();
-        System.out.printf(" ***LEVEL %d*** \n", level);
-        float seedFloor = (level % 5) / 10.0f;
-        float seedCeiling = ((level % 10) + 1) / 10.0f;
+
+        // calculate seed
+        float seedFloor = (float) Math.log(level) / 15;
+        float seedCeiling = (float) Math.log(3 * level) / 6;
         float seed = MathUtils.random(seedFloor, seedCeiling);
 
-
-        if(floor > 1) levelGen.destroyLevel();
-        this.map = levelGen.generateCave(Math.round(seed * 64) + 10, Math.round(seed * 64) + 10, seed);
-
-        int numEnemies = Math.round(seed * 150);
-        numEnemies = 1;
-
+        System.out.printf(" ***FLOOR %d*** \n", level);
         System.out.printf("Picking seed (%f) from between - (%f, %f) \n", seed, seedFloor, seedCeiling);
 
-        player.redefine(levelGen.getRandomPlace());
-        enemies = levelGen.spawnEnemies(numEnemies);
-        entityList.addAll(enemies);
+        // previous floor needs to be cleaned up
+        if(floor > 1) caveGen.destroyLevel();
 
+        this.map = caveGen.generateCave(seed);
+        player.redefine(caveGen.getRandomPlace());
+        enemies = caveGen.generateEnemies(seed);
+        entityList.addAll(enemies);
         mapRenderer.setMap(map);
     }
 
@@ -306,12 +298,12 @@ public class GameScreen implements Screen {
     @Override
     public void dispose() {
         deleteUselessBodies();
-        levelGen.destroyLevel();
+        caveGen.destroyLevel();
         map.dispose();
         mapRenderer.dispose();
         world.dispose();
         b2dr.dispose();
-//        hud.dispose();
+        hud.dispose();
     }
 
     public GameHud getHud(){

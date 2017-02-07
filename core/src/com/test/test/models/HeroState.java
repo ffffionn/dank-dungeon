@@ -34,26 +34,26 @@ public class HeroState {
                 hero.block();
         }
 
-        if(Gdx.input.justTouched()){
-            if( hero.getCurrentState() != blocking){
-                hero.shoot();
-            }
+        if(Gdx.input.justTouched() && hero.getCurrentState() != blocking){
+            hero.shoot();
         }
 
         Vector2 heroVelocity = hero.getBody().getLinearVelocity();
-
+        Vector2 movement = new Vector2(0, 0);
         if (Gdx.input.isKeyPressed(Input.Keys.W) && heroVelocity.y < Hero.MAX_VELOCITY) {
-            hero.getBody().applyLinearImpulse(new Vector2(0, 0.2f), hero.getBody().getWorldCenter(), true);
+            movement.y += 0.2f;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.S) && heroVelocity.y > -Hero.MAX_VELOCITY) {
-            hero.getBody().applyLinearImpulse(new Vector2(0, -0.2f), hero.getBody().getWorldCenter(), true);
+            movement.y -= 0.2f;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.D) && heroVelocity.x < Hero.MAX_VELOCITY) {
-            hero.getBody().applyLinearImpulse(new Vector2(0.2f, 0), hero.getBody().getWorldCenter(), true);
+            movement.x += 0.2f;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.A) && heroVelocity.x > -Hero.MAX_VELOCITY) {
-            hero.getBody().applyLinearImpulse(new Vector2(-0.2f, 0), hero.getBody().getWorldCenter(), true);
+            movement.x -= 0.2f;
         }
+
+        hero.getBody().applyLinearImpulse(movement, hero.getBody().getWorldCenter(), true);
 
     }
 
@@ -63,29 +63,13 @@ public class HeroState {
      * @param atlas The atlas containing the various animations.
      */
     public static void defineAnimations(TextureAtlas atlas){
-        TextureAtlas.AtlasRegion region;
-
-        region = atlas.findRegion("player-move");
-        moveAnimation = region.split(64, 64)[0];
-
-        region = atlas.findRegion("player-cast");
-        castAnimation = region.split(64, 64)[0];
-
-        region = atlas.findRegion("player-die");
-        dieAnimation = region.split(64, 64)[0];
-
-        region = atlas.findRegion("player-strafe");
-        standAnimation = region.split(64, 64)[0];
-
-        region = atlas.findRegion("player-cast-onehand");
-        blockAnimation = region.split(64, 64)[0];
-
-        region = atlas.findRegion("player-wobble");
-        runAnimation = region.split(64, 64)[0];
-
-        region = atlas.findRegion("player-cast-forward");
-        castAnimation2 = region.split(64, 64)[0];
-
+        moveAnimation = atlas.findRegion("player-move").split(64, 64)[0];
+        castAnimation = atlas.findRegion("player-cast").split(64, 64)[0];
+        dieAnimation = atlas.findRegion("player-die").split(64, 64)[0];
+        standAnimation = atlas.findRegion("player-strafe").split(64, 64)[0];
+        blockAnimation = atlas.findRegion("player-cast-onehand").split(64, 64)[0];
+        runAnimation = atlas.findRegion("player-wobble").split(64, 64)[0];
+        castAnimation2 = atlas.findRegion("player-cast-forward").split(64, 64)[0];
     }
 
 }

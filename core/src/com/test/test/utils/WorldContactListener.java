@@ -46,19 +46,15 @@ public class WorldContactListener implements ContactListener{
                 ((Fireball) fb.getBody().getUserData()).setToDestroy();
             }else if(fa.getUserData().equals("barrier") && fb.getUserData().equals("fireball")) {
                 ((Fireball) fb.getBody().getUserData()).setToDestroy();
-                System.out.println("SHIELD HIT A");
             }else if(fa.getUserData().equals("fireball") && fb.getUserData().equals("barrier")) {
                 ((Fireball) fa.getBody().getUserData()).setToDestroy();
-                System.out.println("SHIELD HIT B");
             }else if(fa.getUserData().equals("barrier") && fb.getUserData().equals("enemy")){
                 Vector2 v = fb.getBody().getLinearVelocity();
-                fb.getBody().setLinearVelocity(new Vector2(v.x * -5, v.y * -5));
-                System.out.println("enemy B");
+                fb.getBody().setLinearVelocity(new Vector2(v.x * -2.5f, v.y * -2.5f));
                 ((Enemy) fb.getBody().getUserData()).stun();
             }else if(fb.getUserData().equals("barrier") && fa.getUserData().equals("enemy")){
-                System.out.println("enemy A");
                 Vector2 v = fa.getBody().getLinearVelocity();
-                fa.getBody().setLinearVelocity(new Vector2(v.x * -5, v.y * -5));
+                fa.getBody().setLinearVelocity(new Vector2(v.x * -2.5f, v.y * -2.5f));
                 ((Enemy) fa.getBody().getUserData()).stun();
             }else if((fa.getUserData().equals("goal") && fb.getUserData().equals("player"))
                     || (fa.getUserData().equals("player") && fb.getUserData().equals("goal"))){

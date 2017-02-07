@@ -1,21 +1,20 @@
 package com.test.test.models;
 
 import static com.test.test.SpaceAnts.PPM;
+import static com.test.test.screens.GameScreen.TILE_SIZE;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Timer;
-import com.sun.corba.se.impl.presentation.rmi.ExceptionHandlerImpl;
 import com.test.test.screens.GameScreen;
 
 /**
- * Created by Fionn on 22/10/2016.
+ * Hero class for the playable character. Current HeroState handles input.
  */
 public class Hero extends B2DSprite {
 
@@ -32,6 +31,7 @@ public class Hero extends B2DSprite {
     protected static final float INVINCIBILITY_TIMER = 1.5f;
     protected boolean invincible;
 
+    public static final int HERO_SIZE = 24;
 
     public Hero(GameScreen screen, Vector2 position){
         super();
@@ -47,6 +47,8 @@ public class Hero extends B2DSprite {
 
         // define animations
         HeroState.defineAnimations(screen.getAtlas());
+        setTexture(HeroState.standAnimation[0]);
+        currentState.enter(this);
     }
 
     public void redefine(Vector2 position){
@@ -57,8 +59,7 @@ public class Hero extends B2DSprite {
 
     @Override
     public void setTexture(TextureRegion texture){
-//        sprite.setBounds(0, 0, texture.getRegionWidth() / PPM, texture.getRegionHeight() / PPM);
-        sprite.setBounds(0, 0, 16 / PPM, 16 / PPM);
+        sprite.setBounds(0, 0, HERO_SIZE / PPM, HERO_SIZE / PPM);
         sprite.setOriginCenter();
         sprite.setRegion(texture);
     }
@@ -75,7 +76,6 @@ public class Hero extends B2DSprite {
                 setToDestroy();
             }
         }
-
         animation.update(dt);
 
         sprite.setPosition(b2body.getPosition().x - sprite.getWidth() / 2,
@@ -87,6 +87,9 @@ public class Hero extends B2DSprite {
                 fb.update(dt);
             }
         }
+
+        // DEBUG: bail
+        if(Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) screen.dispose();
     }
 
     public void block(){
@@ -109,7 +112,7 @@ public class Hero extends B2DSprite {
     public void shoot(){
         if(fireballs.size < MAX_FIREBALLS){
             Fireball fb = new Fireball(screen, getPosition());
-            setAnimation(HeroState.castAnimation2, 1/24f);
+            setAnimation(HeroState.castAnimation2, 1/30f);
             screen.add(fb);
             fireballs.add(fb);
         }
@@ -203,7 +206,7 @@ public class Hero extends B2DSprite {
      */
     private void define(Vector2 position){
         BodyDef bdef = new BodyDef();
-        bdef.position.set((position.x + 0.5f) * 20 / PPM, (position.y + 0.5f) * 20 / PPM);
+        bdef.position.set((position.x + 0.5f) * TILE_SIZE / PPM, (position.y + 0.5f) * TILE_SIZE / PPM);
         bdef.type = BodyDef.BodyType.DynamicBody;
         bdef.linearDamping = 10.0f;
         bdef.fixedRotation = true;
@@ -211,7 +214,7 @@ public class Hero extends B2DSprite {
 
         FixtureDef fdef = new FixtureDef();
         CircleShape shape = new CircleShape();
-        shape.setRadius(5.5f / PPM);
+        shape.setRadius(HERO_SIZE / 3 / PPM);
         fdef.shape = shape;
         fdef.friction = 0.75f;
         fdef.restitution = 0.0f;

@@ -9,27 +9,39 @@ import com.badlogic.gdx.utils.Timer;
 import com.test.test.screens.GameScreen;
 
 import static com.test.test.SpaceAnts.PPM;
+import static com.test.test.screens.GameScreen.TILE_SIZE;
 
 /**
- * Created by Fionn on 20/11/2016.
+ * Basic Enemy class.
  */
 public class Enemy extends B2DSprite {
-
-    protected static final float MAX_SPEED = 0.75f;
-    protected static final int SCORE_VALUE = 20;
-
-    protected boolean stunned;
 
     protected GameScreen screen;
     protected Vector2 target, velocity;
 
+    // enemy attributes
+    protected float max_speed;
+    protected int score_value;
+    protected boolean stunned;
+    protected float radius = 5.5f;
 
     public Enemy(GameScreen screen, Vector2 startPosition){
         super();
         this.screen = screen;
         define(startPosition);
-        target = b2body.getPosition();
-        stunned = false;
+        this.target = b2body.getPosition();
+        this.stunned = false;
+
+        // attribute defaults
+        this.health = 100;
+        this.max_speed =  0.75f;
+        this.score_value = 20;
+    }
+
+    public Enemy(GameScreen screen, Vector2 startPosition, float speed, int hp){
+        this(screen, startPosition);
+        this.max_speed = speed;
+        this.health = hp;
     }
 
     public void update(float dt){
@@ -43,30 +55,29 @@ public class Enemy extends B2DSprite {
 
     public void stun(){
         if(!stunned){
-            stunned = true;
             System.out.println("STUN!");
-            System.out.println(Thread.currentThread().toString());
-
+            stunned = true;
             Timer.schedule(new Timer.Task() {
                 @Override
                 public void run() {
                     stunned = false;
-                    System.out.println(Thread.currentThread().toString());
                 }
             }, 1.0f);
         }
     }
 
+    /**
+     * The Enemy's movement patterns, ie. the AI
+     */
     protected void move(){
         // move towards player position
-        velocity = target.cpy().sub(b2body.getPosition()).nor().scl(MAX_SPEED);
+        velocity = target.cpy().sub(b2body.getPosition()).nor().scl(max_speed);
         b2body.setLinearVelocity(velocity);
     }
 
     protected void define(Vector2 startPoint){
-
         BodyDef bdef = new BodyDef();
-        bdef.position.set((startPoint.x + 0.5f) * 20 / PPM, startPoint.y * 20 / PPM);
+        bdef.position.set(startPoint);
         bdef.type = BodyDef.BodyType.DynamicBody;
         bdef.linearDamping = 6.0f;
         bdef.fixedRotation = true;
@@ -74,7 +85,7 @@ public class Enemy extends B2DSprite {
 
         FixtureDef fdef = new FixtureDef();
         CircleShape shape = new CircleShape();
-        shape.setRadius(5 / PPM);
+        shape.setRadius(this.radius / PPM);
         fdef.shape = shape;
         fdef.friction = 0.75f;
         fdef.restitution = 0.0f;
@@ -92,7 +103,7 @@ public class Enemy extends B2DSprite {
     }
 
     public int getScoreValue(){
-        return SCORE_VALUE;
+        return score_value;
     }
 
 }

@@ -5,29 +5,33 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Queue;
 import com.test.test.models.B2DSprite;
 import com.test.test.models.Enemy;
+import com.test.test.models.Wolf;
 import com.test.test.screens.GameScreen;
 
 import static com.badlogic.gdx.math.MathUtils.random;
 import static com.test.test.SpaceAnts.PPM;
+import static com.test.test.screens.GameScreen.TILE_SIZE;
 
 /**
  * Created by fionn on 07/01/17.
  */
 public class CaveGenerator {
 
-    private static final int TILE_SIZE = 20;
+    // matrix of the current floor's cells
+    private boolean[][] caveCells;
 
     // cellular automata constants
     private static final float INITIAL_WALL_CHANCE = 0.40f;
     private static final float MINIMUM_AREA_COVERAGE = 0.45f;
-    private static final int BIRTH_LIMIT = 6;
-    private static final int SURVIVE_LIMIT = 3;
+    private static final int BIRTH_LIMIT = 6;      // become a wall if neighbouring this many walls
+    private static final int SURVIVE_LIMIT = 3;    // if surrounded by under this much, become a floor
     private static final int SIMULATION_STEPS = 6;
 
     private int mapWidth;
@@ -41,8 +45,8 @@ public class CaveGenerator {
     private Array<TextureRegion> floorTiles;
     private Array<Body> wallBodies;
 
-    // current matrix of the cave cells
-    private boolean[][] caveCells;
+    private TextureRegion goalTexture;
+
 
     public CaveGenerator(GameScreen screen, Texture worldTileSheet){
         this.screen = screen;
@@ -50,12 +54,14 @@ public class CaveGenerator {
         this.map = new TiledMap();
         this.floorTiles = new Array<TextureRegion>();
 
+
         TextureRegion[][] splitTiles = TextureRegion.split(worldTileSheet, TILE_SIZE, TILE_SIZE);
-        for(int x = 1; x <= 2; x++){
-            for( int y = 1; y <= 2; y++){
-                floorTiles.add(splitTiles[x][y]);
-            }
+        for(int x = 0; x < splitTiles[0].length; x++){
+            floorTiles.add(splitTiles[0][x]);
         }
+
+        goalTexture = splitTiles[1][7];
+
     }
 
     /**
@@ -65,20 +71,18 @@ public class CaveGenerator {
      * @param seed
      * @return A TiledMap with the new cavern as a Layer.
      */
-    public TiledMap generateCave(int width, int height, float seed){
-        System.out.printf("Generating new cave - %d x %d  \n", width, height);
-
-        mapHeight = height;
-        mapWidth = width;
+    public TiledMap generateCave(float seed){
+        int minimumSize = (10 + Math.round(seed * 15));
+        mapWidth = mapHeight = Math.round(seed * 64) + minimumSize;
+        System.out.printf("Generating new cave - %d x %d   (min - %d) \n", mapWidth, mapHeight, minimumSize);
 
         boolean[][] optimisedCave;
-
-        // keep generating caves until one has a floor area of over 45%
+        // keep generating caves until floor area is at least 45% of map
         do{
             initialiseMap();
             simulateCave();
             optimisedCave = floodFill();
-        }while( numFloorTiles(optimisedCave) < Math.round(mapWidth * mapHeight * MINIMUM_AREA_COVERAGE));
+        }while(numFloorTiles(optimisedCave) < Math.round(mapWidth * mapHeight * MINIMUM_AREA_COVERAGE));
 
         caveCells = optimisedCave;
 
@@ -86,6 +90,75 @@ public class CaveGenerator {
         createGoal();
         map.getLayers().add(terrainLayer);
         return map;
+    }
+
+    public Array<Enemy> generateEnemies(float seed){
+        Array<Enemy> array = new Array<Enemy>();
+
+        int numSkels = Math.round(MathUtils.sin(seed * seed) * 100);
+        int numRoaches = Math.round(MathUtils.sin((seed * seed) / 2) * 50);
+        int numWolves = (seed > 0.2f) ? Math.round((seed/2.0f) * (seed - 0.2f) * 25) : 0;
+
+        System.out.printf("SEED: %f   (%d/%d/%d) \n", seed, numSkels, numRoaches, numWolves);
+
+//        numSkels = 0;
+//        numWolves = 0;
+
+        for( int i = 0; i < numSkels; i++){
+            array.add( new Enemy(screen, cellToWorldPosition(getRandomPlace())) );
+        }
+        for( int i = 0; i < numWolves; i++){
+            array.add( new Wolf(screen, cellToWorldPosition(getRandomPlace())) );
+        }
+
+        return array;
+    }
+
+    /**
+     * Gets a random floor tile that is surrounded by a given number of walls.
+     * @param rarity How many walls need to be surrounding the tile.
+     * @return A Vector2 of the position.
+     */
+    public Vector2 getTreasureSpot(int rarity){
+        Vector2 position;
+        boolean spotFound = false;
+        int x, y;
+        do{
+            position = getRandomPlace();
+            x = Math.round(position.x);
+            y = Math.round(position.y);
+            if(!caveCells[x][y]){
+                int surroundingWalls = countAliveNeighbours(caveCells, x, y, 1);
+                if(surroundingWalls >= rarity){
+                    spotFound = true;
+                }
+            }
+        }while(!spotFound);
+        return position;
+    }
+
+    /**
+     * Finds a random floor tile in the cave.
+     * @return A Vector2 of the floor tile.
+     */
+    public Vector2 getRandomPlace(){
+        int randomX, randomY;
+        while(true){
+            randomX = random(mapWidth - 1);
+            randomY = random(mapHeight - 1);
+            if(!caveCells[randomX][randomY]){
+                return new Vector2((float) randomX, (float) randomY);
+            }
+        }
+    }
+
+    /**
+     * Translates from cells or tiles on the map to Box2D world co-ordinates.
+     * @param cellPosition
+     * @return
+     */
+    public Vector2 cellToWorldPosition(Vector2 cellPosition){
+        return new Vector2((cellPosition.x + 0.5f) * TILE_SIZE / PPM, (cellPosition.y + 0.5f) * TILE_SIZE / PPM);
     }
 
     /**
@@ -98,7 +171,6 @@ public class CaveGenerator {
         wallBodies.clear();
         screen.getWorld().destroyBody(goal.getBody());
         screen.getMap().getLayers().remove(terrainLayer);
-        System.out.printf("-- %d bodies left after level tear down --\n", screen.getWorld().getBodyCount());
         for(int x=0; x < mapWidth; x++){
             for(int y=0; y < mapHeight; y++){
                 caveCells[x][y] = false;
@@ -255,69 +327,13 @@ public class CaveGenerator {
     }
 
     /**
-     * Spawns the given number of enemies in random positions in the cave floor.
-     * @param number Number of enemies to spawn.
-     * @return An Array of Enemies.
-     */
-    public Array<Enemy> spawnEnemies(int number){
-        Array<Enemy> array = new Array<Enemy>();
-        for( int i = 0; i < number; i++){
-            array.add( new Enemy(screen, getRandomPlace()) );
-        }
-        return array;
-    }
-
-    /**
-     * Gets a random floor tile that is surrounded by a given number of walls.
-     * @param rarity How many walls need to be surrounding the tile.
-     * @return A Vector2 of the position.
-     */
-    public Vector2 getTreasureSpot(int rarity){
-        Vector2 position;
-        boolean spotFound = false;
-        int x, y;
-        do{
-            position = getRandomPlace();
-            x = Math.round(position.x);
-            y = Math.round(position.y);
-            if(!caveCells[x][y]){
-                int surroundingWalls = countAliveNeighbours(caveCells, x, y, 1);
-                if(surroundingWalls >= rarity){
-                    spotFound = true;
-                }
-            }
-        }while(!spotFound);
-        return position;
-    }
-
-    /**
-     * Finds a random floor tile in the cave.
-     * @return A Vector2 of the floor tile.
-     */
-    public Vector2 getRandomPlace(){
-        int randomX, randomY;
-        while(true){
-            randomX = random(mapWidth - 1);
-            randomY = random(mapHeight - 1);
-            if(!caveCells[randomX][randomY]){
-                return new Vector2((float) randomX, (float) randomY);
-            }
-        }
-    }
-
-    public Vector2 cellToWorldPosition(Vector2 cellPosition){
-        return new Vector2((cellPosition.x + 0.5f) * 20 / PPM, (cellPosition.y + 0.5f) * 20 / PPM);
-    }
-
-    /**
      * Create the cave level exit, ensuring to be at least a certain distance from the player.
      */
     private void createGoal(){
         BodyDef bdef = new BodyDef();
 
         Vector2 goalPosition = getTreasureSpot(5);
-
-        bdef.position.set((goalPosition.x + 0.5f) * 20 / PPM, (goalPosition.y + 0.5f) * 20 / PPM);
+        bdef.position.set(cellToWorldPosition(goalPosition));
         bdef.type = BodyDef.BodyType.DynamicBody;
         bdef.linearDamping = 5.0f;
         bdef.fixedRotation = true;
@@ -334,6 +350,9 @@ public class CaveGenerator {
         b2body.createFixture(fdef).setUserData("goal");
         this.goal = new B2DSprite(b2body);
         b2body.setUserData(goal);
+
+        // replace floor texture with goal texture
+        terrainLayer.getCell(Math.round(goalPosition.x), Math.round(goalPosition.y)).getTile().setTextureRegion(goalTexture);
     }
 
     private void placeWall(int x, int y){
@@ -352,12 +371,10 @@ public class CaveGenerator {
         body.createFixture(fdef).setUserData("wall");
         wallBodies.add(body);
 
-
         wall.dispose();
         /* SET WALL TEXTURE */
 //        wallTexture = splitTiles[3][17];
     }
-
 
     private TextureRegion randomFloorTile(){
         return floorTiles.random();

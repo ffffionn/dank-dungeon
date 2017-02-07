@@ -1,8 +1,11 @@
 package com.test.test.models;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.sun.corba.se.impl.oa.poa.ActiveObjectMap;
 import com.test.test.screens.GameScreen;
 
 import static com.test.test.SpaceAnts.PPM;
@@ -21,11 +24,16 @@ public class Barrier extends B2DSprite{
         this.screen = screen;
         this.hero = hero;
         defined = false;
+//        b2body.setActive(true);
+//        defineShield(hero.getPosition(), hero.angleToCursor());
     }
 
     public void update() {
         if(defined){
             b2body.setTransform(hero.getPosition(), hero.angleToCursor());
+            if(Gdx.input.isKeyJustPressed(Input.Keys.K)){
+                b2body.setActive(!b2body.isActive());
+            }
         }
     }
 
@@ -34,10 +42,10 @@ public class Barrier extends B2DSprite{
         setToDestroy = false;
         screen.add(this);
         defined = true;
+//        b2body.setActive(true);
     }
 
     private void defineShield(Vector2 position, float rotation) {
-//        System.out.printf("Initial Rotation - %f \n", rotation);
         BodyDef bdef = new BodyDef();
         bdef.position.set(position.x, position.y);
         bdef.angle = rotation;
@@ -50,8 +58,6 @@ public class Barrier extends B2DSprite{
 
         // points made relative to body
         rotation = 0.0f;
-        System.out.printf("COS/SIN - %f / %f\n", MathUtils.cos(rotation), MathUtils.sin(rotation));
-
         float angleOffset = MathUtils.PI / 4;
 
         float px = (MathUtils.cos(rotation) * (9.5f)) / PPM;
@@ -66,16 +72,14 @@ public class Barrier extends B2DSprite{
         py = (MathUtils.sin(rotation + angleOffset) * (9.5f)) / PPM;
         Vector2 p3 = new Vector2(px, py);
 
-        FixtureDef fdef = new FixtureDef();
-
         EdgeShape shape = new EdgeShape();
         shape.set(p1, p2);
+        shape.setRadius(0.5f / PPM);
+
+        FixtureDef fdef = new FixtureDef();
         fdef.shape = shape;
         b2body.createFixture(fdef).setUserData("barrier");
 
-        shape.dispose();
-        //create other edge
-        shape = new EdgeShape();
         shape.set(p1, p3);
         fdef.shape = shape;
 
