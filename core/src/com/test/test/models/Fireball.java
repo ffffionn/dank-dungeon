@@ -6,13 +6,14 @@ import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.test.test.screens.GameScreen;
 
-import static com.test.test.SpaceAnts.PPM;
+import static com.test.test.DankDungeon.PPM;
 
 /**
  * Created by Fionn on 20/11/2016.
  */
 public class Fireball extends B2DSprite {
 
+    public static final int DAMAGE_AMOUNT = 20;
     private static final float BULLET_SPEED = 1.75f;
     private Vector2 velocity;
     private GameScreen screen;

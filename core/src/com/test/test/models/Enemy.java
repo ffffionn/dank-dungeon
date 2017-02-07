@@ -1,15 +1,13 @@
 package com.test.test.models;
 
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.utils.Timer;
 import com.test.test.screens.GameScreen;
 
-import static com.test.test.SpaceAnts.PPM;
-import static com.test.test.screens.GameScreen.TILE_SIZE;
+import static com.test.test.DankDungeon.PPM;
 
 /**
  * Basic Enemy class.

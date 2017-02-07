@@ -1,15 +1,17 @@
 package com.test.test.models;
 
-import static com.test.test.SpaceAnts.PPM;
+import static com.test.test.DankDungeon.PPM;
 import static com.test.test.screens.GameScreen.TILE_SIZE;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.Timer;
 import com.test.test.screens.GameScreen;
 
@@ -28,10 +30,12 @@ public class Hero extends B2DSprite {
     public static final float MAX_VELOCITY = 2.5f;
     public static final int MAX_HEALTH = 100;
     protected static int MAX_FIREBALLS = 5;
-    protected static final float INVINCIBILITY_TIMER = 1.5f;
+    protected static final float INVINCIBILITY_TIMER = 1.2f;
     protected boolean invincible;
 
-    public static final int HERO_SIZE = 24;
+    private Color flashColour;
+
+    public static final int HERO_SIZE = 20;
 
     public Hero(GameScreen screen, Vector2 position){
         super();
@@ -42,7 +46,7 @@ public class Hero extends B2DSprite {
         this.health = MAX_HEALTH;
         this.shield = new Barrier(screen, this);
         this.invincible = false;
-
+        this.flashColour = Color.RED;
         define(position);
 
         // define animations
@@ -65,10 +69,14 @@ public class Hero extends B2DSprite {
     }
 
     public void update(float dt){
+        animation.update(dt);
         if(!isDead()){
             faceCursor();
             shield.update();
             currentState.handleInput(this);
+            if(invincible){
+                sprite.setColor(Color.WHITE.cpy().lerp(flashColour, getInterpolation()));
+            }
         }else{  // player is dead
             // set game over animation
             if( animation.getTimesPlayed() == 1 ){
@@ -76,7 +84,6 @@ public class Hero extends B2DSprite {
                 setToDestroy();
             }
         }
-        animation.update(dt);
 
         sprite.setPosition(b2body.getPosition().x - sprite.getWidth() / 2,
                 b2body.getPosition().y - sprite.getHeight() / 2);
@@ -98,10 +105,6 @@ public class Hero extends B2DSprite {
     }
 
     public void unblock(){
-        if( currentState != HeroState.blocking){
-            System.out.println("ERROR!");
-        }
-        System.out.println("unblock..");
         changeState(getPreviousState());
         shield.setToDestroy();
     }
@@ -122,10 +125,28 @@ public class Hero extends B2DSprite {
         return currentState == HeroState.dead;
     }
 
+    private float tintNanos;
+
+    private static final long TINT_IN_NANOS = 450000000;
+    private static final long TINT_OUT_NANOS = 550000000;
+
+    private float getInterpolation(){
+        if (TimeUtils.nanoTime() - tintNanos < TINT_IN_NANOS){
+            return (TimeUtils.nanoTime() - tintNanos) / (float) TINT_IN_NANOS;
+        }
+        else if (TimeUtils.nanoTime() - tintNanos - TINT_IN_NANOS < TINT_OUT_NANOS){
+            return 1f - (TimeUtils.nanoTime() - tintNanos - TINT_IN_NANOS) /
+                    (float) TINT_OUT_NANOS;
+        }else{
+            return 0;
+        }
+    }
+
     /**
      * Damages the hero by the given amount.
      * @param hp Amount of hero health to reduce
      */
+    @Override
     public void damage(int hp){
         if(!invincible){
             this.health -= hp;
@@ -133,11 +154,17 @@ public class Hero extends B2DSprite {
                 die();
             }else{
                 invincible = true;
+                tintNanos = TimeUtils.nanoTime();
+
+//                flash();
                 Timer.schedule(new Timer.Task() {
                     @Override
                     public void run() {
                         invincible = false;
+//                        unflash();
                         System.out.println("--vulnerable--");
+                        sprite.setColor(Color.WHITE.cpy().lerp(flashColour, 0.0f));
+//                        sprite.setColor(0,0,0,0);
                     }
                 }, INVINCIBILITY_TIMER);
             }

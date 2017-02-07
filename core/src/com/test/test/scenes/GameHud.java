@@ -14,24 +14,29 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.test.test.SpaceAnts;
+import com.test.test.DankDungeon;
 import com.test.test.models.Hero;
 
 /**
- * Created by Fionn on 22/10/2016.
+ * The game HUD.
  */
 public class GameHud {
 
+    private Skin skin;
     private Stage stage;
     private Viewport viewport;
     private Label healthLabel;
     private Label scoreLabel;
     private Label floorLabel;
 
-    private ProgressBar healthBar;
+//    private ProgressBar healthBar;
+
+    private TextureRegion healthBar;
+    private TextureRegion healthBarBackground;
 
     private int score;
     private int floor;
@@ -41,32 +46,38 @@ public class GameHud {
         score = 0;
         playerHealth = Hero.MAX_HEALTH;
         floor = 1;
-        viewport = new FitViewport(SpaceAnts.V_WIDTH, SpaceAnts.V_HEIGHT, new OrthographicCamera());
+        viewport = new FitViewport(DankDungeon.V_WIDTH, DankDungeon.V_HEIGHT, new OrthographicCamera());
         stage = new Stage(viewport, sb);
 
         Table table = new Table();
         table.bottom();
         table.setFillParent(true);
 
-        Skin skin = new Skin();
-        Pixmap pixmap = new Pixmap(10, 10, Pixmap.Format.RGBA8888);
+        skin = new Skin();
+        skin = new Skin(Gdx.files.internal("ui/skin.json"));
+        Pixmap pixmap = new Pixmap(10, 100, Pixmap.Format.RGBA8888);
         pixmap.setColor(Color.WHITE);
         pixmap.fill();
         skin.add("white", new Texture(pixmap));
         skin.add("font", new BitmapFont(Gdx.files.internal("fonts/segoe-ui.fnt")));
+
+        healthBarBackground = new TextureRegion(new Texture(pixmap));
+//        healthBarBackground = new TextureRegion(new Texture("textures/blank.jpg"));
+        skin.add("healthBarBg", new Texture(pixmap));
+        Drawable hb = skin.newDrawable("white", Color.DARK_GRAY);
+
+
         // create the health and mana bars
-
-        TextureRegionDrawable textureBar = new TextureRegionDrawable(new TextureRegion(new Texture(Gdx.files.internal("textures/health.png"))));
-
-        ProgressBar.ProgressBarStyle barStyle = new ProgressBar.ProgressBarStyle(skin.newDrawable("white", Color.DARK_GRAY), textureBar);
-        barStyle.knobBefore = barStyle.knob;
-        barStyle.knobAfter = barStyle.knob;
-        healthBar = new ProgressBar(0, Hero.MAX_HEALTH, 1.0f, false, barStyle);
-        healthBar.setPosition(100, 10);
-        healthBar.setSize(150, healthBar.getPrefHeight());
-//        healthBar.setAnimateDuration(2);
-        stage.addActor(healthBar);
-        healthBar.setValue(playerHealth);
+//        TextureRegionDrawable textureBar = new TextureRegionDrawable(new TextureRegion(new Texture(Gdx.files.internal("textures/health.png"))));
+//
+//        ProgressBar.ProgressBarStyle barStyle = new ProgressBar.ProgressBarStyle(skin.newDrawable("white", Color.DARK_GRAY), textureBar);
+//        barStyle.knobBefore = barStyle.knob;
+//        barStyle.knobAfter = barStyle.knob;
+//        healthBar = new ProgressBar(0, Hero.MAX_HEALTH, 1.0f, false, barStyle);
+//        healthBar.setPosition(100, 10);
+//        healthBar.setSize(150, healthBar.getPrefHeight());
+//        stage.addActor(healthBar);
+//        healthBar.setValue(playerHealth);
 
         FileHandle font = Gdx.files.internal("fonts/segoe-ui.fnt");
 
@@ -75,10 +86,11 @@ public class GameHud {
         floorLabel = new Label(String.format("Level: %03d", floor), new Label.LabelStyle(new BitmapFont(font), Color.LIGHT_GRAY));
         scoreLabel = new Label(String.format("%06d", score), new Label.LabelStyle(new BitmapFont(font), Color.LIGHT_GRAY));
 
-        table.add(floorLabel).expandX().padBottom(5);
-        table.add(scoreLabel).expandX().padBottom(5);
         table.add(healthLabel).expandX().padBottom(5);
+        table.add(scoreLabel).expandX().padBottom(5);
+        table.add(floorLabel).expandX().padBottom(5);
 
+        table.setDebug(true);
         table.left();
         stage.addActor(table);
     }
@@ -94,10 +106,8 @@ public class GameHud {
     public void updatePlayerHealth(int newHealth){
         playerHealth = newHealth;
         healthLabel.setText(String.format("Health: %03d", playerHealth));
-        healthBar.setValue(playerHealth);
-        System.out.println(healthBar.getValue());
-        System.out.println(healthBar.isDisabled());
-        healthBar.act(0.2f);
+//        healthBar.setValue(playerHealth);
+//        healthBar.act(0.2f);
     }
 
     public void updateScore(int adjustment){
@@ -108,4 +118,5 @@ public class GameHud {
     public void dispose(){
         stage.dispose();
     }
+
 }

@@ -16,7 +16,7 @@ import com.test.test.models.Wolf;
 import com.test.test.screens.GameScreen;
 
 import static com.badlogic.gdx.math.MathUtils.random;
-import static com.test.test.SpaceAnts.PPM;
+import static com.test.test.DankDungeon.PPM;
 import static com.test.test.screens.GameScreen.TILE_SIZE;
 
 /**

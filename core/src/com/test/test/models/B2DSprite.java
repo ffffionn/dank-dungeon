@@ -7,7 +7,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.test.test.utils.Animation;
 
-import static com.test.test.SpaceAnts.PPM;
+import static com.test.test.DankDungeon.PPM;
 
 /**
  * Created by Fionn on 20/11/2016.
@@ -67,6 +67,13 @@ public class B2DSprite{
         this.b2body = null;
         this.sprite = null;
         this.animation = null;
+    }
+
+    public void damage(int dmgAmount){
+        this.health -= dmgAmount;
+        if( health < 0){
+            setToDestroy();
+        }
     }
 
     public void setToDestroy(){ setToDestroy = true; }

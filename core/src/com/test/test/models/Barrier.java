@@ -5,10 +5,9 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
-import com.sun.corba.se.impl.oa.poa.ActiveObjectMap;
 import com.test.test.screens.GameScreen;
 
-import static com.test.test.SpaceAnts.PPM;
+import static com.test.test.DankDungeon.PPM;
 
 /**
  * Created by Fionn on 22/01/2017.

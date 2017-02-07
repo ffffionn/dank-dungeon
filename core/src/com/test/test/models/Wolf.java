@@ -13,7 +13,6 @@ public class Wolf extends Enemy {
     private static final int WOLF_SCORE = 200;
     private static final float WOLF_SPEED = 0.35f;
 
-
     public Wolf(GameScreen screen, Vector2 startPosition){
         super(screen, startPosition);
         this.health = WOLF_HEALTH;

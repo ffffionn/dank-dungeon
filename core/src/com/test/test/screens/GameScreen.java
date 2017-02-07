@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
@@ -16,25 +15,24 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.test.test.models.*;
-import com.test.test.SpaceAnts;
+import com.test.test.DankDungeon;
 import com.test.test.scenes.GameHud;
 import com.test.test.utils.CaveGenerator;
 import com.test.test.utils.WorldContactListener;
 
-import static com.test.test.SpaceAnts.PPM;
-import static com.test.test.SpaceAnts.V_HEIGHT;
-import static com.test.test.SpaceAnts.V_WIDTH;
+import static com.test.test.DankDungeon.PPM;
+import static com.test.test.DankDungeon.V_HEIGHT;
+import static com.test.test.DankDungeon.V_WIDTH;
 
 /**
  * Created by Fionn on 22/10/2016.
  */
 public class GameScreen implements Screen {
     // game
-    private SpaceAnts game;
+    private DankDungeon game;
 
     // screen
     private OrthographicCamera cam;
@@ -71,7 +69,7 @@ public class GameScreen implements Screen {
 
     private boolean levelUp;
 
-    public GameScreen(SpaceAnts game){
+    public GameScreen(DankDungeon game){
         this.game = game;
         this.world = new World(new Vector2(0, 0), true);
         this.b2dr = new Box2DDebugRenderer();
@@ -83,9 +81,9 @@ public class GameScreen implements Screen {
         this.assetManager = new AssetManager();
         this.enemies = new Array<Enemy>();
         this.atlas = new TextureAtlas("animations/player.pack");
-        this.gamePort = new StretchViewport(SpaceAnts.V_WIDTH / PPM, SpaceAnts.V_HEIGHT / PPM , cam);
+        this.gamePort = new StretchViewport(DankDungeon.V_WIDTH / PPM, DankDungeon.V_HEIGHT / PPM , cam);
 //        this.tiles = new Texture("textures/dungeon_tiles2.png");
-        this.tiles = new Texture("textures/dungeontiles-dark.png");
+        this.tiles = new Texture("textures/dungeontiles-frost.png");
         this.hud = new GameHud(game.batch);
         this.entityList = new Array<B2DSprite>();
         this.deleteList = new Array<B2DSprite>();
@@ -133,7 +131,7 @@ public class GameScreen implements Screen {
         mapRenderer.render();
         b2dr.render(world, cam.combined);
 
-        game.batch.setProjectionMatrix(hud.getStage().getCamera().combined);
+        game.batch.setProjectionMatrix(hud.getStage().getCamera().combined);   // ???
         hud.getStage().draw();
         game.batch.setProjectionMatrix(cam.combined);
         game.batch.begin();
