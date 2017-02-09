@@ -9,7 +9,7 @@ import com.badlogic.gdx.math.Vector2;
 /**
  * Created by Fionn on 04/02/2017.
  */
-public class HeroState {
+public abstract class HeroState {
 
     public static BlockingState blocking = new BlockingState();
     public static StandingState standing = new StandingState();
@@ -25,18 +25,20 @@ public class HeroState {
     protected static TextureRegion[] castAnimation2;
 
     public void enter(Hero hero){}
+    public void leave(Hero hero){}
     public void update(float dt){}
 
     public void handleInput(Hero hero){
         // default alive hero controls
 
         if(Gdx.input.isKeyPressed(Input.Keys.SPACE) && hero.getCurrentState() != blocking){
-                hero.block();
+            hero.block();
         }
 
         if(Gdx.input.justTouched() && hero.getCurrentState() != blocking){
             hero.shoot();
         }
+
 
         Vector2 heroVelocity = hero.getBody().getLinearVelocity();
         Vector2 movement = new Vector2(0, 0);
@@ -54,7 +56,6 @@ public class HeroState {
         }
 
         hero.getBody().applyLinearImpulse(movement, hero.getBody().getWorldCenter(), true);
-
     }
 
 

@@ -304,21 +304,11 @@ public class GameScreen implements Screen {
         hud.dispose();
     }
 
-    public GameHud getHud(){
-        return this.hud;
-    }
-
-    public TextureAtlas getAtlas(){ return this.atlas; }
-
-    public World getWorld(){
-        return this.world;
-    }
-
-    public TiledMap getMap(){
-        return this.map;
-    }
-
-    public Body getCursor() { return this.cursorBody; }
     public OrthographicCamera getCam() { return this.cam; }
-
+    public GameHud getHud(){ return this.hud; }
+    public TextureAtlas getAtlas(){ return this.atlas; }
+    public World getWorld(){ return this.world; }
+    public TiledMap getMap(){ return this.map; }
+    public Hero getPlayer(){ return this.player; }
+    public Body getCursor() { return this.cursorBody; }
 }

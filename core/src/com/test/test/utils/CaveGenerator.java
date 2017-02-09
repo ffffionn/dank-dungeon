@@ -99,10 +99,9 @@ public class CaveGenerator {
         int numRoaches = Math.round(MathUtils.sin((seed * seed) / 2) * 50);
         int numWolves = (seed > 0.2f) ? Math.round((seed/2.0f) * (seed - 0.2f) * 25) : 0;
 
+        numSkels = 1;
+        numWolves = 1;
         System.out.printf("SEED: %f   (%d/%d/%d) \n", seed, numSkels, numRoaches, numWolves);
-
-//        numSkels = 0;
-//        numWolves = 0;
 
         for( int i = 0; i < numSkels; i++){
             array.add( new Enemy(screen, cellToWorldPosition(getRandomPlace())) );

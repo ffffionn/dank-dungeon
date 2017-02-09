@@ -11,11 +11,9 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.test.test.DankDungeon;
@@ -32,8 +30,6 @@ public class GameHud {
     private Label healthLabel;
     private Label scoreLabel;
     private Label floorLabel;
-
-//    private ProgressBar healthBar;
 
     private TextureRegion healthBar;
     private TextureRegion healthBarBackground;
@@ -54,7 +50,7 @@ public class GameHud {
         table.setFillParent(true);
 
         skin = new Skin();
-        skin = new Skin(Gdx.files.internal("ui/skin.json"));
+//        skin = new Skin(Gdx.files.internal("ui/skin.json"));
         Pixmap pixmap = new Pixmap(10, 100, Pixmap.Format.RGBA8888);
         pixmap.setColor(Color.WHITE);
         pixmap.fill();

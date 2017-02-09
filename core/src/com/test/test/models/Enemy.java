@@ -1,5 +1,6 @@
 package com.test.test.models;
 
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
@@ -69,8 +70,11 @@ public class Enemy extends B2DSprite {
      */
     protected void move(){
         // move towards player position
-        velocity = target.cpy().sub(b2body.getPosition()).nor().scl(max_speed);
+        Vector2 currentPosition = b2body.getPosition();
+        float angleToPlayer = MathUtils.atan2((target.y - currentPosition.y), (target.x - currentPosition.x));
+        velocity = target.cpy().sub(currentPosition).nor().scl(max_speed);
         b2body.setLinearVelocity(velocity);
+        b2body.setTransform(currentPosition, angleToPlayer);
     }
 
     protected void define(Vector2 startPoint){
@@ -83,7 +87,7 @@ public class Enemy extends B2DSprite {
 
         FixtureDef fdef = new FixtureDef();
         CircleShape shape = new CircleShape();
-        shape.setRadius(this.radius / PPM);
+        shape.setRadius(getSize());
         fdef.shape = shape;
         fdef.friction = 0.75f;
         fdef.restitution = 0.0f;
@@ -103,5 +107,8 @@ public class Enemy extends B2DSprite {
     public int getScoreValue(){
         return score_value;
     }
+
+    // Override to change size of subclass bodies with default definition.
+    protected float getSize(){ return this.radius / PPM; }
 
 }

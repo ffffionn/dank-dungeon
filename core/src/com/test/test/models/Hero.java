@@ -71,7 +71,7 @@ public class Hero extends B2DSprite {
     public void update(float dt){
         animation.update(dt);
         if(!isDead()){
-            faceCursor();
+            rotate(angleToCursor());
             shield.update();
             currentState.handleInput(this);
             if(invincible){
@@ -127,8 +127,8 @@ public class Hero extends B2DSprite {
 
     private float tintNanos;
 
-    private static final long TINT_IN_NANOS = 450000000;
-    private static final long TINT_OUT_NANOS = 550000000;
+    private static final long TINT_IN_NANOS = 250000000;
+    private static final long TINT_OUT_NANOS = 250000000;
 
     private float getInterpolation(){
         if (TimeUtils.nanoTime() - tintNanos < TINT_IN_NANOS){
@@ -211,8 +211,7 @@ public class Hero extends B2DSprite {
     /**
      * Rotate the Box2D body and sprite to face the cursor.
      */
-    private void faceCursor(){
-        float angle = angleToCursor();
+    private void rotate(float angle){
         b2body.setTransform(b2body.getPosition(), angle);
         sprite.setRotation(angle * MathUtils.radiansToDegrees);
     }
