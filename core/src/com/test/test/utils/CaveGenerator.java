@@ -12,12 +12,14 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Queue;
 import com.test.test.models.B2DSprite;
 import com.test.test.models.Enemy;
+import com.test.test.models.Shooter;
 import com.test.test.models.Wolf;
 import com.test.test.screens.GameScreen;
 
 import static com.badlogic.gdx.math.MathUtils.random;
 import static com.test.test.DankDungeon.PPM;
 import static com.test.test.screens.GameScreen.TILE_SIZE;
+import static com.test.test.utils.WorldContactListener.*;
 
 /**
  * Created by fionn on 07/01/17.
@@ -66,9 +68,7 @@ public class CaveGenerator {
 
     /**
      * Generates a map with given dimensions.
-     * @param width Width of the cavern in tiles.
-     * @param height Height of the cavern in tiles.
-     * @param seed
+     * @param seed A random number between 0 and 1 that decides the cave size.
      * @return A TiledMap with the new cavern as a Layer.
      */
     public TiledMap generateCave(float seed){
@@ -99,12 +99,16 @@ public class CaveGenerator {
         int numRoaches = Math.round(MathUtils.sin((seed * seed) / 2) * 50);
         int numWolves = (seed > 0.2f) ? Math.round((seed/2.0f) * (seed - 0.2f) * 25) : 0;
 
-        numSkels = 1;
+        numSkels = 0;
         numWolves = 1;
+        numRoaches = 1;
         System.out.printf("SEED: %f   (%d/%d/%d) \n", seed, numSkels, numRoaches, numWolves);
 
         for( int i = 0; i < numSkels; i++){
             array.add( new Enemy(screen, cellToWorldPosition(getRandomPlace())) );
+        }
+        for( int i = 0; i < numRoaches; i++){
+            array.add( new Shooter(screen, cellToWorldPosition(getRandomPlace())) );
         }
         for( int i = 0; i < numWolves; i++){
             array.add( new Wolf(screen, cellToWorldPosition(getRandomPlace())) );
@@ -344,6 +348,8 @@ public class CaveGenerator {
         fdef.friction = 0.75f;
         fdef.restitution = 0.0f;
         fdef.isSensor = true;
+        fdef.filter.categoryBits = PICKUP;
+        fdef.filter.maskBits = PLAYER;
 
         Body b2body = screen.getWorld().createBody(bdef);
         b2body.createFixture(fdef).setUserData("goal");
@@ -365,6 +371,8 @@ public class CaveGenerator {
         bdef.position.set(centre);
         wall.setAsBox(TILE_SIZE / 2 / PPM, TILE_SIZE / 2 / PPM, centre, 0);
         fdef.shape = wall;
+        fdef.filter.categoryBits = WALL;
+        fdef.filter.maskBits = PLAYER | PLAYER_PROJECTILE | ENEMY_PROJECTILE | ENEMY;
 
         Body body = screen.getWorld().createBody(bdef);
         body.createFixture(fdef).setUserData("wall");

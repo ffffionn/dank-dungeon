@@ -6,13 +6,11 @@ import com.test.test.screens.GameScreen;
 /**
  * Created by Fionn on 09/02/2017.
  */
-public class Fireball extends Projectile {
+public class Iceball extends Projectile {
 
-
-    public Fireball(GameScreen screen, Vector2 startPosition, Vector2 target){
+    public Iceball(GameScreen screen, Vector2 startPosition, Vector2 target){
         super(screen, startPosition, target);
-        this.damageAmount = 20;
+        this.damageAmount = 15;
     }
-
 
 }

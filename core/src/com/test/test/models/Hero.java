@@ -2,6 +2,7 @@ package com.test.test.models;
 
 import static com.test.test.DankDungeon.PPM;
 import static com.test.test.screens.GameScreen.TILE_SIZE;
+import static com.test.test.utils.WorldContactListener.*;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -22,7 +23,7 @@ public class Hero extends B2DSprite {
 
     protected HeroState currentState;
     protected HeroState previousState;
-    protected Array<Fireball> fireballs;
+    protected Array<Projectile> fireballs;
     protected GameScreen screen;
     protected Barrier shield;
 
@@ -42,7 +43,7 @@ public class Hero extends B2DSprite {
         this.screen = screen;
         this.currentState = HeroState.standing;
         this.previousState = HeroState.standing;
-        this.fireballs = new Array<Fireball>(MAX_FIREBALLS);
+        this.fireballs = new Array<Projectile>(MAX_FIREBALLS);
         this.health = MAX_HEALTH;
         this.shield = new Barrier(screen, this);
         this.invincible = false;
@@ -87,7 +88,7 @@ public class Hero extends B2DSprite {
 
         sprite.setPosition(b2body.getPosition().x - sprite.getWidth() / 2,
                 b2body.getPosition().y - sprite.getHeight() / 2);
-        for(Fireball fb : fireballs){
+        for(Projectile fb : fireballs){
             if (fb.isDestroyed()){
                 fireballs.removeValue(fb, true);
             }else{
@@ -114,7 +115,7 @@ public class Hero extends B2DSprite {
      */
     public void shoot(){
         if(fireballs.size < MAX_FIREBALLS){
-            Fireball fb = new Fireball(screen, getPosition());
+            Projectile fb = new Projectile(screen, getPosition(), screen.getCursor().getPosition());
             setAnimation(HeroState.castAnimation2, 1/30f);
             screen.add(fb);
             fireballs.add(fb);
@@ -126,7 +127,6 @@ public class Hero extends B2DSprite {
     }
 
     private float tintNanos;
-
     private static final long TINT_IN_NANOS = 250000000;
     private static final long TINT_OUT_NANOS = 250000000;
 
@@ -244,6 +244,8 @@ public class Hero extends B2DSprite {
         fdef.shape = shape;
         fdef.friction = 0.75f;
         fdef.restitution = 0.0f;
+        fdef.filter.categoryBits = PLAYER;
+        fdef.filter.maskBits = ENEMY_PROJECTILE | ENEMY | WALL | PICKUP;
 
         b2body.createFixture(fdef).setUserData("player");
         b2body.setUserData(this);

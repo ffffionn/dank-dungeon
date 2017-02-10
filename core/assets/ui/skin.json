@@ -1,0 +1,13 @@
+{
+    com.badlogic.gdx.graphics.Color: {
+        yellow: { r: 0.5, g: 0.5, b: 0, a: 1 },
+        white: { r: 0.87, g: 0.87, b: 0.87, a: 1 },
+        wine: { r: 0.23, g: 0.011, b: 0.14, a: 1},
+        blue: { r: 0.376, g: 0.87, b: 0.9, a: 1 },
+        red: { r: 0.54, g: 0.03, b: 0.03, a: 1 },
+    },
+    com.badlogic.gdx.graphics.g2d.BitmapFont: {
+        default : { file: fonts/segoe-ui.fnt }
+    },
+
+}

@@ -53,9 +53,12 @@ public class B2DSprite{
     }
 
     public void update(float dt) {
-        sprite.setPosition(b2body.getPosition().x - sprite.getWidth() / 2,
+        if(sprite != null){
+            sprite.setPosition(b2body.getPosition().x - sprite.getWidth() / 2,
                            b2body.getPosition().y - sprite.getHeight() / 2);
-//        animation.update(dt);
+//          animation.update(dt);
+
+        }
     }
 
     public void render(SpriteBatch sb) {

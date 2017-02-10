@@ -8,6 +8,7 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.test.test.screens.GameScreen;
 
 import static com.test.test.DankDungeon.PPM;
+import static com.test.test.utils.WorldContactListener.*;
 
 /**
  * Created by Fionn on 22/01/2017.
@@ -77,6 +78,9 @@ public class Barrier extends B2DSprite{
 
         FixtureDef fdef = new FixtureDef();
         fdef.shape = shape;
+        fdef.filter.categoryBits = BARRIER;
+        fdef.filter.maskBits = PLAYER_PROJECTILE | ENEMY_PROJECTILE | ENEMY;
+
         b2body.createFixture(fdef).setUserData("barrier");
 
         shape.set(p1, p3);

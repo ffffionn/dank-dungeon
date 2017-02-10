@@ -9,6 +9,7 @@ import com.badlogic.gdx.utils.Timer;
 import com.test.test.screens.GameScreen;
 
 import static com.test.test.DankDungeon.PPM;
+import static com.test.test.utils.WorldContactListener.*;
 
 /**
  * Basic Enemy class.
@@ -23,6 +24,7 @@ public class Enemy extends B2DSprite {
     protected int score_value;
     protected boolean stunned;
     protected float radius = 5.5f;
+    protected int attackDamage;
 
     public Enemy(GameScreen screen, Vector2 startPosition){
         super();
@@ -35,6 +37,7 @@ public class Enemy extends B2DSprite {
         this.health = 100;
         this.max_speed =  0.75f;
         this.score_value = 20;
+        this.attackDamage = 5;
     }
 
     public Enemy(GameScreen screen, Vector2 startPosition, float speed, int hp){
@@ -91,6 +94,8 @@ public class Enemy extends B2DSprite {
         fdef.shape = shape;
         fdef.friction = 0.75f;
         fdef.restitution = 0.0f;
+        fdef.filter.categoryBits = ENEMY;
+        fdef.filter.maskBits = WALL | PLAYER | PLAYER_PROJECTILE | BARRIER;
 
         b2body.createFixture(fdef).setUserData("enemy");
         b2body.setUserData(this);
@@ -105,10 +110,12 @@ public class Enemy extends B2DSprite {
     }
 
     public int getScoreValue(){
-        return score_value;
+        return this.score_value;
     }
+    public int getAttackDamage(){ return this.attackDamage; }
 
     // Override to change size of subclass bodies with default definition.
     protected float getSize(){ return this.radius / PPM; }
+
 
 }

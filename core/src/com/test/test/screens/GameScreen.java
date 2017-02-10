@@ -82,7 +82,6 @@ public class GameScreen implements Screen {
         this.enemies = new Array<Enemy>();
         this.atlas = new TextureAtlas("animations/player.pack");
         this.gamePort = new StretchViewport(DankDungeon.V_WIDTH / PPM, DankDungeon.V_HEIGHT / PPM , cam);
-//        this.tiles = new Texture("textures/dungeon_tiles2.png");
         this.tiles = new Texture("textures/dungeontiles-frost.png");
         this.hud = new GameHud(game.batch);
         this.entityList = new Array<B2DSprite>();
@@ -115,7 +114,12 @@ public class GameScreen implements Screen {
         // update enemies
         for( Enemy e : enemies ){
             e.setTarget(player.getPosition());
-            e.update(delta);
+        }
+        for( B2DSprite b : entityList){
+             b.update(delta);
+            if( b instanceof Enemy){
+                ((Enemy) b).setTarget(player.getPosition());
+            }
         }
 
         // keep camera centered on player
@@ -125,21 +129,27 @@ public class GameScreen implements Screen {
         mapRenderer.setView(cam);
 
         // draw the game
+        draw();
+    }
+
+    private void draw(){
         Gdx.gl.glClearColor(100f / 255f, 100f / 255f, 100f / 255f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         mapRenderer.render();
         b2dr.render(world, cam.combined);
 
-        game.batch.setProjectionMatrix(hud.getStage().getCamera().combined);   // ???
-        hud.getStage().draw();
         game.batch.setProjectionMatrix(cam.combined);
         game.batch.begin();
         player.render(game.batch);
-        for(B2DSprite sprite : entityList){
+//        for(B2DSprite sprite : entityList){
 //            sprite.render(game.batch);
-        }
+//        }
         game.batch.end();
+
+        // draw hud
+        game.batch.setProjectionMatrix(hud.getStage().getCamera().combined);
+        hud.getStage().draw();
     }
 
     private void deleteUselessBodies(){
@@ -251,8 +261,11 @@ public class GameScreen implements Screen {
         fdef.isSensor = true;
         fdef.restitution = 0f;
 
+        fdef.filter.categoryBits = 0;
+        fdef.filter.maskBits = 0;
+
         this.cursorBody = world.createBody(bdef);
-        cursorBody.createFixture(fdef);
+        cursorBody.createFixture(fdef).setUserData("cursor");
     }
 
     private static final float STEP_TIME = 1f / 60f;
