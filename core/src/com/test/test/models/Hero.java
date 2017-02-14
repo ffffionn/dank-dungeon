@@ -31,7 +31,7 @@ public class Hero extends B2DSprite {
     public static final float MAX_VELOCITY = 2.5f;
     public static final int MAX_HEALTH = 100;
     protected static int MAX_FIREBALLS = 5;
-    protected static final float INVINCIBILITY_TIMER = 1.2f;
+    protected static final float INVINCIBILITY_TIMER = 0.85f;
     protected boolean invincible;
 
     private Color flashColour;
@@ -75,9 +75,9 @@ public class Hero extends B2DSprite {
             rotate(angleToCursor());
             shield.update();
             currentState.handleInput(this);
-            if(invincible){
-                sprite.setColor(Color.WHITE.cpy().lerp(flashColour, getInterpolation()));
-            }
+//            if(invincible){
+//                sprite.setColor(Color.WHITE.cpy().lerp(flashColour, getInterpolation()));
+//            }
         }else{  // player is dead
             // set game over animation
             if( animation.getTimesPlayed() == 1 ){
@@ -144,18 +144,18 @@ public class Hero extends B2DSprite {
 
     /**
      * Damages the hero by the given amount.
-     * @param hp Amount of hero health to reduce
+     * @param damageAmount Amount of hero health to reduce
      */
     @Override
-    public void damage(int hp){
+    public void damage(int damageAmount){
         if(!invincible){
-            this.health -= hp;
-            if (health < 0){
+            this.health -= damageAmount;
+            if (health <= 0){
                 die();
             }else{
                 invincible = true;
                 tintNanos = TimeUtils.nanoTime();
-
+                sprite.setColor(Color.WHITE.cpy().lerp(flashColour, 0.8f));
 //                flash();
                 Timer.schedule(new Timer.Task() {
                     @Override
@@ -164,13 +164,10 @@ public class Hero extends B2DSprite {
 //                        unflash();
                         System.out.println("--vulnerable--");
                         sprite.setColor(Color.WHITE.cpy().lerp(flashColour, 0.0f));
-//                        sprite.setColor(0,0,0,0);
                     }
                 }, INVINCIBILITY_TIMER);
             }
             screen.getHud().updatePlayerHealth(this.health);
-        }else{
-            System.out.println("INVINCIBLE!");
         }
     }
 
@@ -187,6 +184,7 @@ public class Hero extends B2DSprite {
      * @param s The new HeroState.
      */
     public void changeState(HeroState s){
+        currentState.leave(this);
         previousState = currentState;
         currentState = s;
         s.enter(this);

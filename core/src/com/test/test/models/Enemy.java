@@ -55,7 +55,7 @@ public class Enemy extends B2DSprite {
         }
     }
 
-    public void stun(){
+    public void stun(float stunDuration){
         if(!stunned){
             System.out.println("STUN!");
             stunned = true;
@@ -64,7 +64,7 @@ public class Enemy extends B2DSprite {
                 public void run() {
                     stunned = false;
                 }
-            }, 1.0f);
+            }, stunDuration);
         }
     }
 
@@ -79,6 +79,16 @@ public class Enemy extends B2DSprite {
         b2body.setLinearVelocity(velocity);
         b2body.setTransform(currentPosition, angleToPlayer);
     }
+
+    protected void moveTowards(Vector2 position){
+        // move towards player position
+        Vector2 currentPosition = b2body.getPosition();
+        float angleToPlayer = MathUtils.atan2((position.y - currentPosition.y), (position.x - currentPosition.x));
+        velocity = position.cpy().sub(currentPosition).nor().scl(max_speed);
+        b2body.setLinearVelocity(velocity);
+        b2body.setTransform(currentPosition, angleToPlayer);
+    }
+
 
     protected void define(Vector2 startPoint){
         BodyDef bdef = new BodyDef();

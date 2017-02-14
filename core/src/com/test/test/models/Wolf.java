@@ -30,7 +30,7 @@ public class Wolf extends Enemy {
                 return 0;
             }else if (fixture.getUserData().equals("player")) {
                 // move towards player;
-                moveToPlayer();
+                moveTowards(target);
                 return 0;
             } else {
                 if( fixture.getBody().getUserData() instanceof B2DSprite){
@@ -59,30 +59,6 @@ public class Wolf extends Enemy {
     protected void move() {
         // move randomly around until hero is in range
         screen.getWorld().rayCast(callback, b2body.getPosition(), target);
-    }
-
-    private void moveToPlayer(){
-        // move towards player position
-        Vector2 currentPosition = b2body.getPosition();
-        float angleToPlayer = MathUtils.atan2((target.y - currentPosition.y), (target.x - currentPosition.x));
-        velocity = target.cpy().sub(currentPosition).nor().scl(max_speed);
-        b2body.setLinearVelocity(velocity);
-        b2body.setTransform(currentPosition, angleToPlayer);
-    }
-
-    private void shoot(Vector2 target){
-        if(canAttack){
-            this.canAttack = false;
-            Projectile fb = new Projectile(screen, getPosition(), target);
-            screen.add(fb);
-            // can't shoot again for 1s
-            Timer.schedule(new Timer.Task() {
-                @Override
-                public void run() {
-                    canAttack = true;
-                }
-            }, 1f);
-        }
     }
 
     @Override

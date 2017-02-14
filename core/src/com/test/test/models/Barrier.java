@@ -17,12 +17,14 @@ public class Barrier extends B2DSprite{
 
     private GameScreen screen;
     private Hero hero;
+    private float shieldSize;
     private boolean defined;
 
     public Barrier(GameScreen screen, Hero hero){
         super();
         this.screen = screen;
         this.hero = hero;
+        this.shieldSize = 10.5f;
         defined = false;
 //        b2body.setActive(true);
 //        defineShield(hero.getPosition(), hero.angleToCursor());
@@ -60,16 +62,16 @@ public class Barrier extends B2DSprite{
         rotation = 0.0f;
         float angleOffset = MathUtils.PI / 4;
 
-        float px = (MathUtils.cos(rotation) * (9.5f)) / PPM;
-        float py = (MathUtils.sin(rotation) * (9.5f)) / PPM;
+        float px = (MathUtils.cos(rotation) * (shieldSize)) / PPM;
+        float py = (MathUtils.sin(rotation) * (shieldSize)) / PPM;
         Vector2 p1 = new Vector2(px, py);
 
-        px = (MathUtils.cos(rotation - angleOffset) * (9.5f)) / PPM;
-        py = (MathUtils.sin(rotation - angleOffset) * (9.5f)) / PPM;
+        px = (MathUtils.cos(rotation - angleOffset) * (shieldSize)) / PPM;
+        py = (MathUtils.sin(rotation - angleOffset) * (shieldSize)) / PPM;
         Vector2 p2 = new Vector2(px, py);
 
-        px = (MathUtils.cos(rotation + angleOffset) * (9.5f)) / PPM;
-        py = (MathUtils.sin(rotation + angleOffset) * (9.5f)) / PPM;
+        px = (MathUtils.cos(rotation + angleOffset) * (shieldSize)) / PPM;
+        py = (MathUtils.sin(rotation + angleOffset) * (shieldSize)) / PPM;
         Vector2 p3 = new Vector2(px, py);
 
         EdgeShape shape = new EdgeShape();

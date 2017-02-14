@@ -100,7 +100,7 @@ public class CaveGenerator {
         int numWolves = (seed > 0.2f) ? Math.round((seed/2.0f) * (seed - 0.2f) * 25) : 0;
 
         numSkels = 0;
-        numWolves = 1;
+        numWolves = 0;
         numRoaches = 1;
         System.out.printf("SEED: %f   (%d/%d/%d) \n", seed, numSkels, numRoaches, numWolves);
 

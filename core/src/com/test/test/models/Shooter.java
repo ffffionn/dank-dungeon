@@ -22,30 +22,7 @@ public class Shooter extends Enemy{
 
     private boolean canAttack;
 
-    private RayCastCallback callback = new RayCastCallback() {
-        @Override
-        public float reportRayFixture(Fixture fixture, Vector2 point, Vector2 normal, float fraction) {
-            if( fixture.getUserData() == null){
-                System.out.println("null?");
-                return 0;
-            }else if (fixture.getUserData().equals("player")) {
-
-//                    System.out.println("player!");
-                // move towards player;
-//                moveToPlayer();
-                shoot(target);
-                return 0;
-            } else {
-                if( fixture.getBody().getUserData() instanceof B2DSprite){
-//                    System.out.println("something else");
-                    return -1;
-                }
-
-//                System.out.println("err..");
-                return 0;
-            }
-        }
-    };
+    private PlayerSearchCallback callback;
 
     public Shooter(GameScreen screen, Vector2 startPosition){
         super(screen, startPosition);
@@ -53,6 +30,7 @@ public class Shooter extends Enemy{
         this.max_speed =  SHOOTER_SPEED;
         this.score_value = SHOOTER_SCORE;
         this.canAttack = true;
+        callback = new PlayerSearchCallback();
     }
 
     public Shooter(GameScreen screen, Vector2 startPosition, float speed, int hp){
@@ -65,12 +43,15 @@ public class Shooter extends Enemy{
     protected void move() {
         // move randomly around until hero is in range
         screen.getWorld().rayCast(callback, b2body.getPosition(), target);
+        if( callback.playerInSight() ){
+            shoot(target);
+        }
     }
 
     private void shoot(Vector2 target){
         if(canAttack){
             this.canAttack = false;
-            Projectile p = new Projectile(screen, getPosition(), target);
+            Projectile p = new Projectile(screen, getPosition(), target, 10, 1.25f);
             screen.add(p);
             // can't shoot again for 1s
             Timer.schedule(new Timer.Task() {
@@ -86,4 +67,26 @@ public class Shooter extends Enemy{
     protected float getSize() {
         return this.RADIUS / PPM;
     }
+
+    private class PlayerSearchCallback implements RayCastCallback {
+        private Type lastHit;
+
+        @Override
+        public float reportRayFixture(Fixture fixture, Vector2 point, Vector2 normal, float fraction) {
+            if (fixture.getUserData() == null) {
+                lastHit = Type.OTHER;
+            } else if (fixture.getUserData().equals("player")) {
+                lastHit = Type.PLAYER;
+            } else {
+                lastHit = Type.OTHER;
+            }
+            return fraction;
+        }
+
+        public boolean playerInSight() {
+            return lastHit == Type.PLAYER;
+        }
+    }
+
+    private enum Type{ PLAYER, OTHER }
 }

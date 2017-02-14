@@ -66,12 +66,10 @@ public class Projectile extends B2DSprite {
         if(startPosition == screen.getPlayer().getPosition()){
             fdef.filter.categoryBits = PLAYER_PROJECTILE;
             fdef.filter.maskBits |= ENEMY;
-            System.out.println("creating player fb - " + fdef.filter.maskBits);
             b2body.createFixture(fdef).setUserData("player-fireball");
         }else{
             fdef.filter.categoryBits = ENEMY_PROJECTILE;
             fdef.filter.maskBits |= PLAYER;
-            System.out.println("creating enemy fb - " + fdef.filter.maskBits);
             b2body.createFixture(fdef).setUserData("enemy-fireball");
         }
 
