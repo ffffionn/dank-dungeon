@@ -11,10 +11,11 @@ import com.badlogic.gdx.math.Vector2;
  */
 public abstract class HeroState {
 
+    public static DeadState dead = new DeadState();
     public static BlockingState blocking = new BlockingState();
     public static StandingState standing = new StandingState();
     public static SprintingState sprinting = new SprintingState();
-    public static DeadState dead = new DeadState();
+    public static AttackingState attacking = new AttackingState();
 
     protected static TextureRegion[] moveAnimation;
     protected static TextureRegion[] standAnimation;
@@ -26,51 +27,40 @@ public abstract class HeroState {
 
     public void enter(Hero hero){}
     public void leave(Hero hero){}
-    public void update(float dt){}
+    public void update(float dt, Hero hero){}
+    protected float getRunModifier(){ return 1.0f;}
 
-    public void handleInput(Hero hero){
-        // default alive hero controls
-
-        if(Gdx.input.isKeyPressed(Input.Keys.SPACE) && hero.getCurrentState() != blocking){
-            hero.block();
-        }
-
-        if(Gdx.input.justTouched() && hero.getCurrentState() != blocking){
-            hero.shoot();
-        }
-
-
+    protected void handleMovement(Hero hero){
         Vector2 heroVelocity = hero.getBody().getLinearVelocity();
         Vector2 movement = new Vector2(0, 0);
+        float modifier = getRunModifier();
         if (Gdx.input.isKeyPressed(Input.Keys.W) && heroVelocity.y < Hero.MAX_VELOCITY) {
-            movement.y += 0.2f;
+            movement.y += 0.2f * modifier;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.S) && heroVelocity.y > -Hero.MAX_VELOCITY) {
-            movement.y -= 0.2f;
+            movement.y -= 0.2f * modifier;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.D) && heroVelocity.x < Hero.MAX_VELOCITY) {
-            movement.x += 0.2f;
+            movement.x += 0.2f * modifier;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.A) && heroVelocity.x > -Hero.MAX_VELOCITY) {
-            movement.x -= 0.2f;
+            movement.x -= 0.2f * modifier;
         }
-
         hero.getBody().applyLinearImpulse(movement, hero.getBody().getWorldCenter(), true);
     }
-
 
     /**
      * Define the hero's animations given a TextureAtlas
      * @param atlas The atlas containing the various animations.
      */
     public static void defineAnimations(TextureAtlas atlas){
-        moveAnimation = atlas.findRegion("player-move").split(64, 64)[0];
-        castAnimation = atlas.findRegion("player-cast").split(64, 64)[0];
-        dieAnimation = atlas.findRegion("player-die").split(64, 64)[0];
         standAnimation = atlas.findRegion("player-strafe").split(64, 64)[0];
-        blockAnimation = atlas.findRegion("player-cast-onehand").split(64, 64)[0];
+        moveAnimation = atlas.findRegion("player-move").split(64, 64)[0];
         runAnimation = atlas.findRegion("player-wobble").split(64, 64)[0];
-        castAnimation2 = atlas.findRegion("player-cast-forward").split(64, 64)[0];
+        blockAnimation = atlas.findRegion("player-cast-forward").split(64, 64)[0];
+        castAnimation = atlas.findRegion("player-cast").split(64, 64)[0];
+        castAnimation2 = atlas.findRegion("player-cast-onehand").split(64, 64)[0];
+        dieAnimation = atlas.findRegion("player-die").split(64, 64)[0];
     }
 
 }

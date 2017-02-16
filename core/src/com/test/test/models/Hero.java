@@ -1,6 +1,8 @@
 package com.test.test.models;
 
 import static com.test.test.DankDungeon.PPM;
+import static com.test.test.models.HeroState.attacking;
+import static com.test.test.models.HeroState.standing;
 import static com.test.test.screens.GameScreen.TILE_SIZE;
 import static com.test.test.utils.WorldContactListener.*;
 
@@ -29,6 +31,8 @@ public class Hero extends B2DSprite {
 
     // hero attributes
     public static final float MAX_VELOCITY = 2.5f;
+
+    private float mana;
     public static final int MAX_HEALTH = 100;
     protected static int MAX_FIREBALLS = 5;
     protected static final float INVINCIBILITY_TIMER = 0.85f;
@@ -41,14 +45,15 @@ public class Hero extends B2DSprite {
     public Hero(GameScreen screen, Vector2 position){
         super();
         this.screen = screen;
-        this.currentState = HeroState.standing;
-        this.previousState = HeroState.standing;
+        this.currentState = standing;
+        this.previousState = standing;
         this.fireballs = new Array<Projectile>(MAX_FIREBALLS);
         this.health = MAX_HEALTH;
-        this.shield = new Barrier(screen, this);
         this.invincible = false;
         this.flashColour = Color.RED;
         define(position);
+        this.shield = new Barrier(screen, this);
+        this.mana = 15.0f;
 
         // define animations
         HeroState.defineAnimations(screen.getAtlas());
@@ -69,12 +74,19 @@ public class Hero extends B2DSprite {
         sprite.setRegion(texture);
     }
 
+    public int getMana(){ return MathUtils.floor(mana);}
+
     public void update(float dt){
         animation.update(dt);
         if(!isDead()){
             rotate(angleToCursor());
-            shield.update();
-            currentState.handleInput(this);
+            shield.update(dt);
+            currentState.update(dt, this);
+            if( currentState == standing && mana < 100.0f){
+                float inc = ((StandingState) currentState).getTimeStanding();
+                this.mana += (1.0f * inc * dt);
+                screen.getHud().updatePlayerMana(MathUtils.floor(this.mana));
+            }
 //            if(invincible){
 //                sprite.setColor(Color.WHITE.cpy().lerp(flashColour, getInterpolation()));
 //            }
@@ -106,19 +118,20 @@ public class Hero extends B2DSprite {
     }
 
     public void unblock(){
-        changeState(getPreviousState());
-        shield.setToDestroy();
+        changeState(standing);
+        shield.lower();
     }
 
     /**
      * Fires a fireball to direction the hero is facing.
      */
     public void shoot(){
-        if(fireballs.size < MAX_FIREBALLS){
+        if(fireballs.size < MAX_FIREBALLS && mana > 2.0f){
+            mana -= 1.0f;
             Projectile fb = new Projectile(screen, getPosition(), screen.getCursor().getPosition());
-            setAnimation(HeroState.castAnimation2, 1/30f);
             screen.add(fb);
             fireballs.add(fb);
+            changeState(attacking);
         }
     }
 
@@ -126,20 +139,32 @@ public class Hero extends B2DSprite {
         return currentState == HeroState.dead;
     }
 
-    private float tintNanos;
-    private static final long TINT_IN_NANOS = 250000000;
-    private static final long TINT_OUT_NANOS = 250000000;
+//    private float tintNanos;
+//    private static final long TINT_IN_NANOS = 250000000;
+//    private static final long TINT_OUT_NANOS = 250000000;
+//
+//    private float getInterpolation(){
+//        if (TimeUtils.nanoTime() - tintNanos < TINT_IN_NANOS){
+//            return (TimeUtils.nanoTime() - tintNanos) / (float) TINT_IN_NANOS;
+//        }
+//        else if (TimeUtils.nanoTime() - tintNanos - TINT_IN_NANOS < TINT_OUT_NANOS){
+//            return 1f - (TimeUtils.nanoTime() - tintNanos - TINT_IN_NANOS) /
+//                    (float) TINT_OUT_NANOS;
+//        }else{
+//            return 0;
+//        }
+//    }
 
-    private float getInterpolation(){
-        if (TimeUtils.nanoTime() - tintNanos < TINT_IN_NANOS){
-            return (TimeUtils.nanoTime() - tintNanos) / (float) TINT_IN_NANOS;
-        }
-        else if (TimeUtils.nanoTime() - tintNanos - TINT_IN_NANOS < TINT_OUT_NANOS){
-            return 1f - (TimeUtils.nanoTime() - tintNanos - TINT_IN_NANOS) /
-                    (float) TINT_OUT_NANOS;
+
+    public void drain(float amount){
+        if( mana < 0 ){
+            mana = 0;
         }else{
-            return 0;
+            this.mana -= amount;
         }
+
+        // update hud
+        screen.getHud().updatePlayerMana(MathUtils.floor(this.mana));
     }
 
     /**
@@ -154,14 +179,13 @@ public class Hero extends B2DSprite {
                 die();
             }else{
                 invincible = true;
-                tintNanos = TimeUtils.nanoTime();
-                sprite.setColor(Color.WHITE.cpy().lerp(flashColour, 0.8f));
-//                flash();
+//                tintNanos = TimeUtils.nanoTime();
+                sprite.setColor(Color.WHITE.cpy().lerp(Color.GOLD, 0.8f));
+                // tint the player red while invincible
                 Timer.schedule(new Timer.Task() {
                     @Override
                     public void run() {
                         invincible = false;
-//                        unflash();
                         System.out.println("--vulnerable--");
                         sprite.setColor(Color.WHITE.cpy().lerp(flashColour, 0.0f));
                     }

@@ -79,7 +79,8 @@ public class GameHud {
 
         healthLabel = new Label(String.format("HP: %03d", playerHealth),
                 new Label.LabelStyle(new BitmapFont(font), Color.LIGHT_GRAY));
-        floorLabel = new Label(String.format("Level: %03d", floor), new Label.LabelStyle(new BitmapFont(font), Color.LIGHT_GRAY));
+//        floorLabel = new Label(String.format("Level: %03d", floor), new Label.LabelStyle(new BitmapFont(font), Color.LIGHT_GRAY));
+        floorLabel = new Label(String.format("Mana: %03d", 100), new Label.LabelStyle(new BitmapFont(font), Color.LIGHT_GRAY));
         scoreLabel = new Label(String.format("%06d", score), new Label.LabelStyle(new BitmapFont(font), Color.LIGHT_GRAY));
 
         table.add(healthLabel).expandX().padBottom(5);
@@ -109,6 +110,10 @@ public class GameHud {
     public void updateScore(int adjustment){
         score += adjustment;
         scoreLabel.setText(String.format("%06d", score));
+    }
+
+    public void updatePlayerMana(int newMana){
+        floorLabel.setText(String.format("Mana: %03d", newMana));
     }
 
     public void dispose(){

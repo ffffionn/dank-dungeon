@@ -11,7 +11,7 @@ public class DeadState extends HeroState {
     }
 
     @Override
-    public void handleInput(Hero hero) {
+    public void update(float dt, Hero hero) {
         // don't handle input, you're dead!
     }
 

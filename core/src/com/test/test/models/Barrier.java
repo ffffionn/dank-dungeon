@@ -1,7 +1,5 @@
 package com.test.test.models;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
@@ -18,48 +16,48 @@ public class Barrier extends B2DSprite{
     private GameScreen screen;
     private Hero hero;
     private float shieldSize;
-    private boolean defined;
+    private boolean raised;
 
     public Barrier(GameScreen screen, Hero hero){
         super();
         this.screen = screen;
         this.hero = hero;
         this.shieldSize = 10.5f;
-        defined = false;
-//        b2body.setActive(true);
-//        defineShield(hero.getPosition(), hero.angleToCursor());
+        setToDestroy = false;
+        raised = false;
+        defineShield(hero.getPosition());
+        b2body.setActive(false);
     }
 
-    public void update() {
-        if(defined){
-            b2body.setTransform(hero.getPosition(), hero.angleToCursor());
-            if(Gdx.input.isKeyJustPressed(Input.Keys.K)){
-                b2body.setActive(!b2body.isActive());
-            }
+    public void update(float dt) {
+        b2body.setTransform(hero.getPosition(), hero.angleToCursor());
+        if(raised){
+            hero.drain(5 * dt);
         }
     }
 
     public void raise(){
-        defineShield(hero.getPosition(), hero.angleToCursor());
-        setToDestroy = false;
-        screen.add(this);
-        defined = true;
-//        b2body.setActive(true);
+        b2body.setActive(true);
+        raised = true;
     }
 
-    private void defineShield(Vector2 position, float rotation) {
+    public void lower(){
+        b2body.setActive(false);
+        raised = false;
+    }
+
+    private void defineShield(Vector2 position) {
         BodyDef bdef = new BodyDef();
         bdef.position.set(position.x, position.y);
-        bdef.angle = rotation;
-        bdef.type = BodyDef.BodyType.StaticBody;
+        bdef.type = BodyDef.BodyType.DynamicBody;
         bdef.linearDamping = 10.0f;
         bdef.fixedRotation = true;
         b2body = screen.getWorld().createBody(bdef);
 
         // create the points for the barrier
-
         // points made relative to body
-        rotation = 0.0f;
+
+        float rotation = 0.0f;
         float angleOffset = MathUtils.PI / 4;
 
         float px = (MathUtils.cos(rotation) * (shieldSize)) / PPM;
@@ -96,6 +94,6 @@ public class Barrier extends B2DSprite{
     @Override
     public void setToDestroy() {
         super.setToDestroy();
-        defined = false;
+        raised = false;
     }
 }

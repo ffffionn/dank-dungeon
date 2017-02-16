@@ -82,7 +82,7 @@ public class GameScreen implements Screen {
         this.enemies = new Array<Enemy>();
         this.atlas = new TextureAtlas("animations/player.pack");
         this.gamePort = new StretchViewport(DankDungeon.V_WIDTH / PPM, DankDungeon.V_HEIGHT / PPM , cam);
-        this.tiles = new Texture("textures/dungeontiles-frost.png");
+        this.tiles = new Texture("textures/dungeontiles-poison.png");
         this.hud = new GameHud(game.batch);
         this.entityList = new Array<B2DSprite>();
         this.deleteList = new Array<B2DSprite>();
@@ -167,6 +167,7 @@ public class GameScreen implements Screen {
             }
             if( b instanceof Barrier){
                 // start cooldown?
+
             }
             world.destroyBody(b.getBody());
             b.dispose();
@@ -317,6 +318,7 @@ public class GameScreen implements Screen {
         hud.dispose();
     }
 
+    public boolean[][] getLevelMap(){ return caveGen.getCellMap(); }
     public OrthographicCamera getCam() { return this.cam; }
     public GameHud getHud(){ return this.hud; }
     public TextureAtlas getAtlas(){ return this.atlas; }

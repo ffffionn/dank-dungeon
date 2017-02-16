@@ -8,14 +8,19 @@ import com.badlogic.gdx.Input;
  */
 public class StandingState extends HeroState {
 
-    @Override
-    public void enter(Hero hero) {
-        hero.setAnimation(standAnimation, 1/4f);
-    }
+    private boolean still;
+    private float timeStanding;
 
     @Override
-    public void handleInput(Hero hero) {
-        super.handleInput(hero);
+    public void update(float dt, Hero hero) {
+        timeStanding += dt;
+
+        if(Gdx.input.isKeyPressed(Input.Keys.SPACE) && hero.getMana() > 10.0f){
+            hero.block();
+        }
+        if(Gdx.input.justTouched()){
+            hero.shoot();
+        }
         if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)){
             hero.changeState(sprinting);
         }
@@ -24,11 +29,27 @@ public class StandingState extends HeroState {
         }
         if( Math.abs(hero.getBody().getLinearVelocity().x) < 0.1f &&
                 Math.abs(hero.getBody().getLinearVelocity().y) < 0.1f ){
-//            System.out.print(".");
+            if(!still){
+                still = true;
+                hero.setAnimation(standAnimation, 0f);
+            }
+        }else if(still){
+            hero.setAnimation(standAnimation, 1/8f);
+            still = false;
         }
+        handleMovement(hero);
     }
 
-    public String toString(){
-        return "standing";
+    @Override
+    public void enter(Hero hero){
+        timeStanding = 0.0f;
+        still = false;
+        hero.setAnimation(standAnimation, 1/8f);
     }
+
+    public float getTimeStanding(){
+        return timeStanding;
+    }
+
+    public String toString(){return "standing";}
 }

@@ -89,14 +89,12 @@ public class WorldContactListener implements ContactListener{
     }
 
     private static class EnemyCollisionHandler{
-        static Enemy e;
         public static void collide(Body enemyBody, Body body) {
             // if it's an entity, damage it
-            e = (Enemy) enemyBody.getUserData();
             if(body.getUserData() instanceof Hero){
-                ((Hero) body.getUserData()).damage(e.getAttackDamage());
+                ((Hero) body.getUserData()).damage(((Enemy) enemyBody.getUserData()).getAttackDamage());
             }else if( body.getUserData() instanceof Barrier){
-                e.stun(1.0f);
+                ((Enemy) enemyBody.getUserData()).stun(1.0f);
             }
             Vector2 v = enemyBody.getLinearVelocity();
             enemyBody.setLinearVelocity(new Vector2(-v.x, -v.y));

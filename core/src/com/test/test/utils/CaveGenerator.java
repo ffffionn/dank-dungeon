@@ -10,10 +10,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Queue;
-import com.test.test.models.B2DSprite;
-import com.test.test.models.Enemy;
-import com.test.test.models.Shooter;
-import com.test.test.models.Wolf;
+import com.test.test.models.*;
 import com.test.test.screens.GameScreen;
 
 import static com.badlogic.gdx.math.MathUtils.random;
@@ -100,12 +97,12 @@ public class CaveGenerator {
         int numWolves = (seed > 0.2f) ? Math.round((seed/2.0f) * (seed - 0.2f) * 25) : 0;
 
         numSkels = 0;
-        numWolves = 0;
-        numRoaches = 1;
+        numWolves = 1;
+        numRoaches = 0;
         System.out.printf("SEED: %f   (%d/%d/%d) \n", seed, numSkels, numRoaches, numWolves);
 
         for( int i = 0; i < numSkels; i++){
-            array.add( new Enemy(screen, cellToWorldPosition(getRandomPlace())) );
+            array.add( new Skeleton(screen, cellToWorldPosition(getRandomPlace())) );
         }
         for( int i = 0; i < numRoaches; i++){
             array.add( new Shooter(screen, cellToWorldPosition(getRandomPlace())) );
@@ -140,6 +137,8 @@ public class CaveGenerator {
         return position;
     }
 
+    public boolean[][] getCellMap(){ return caveCells; }
+
     /**
      * Finds a random floor tile in the cave.
      * @return A Vector2 of the floor tile.
@@ -160,8 +159,18 @@ public class CaveGenerator {
      * @param cellPosition
      * @return
      */
-    public Vector2 cellToWorldPosition(Vector2 cellPosition){
+    public static Vector2 cellToWorldPosition(Vector2 cellPosition){
         return new Vector2((cellPosition.x + 0.5f) * TILE_SIZE / PPM, (cellPosition.y + 0.5f) * TILE_SIZE / PPM);
+    }
+
+    /**
+     * Translates from Box2D world co-ordinates to it's corresponding cell on the map.
+     * @param worldPosition The box2d body's world co-ordinates.
+     * @return
+     */
+    public static Vector2 worldPositionToCell(Vector2 worldPosition){
+        worldPosition = worldPosition.cpy().scl(PPM / TILE_SIZE);
+        return new Vector2(Math.round(worldPosition.x - 0.5f), Math.round(worldPosition.y - 0.5f));
     }
 
     /**
