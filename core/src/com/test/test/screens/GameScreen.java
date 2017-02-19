@@ -80,9 +80,9 @@ public class GameScreen implements Screen {
         world.setContactListener(new WorldContactListener(this));
         this.assetManager = new AssetManager();
         this.enemies = new Array<Enemy>();
-        this.atlas = new TextureAtlas("animations/player.pack");
+        this.atlas = new TextureAtlas("animations/characters/entities.pack");
         this.gamePort = new StretchViewport(DankDungeon.V_WIDTH / PPM, DankDungeon.V_HEIGHT / PPM , cam);
-        this.tiles = new Texture("textures/dungeontiles-poison.png");
+        this.tiles = new Texture("textures/dungeontiles-light.png");
         this.hud = new GameHud(game.batch);
         this.entityList = new Array<B2DSprite>();
         this.deleteList = new Array<B2DSprite>();
@@ -111,10 +111,7 @@ public class GameScreen implements Screen {
         player.update(delta);
         updateCursorBody();
 
-        // update enemies
-        for( Enemy e : enemies ){
-            e.setTarget(player.getPosition());
-        }
+        // update world entities
         for( B2DSprite b : entityList){
              b.update(delta);
             if( b instanceof Enemy){
@@ -164,10 +161,6 @@ public class GameScreen implements Screen {
                 // give the player score based on the enemy
                 hud.updateScore(((Enemy) b).getScoreValue());
                 enemies.removeValue((Enemy) b, true);
-            }
-            if( b instanceof Barrier){
-                // start cooldown?
-
             }
             world.destroyBody(b.getBody());
             b.dispose();

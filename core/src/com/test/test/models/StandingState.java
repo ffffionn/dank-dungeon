@@ -21,7 +21,7 @@ public class StandingState extends HeroState {
         if(Gdx.input.justTouched()){
             hero.shoot();
         }
-        if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)){
+        if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) && sprinting.canRun()){
             hero.changeState(sprinting);
         }
         if(Gdx.input.isKeyJustPressed(Input.Keys.R)){

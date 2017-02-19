@@ -83,6 +83,8 @@ public class WorldContactListener implements ContactListener{
             // if it's an entity, damage it
             if( body.getUserData() instanceof Hero || body.getUserData() instanceof Enemy){
                 ((B2DSprite) body.getUserData()).damage(p.getDamageAmount());
+            }else if( body.getUserData() instanceof Projectile){
+                ((Projectile) body.getUserData()).setToDestroy();
             }
             p.setToDestroy();
         }

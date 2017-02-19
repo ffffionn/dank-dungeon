@@ -57,4 +57,5 @@ public class SprintingState extends HeroState {
     protected float getRunModifier(){return RUN_MODIFIER;}
     public String toString(){ return "running";}
     public float getTimeRunning(){return timeRunning;}
+    public boolean canRun(){ return this.canRun; }
 }

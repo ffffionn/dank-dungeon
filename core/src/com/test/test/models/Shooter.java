@@ -6,18 +6,18 @@ import com.badlogic.gdx.utils.Timer;
 import com.test.test.screens.GameScreen;
 
 /**
- * Shooter Enemy type. Fires projectiles at the hero, runs away if approached.
+ * Shooter Enemy type. Wide field-of-view, shoots at the hero, runs away if approached.
  */
 public class Shooter extends Enemy{
 
     public Shooter(GameScreen screen, Vector2 startPosition){
         super(screen, startPosition);
-        this.sightRadius = 3.5f;
-        this.max_speed =  0.85f;
         this.radius = 4.20f;
+        this.maxSight = 3.0f;
+        this.coneAngle = 120 * MathUtils.degreesToRadians;
+        this.max_speed =  0.55f;
         this.score_value = 150;
         this.health = 60;
-
         define(startPosition);
     }
 
@@ -27,6 +27,7 @@ public class Shooter extends Enemy{
         this.health = hp;
     }
 
+
     @Override
     protected void move() {
        if(targetInSight()){
@@ -35,20 +36,23 @@ public class Shooter extends Enemy{
                Vector2 approach = b2body.getPosition().cpy().sub(target);
                moveTowards(approach.add(b2body.getPosition()));
            }else{
-               shoot(target);
+               if(canAttack){
+                   shoot(target);
+               }else{
+                   walkAround();
+               }
+               faceDirection(angleToTarget());
            }
        }else{
-//           moveRandom();
+           walkAround();
+           faceDirection(b2body.getLinearVelocity().angleRad());
        }
     }
-
 
     private void shoot(Vector2 target){
         if(canAttack){
             this.canAttack = false;
-            faceDirection(MathUtils.atan2((target.y - b2body.getPosition().y), (target.x - b2body.getPosition().x)));
-            Projectile p = new Projectile(screen, getPosition(), target, 10, 1.25f);
-            screen.add(p);
+            screen.add(new Projectile(screen, getPosition(), target, 10, 1.25f));
             // can't shoot again for 1s
             Timer.schedule(new Timer.Task() {
                 @Override
@@ -57,11 +61,5 @@ public class Shooter extends Enemy{
                 }
             }, 1f);
         }
-    }
-
-    private void moveRandom(){
-        float angle = b2body.getAngle();
-        int direction = Math.round((angle + MathUtils.PI2) / (MathUtils.PI));
-        System.out.printf("%f -> %d \n", angle + MathUtils.PI2, direction);
     }
 }

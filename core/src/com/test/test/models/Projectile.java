@@ -1,5 +1,6 @@
 package com.test.test.models;
 
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
@@ -24,7 +25,7 @@ public class Projectile extends B2DSprite {
         this.screen = screen;
         this.speed = 1.75f;
         this.damageAmount = 20;
-        defineProjectile(startPosition);
+        defineProjectile(startPosition, target);
         velocity = target.cpy().sub(startPosition).nor().scl(speed);
         b2body.setLinearVelocity(velocity);
     }
@@ -33,7 +34,7 @@ public class Projectile extends B2DSprite {
         this(screen, startPosition, target);
         this.damageAmount = damage;
         this.speed = s;
-        // recalculate velocity
+        // recalculate velocity with new speed
         velocity = target.cpy().sub(startPosition).nor().scl(speed);
         b2body.setLinearVelocity(velocity);
     }
@@ -44,10 +45,11 @@ public class Projectile extends B2DSprite {
         }
     }
 
-    protected void defineProjectile(Vector2 startPosition){
+    protected void defineProjectile(Vector2 startPosition, Vector2 target){
         BodyDef bdef = new BodyDef();
         bdef.position.set(startPosition);
         bdef.type = BodyDef.BodyType.DynamicBody;
+        bdef.angle = MathUtils.atan2((target.y - startPosition.y), (target.x - startPosition.x));
         bdef.fixedRotation = true;
         bdef.linearDamping = 0.0f;
         this.b2body = screen.getWorld().createBody(bdef);
@@ -65,11 +67,11 @@ public class Projectile extends B2DSprite {
         // is it friendly?
         if(startPosition == screen.getPlayer().getPosition()){
             fdef.filter.categoryBits = PLAYER_PROJECTILE;
-            fdef.filter.maskBits |= ENEMY;
+            fdef.filter.maskBits |= ENEMY | ENEMY_PROJECTILE;
             b2body.createFixture(fdef).setUserData("player-fireball");
         }else{
             fdef.filter.categoryBits = ENEMY_PROJECTILE;
-            fdef.filter.maskBits |= PLAYER;
+            fdef.filter.maskBits |= PLAYER | PLAYER_PROJECTILE;
             b2body.createFixture(fdef).setUserData("enemy-fireball");
         }
 

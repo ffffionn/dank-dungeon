@@ -97,8 +97,8 @@ public class CaveGenerator {
         int numWolves = (seed > 0.2f) ? Math.round((seed/2.0f) * (seed - 0.2f) * 25) : 0;
 
         numSkels = 0;
-        numWolves = 1;
-        numRoaches = 0;
+        numWolves = 0;
+        numRoaches = 1;
         System.out.printf("SEED: %f   (%d/%d/%d) \n", seed, numSkels, numRoaches, numWolves);
 
         for( int i = 0; i < numSkels; i++){
@@ -169,8 +169,8 @@ public class CaveGenerator {
      * @return
      */
     public static Vector2 worldPositionToCell(Vector2 worldPosition){
-        worldPosition = worldPosition.cpy().scl(PPM / TILE_SIZE);
-        return new Vector2(Math.round(worldPosition.x - 0.5f), Math.round(worldPosition.y - 0.5f));
+        return new Vector2(MathUtils.floor(worldPosition.x * PPM / TILE_SIZE),
+                MathUtils.floor(worldPosition.y * PPM / TILE_SIZE));
     }
 
     /**
