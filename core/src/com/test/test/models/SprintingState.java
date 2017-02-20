@@ -11,8 +11,10 @@ import com.badlogic.gdx.utils.Timer;
 public class SprintingState extends HeroState {
 
     private static float RUN_MODIFIER = 1.6f;
+    private static final float SPRINT_COOLDOWN = 1.75f;
     private boolean canRun;
     private float timeRunning;
+    private Vector2 heroVelocity;
 
     public SprintingState(){
         this.canRun = true;
@@ -22,10 +24,9 @@ public class SprintingState extends HeroState {
     public void update(float dt, Hero hero) {
         handleMovement(hero);
         timeRunning += dt;
+        heroVelocity = hero.getBody().getLinearVelocity();
 
-        Vector2 heroVelocity = hero.getBody().getLinearVelocity();
-
-        // if shift is not held or you're not moving, switch to standing
+        // if you're not running, or you can't, switch to standing
         if(timeRunning > 1.5f || !Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) ||
                 (Math.abs(heroVelocity.x) < 0.01f && Math.abs(heroVelocity.y) < 0.01f) ){
             hero.changeState(standing);
@@ -34,12 +35,8 @@ public class SprintingState extends HeroState {
 
     @Override
     public void enter(Hero hero) {
-        if(canRun){
-            timeRunning = 0.0f;
-            hero.setAnimation(runAnimation, 1/8f);
-        }else{
-            hero.changeState(hero.getPreviousState());
-        }
+        timeRunning = 0.0f;
+        hero.setAnimation(runAnimation, 1/8f);
     }
 
     @Override
@@ -50,7 +47,7 @@ public class SprintingState extends HeroState {
             public void run() {
                 canRun = true;
             }
-        }, 1.75f);
+        }, SPRINT_COOLDOWN);
     }
 
     @Override

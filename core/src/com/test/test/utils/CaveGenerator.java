@@ -38,7 +38,7 @@ public class CaveGenerator {
 
     private TiledMapTileLayer terrainLayer;
     private GameScreen screen;
-    private B2DSprite goal;
+    private Body goal;
     private TiledMap map;
 
     private Array<TextureRegion> floorTiles;
@@ -96,16 +96,16 @@ public class CaveGenerator {
         int numRoaches = Math.round(MathUtils.sin((seed * seed) / 2) * 50);
         int numWolves = (seed > 0.2f) ? Math.round((seed/2.0f) * (seed - 0.2f) * 25) : 0;
 
-        numSkels = 0;
-        numWolves = 0;
-        numRoaches = 1;
+//        numSkels = 1;
+//        numWolves = 1;
+//        numRoaches = 1;
         System.out.printf("SEED: %f   (%d/%d/%d) \n", seed, numSkels, numRoaches, numWolves);
 
         for( int i = 0; i < numSkels; i++){
             array.add( new Skeleton(screen, cellToWorldPosition(getRandomPlace())) );
         }
         for( int i = 0; i < numRoaches; i++){
-            array.add( new Shooter(screen, cellToWorldPosition(getRandomPlace())) );
+            array.add( new Scorpion(screen, cellToWorldPosition(getRandomPlace())) );
         }
         for( int i = 0; i < numWolves; i++){
             array.add( new Wolf(screen, cellToWorldPosition(getRandomPlace())) );
@@ -181,7 +181,7 @@ public class CaveGenerator {
             screen.getWorld().destroyBody(b);
         }
         wallBodies.clear();
-        screen.getWorld().destroyBody(goal.getBody());
+        screen.getWorld().destroyBody(goal);
         screen.getMap().getLayers().remove(terrainLayer);
         for(int x=0; x < mapWidth; x++){
             for(int y=0; y < mapHeight; y++){
@@ -360,10 +360,10 @@ public class CaveGenerator {
         fdef.filter.categoryBits = PICKUP;
         fdef.filter.maskBits = PLAYER;
 
-        Body b2body = screen.getWorld().createBody(bdef);
-        b2body.createFixture(fdef).setUserData("goal");
-        this.goal = new B2DSprite(b2body);
-        b2body.setUserData(goal);
+        this.goal = screen.getWorld().createBody(bdef);
+        goal.createFixture(fdef).setUserData("goal");
+//        this.goal = new B2DSprite(goal);
+        goal.setUserData(goal);
 
         // replace floor texture with goal texture
         terrainLayer.getCell(Math.round(goalPosition.x), Math.round(goalPosition.y)).getTile().setTextureRegion(goalTexture);

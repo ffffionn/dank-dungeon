@@ -20,26 +20,23 @@ import com.test.test.screens.GameScreen;
 /**
  * Hero class for the playable character. Current HeroState handles input.
  */
-public class Hero extends B2DSprite {
-
-    protected HeroState currentState;
-    protected HeroState previousState;
-    protected Array<Projectile> fireballs;
-    protected GameScreen screen;
-    protected Barrier shield;
+public class Hero extends AnimatedB2DSprite {
 
     // hero attributes
     public static final float MAX_VELOCITY = 2.5f;
-
-    private float mana;
     public static final int MAX_HEALTH = 100;
-    protected static int MAX_FIREBALLS = 5;
-    protected static final float INVINCIBILITY_TIMER = 0.85f;
-    protected boolean invincible;
-
+    private static final float INVINCIBILITY_TIMER = 0.85f;
+    private static final int HERO_SIZE = 20;
+    private static int MAX_FIREBALLS = 5;
+    private boolean invincible;
+    private float mana;
     private Color flashColour;
 
-    public static final int HERO_SIZE = 20;
+    private HeroState currentState;
+    private HeroState previousState;
+    private Array<Projectile> fireballs;
+    private GameScreen screen;
+    private Barrier shield;
 
     public Hero(GameScreen screen, Vector2 position){
         super();
@@ -56,7 +53,7 @@ public class Hero extends B2DSprite {
 
         // define animations
         HeroState.defineAnimations(screen.getAtlas());
-        setTexture(HeroState.standAnimation[0]);
+        setTexture(HeroState.standAnimation[0], HERO_SIZE);
         currentState.enter(this);
     }
 
@@ -64,13 +61,6 @@ public class Hero extends B2DSprite {
         fireballs.clear();
         screen.getWorld().destroyBody(b2body);
         define(position);
-    }
-
-    @Override
-    public void setTexture(TextureRegion texture){
-        sprite.setBounds(0, 0, HERO_SIZE / PPM, HERO_SIZE / PPM);
-        sprite.setOriginCenter();
-        sprite.setRegion(texture);
     }
 
     public int getMana(){ return MathUtils.floor(mana);}
@@ -82,7 +72,7 @@ public class Hero extends B2DSprite {
             shield.update(dt);
             currentState.update(dt, this);
             if( currentState == standing && mana < 100.0f){
-                this.mana += (((StandingState) currentState).getTimeStanding() * dt);
+                this.mana += (((StandingState) currentState).getTimeStanding() / 2.0 * dt);
                 screen.getHud().updatePlayerMana(MathUtils.floor(this.mana));
             }
         }else{  // player is dead
@@ -193,6 +183,7 @@ public class Hero extends B2DSprite {
      * Draw the hero.
      * @param batch
      */
+    @Override
     public void render(SpriteBatch batch){
         sprite.setRegion(animation.getFrame());
         // rotate region 90 first for perf.

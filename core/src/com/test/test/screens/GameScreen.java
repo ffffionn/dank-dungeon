@@ -55,7 +55,6 @@ public class GameScreen implements Screen {
     private Body cursorBody;
 
     private Texture tiles;
-    private Array<Enemy> enemies;
 
     private Array<B2DSprite> entityList;
     private Array<B2DSprite> deleteList;
@@ -79,8 +78,7 @@ public class GameScreen implements Screen {
         this.levelUp = false;
         world.setContactListener(new WorldContactListener(this));
         this.assetManager = new AssetManager();
-        this.enemies = new Array<Enemy>();
-        this.atlas = new TextureAtlas("animations/characters/entities.pack");
+        this.atlas = new TextureAtlas("animations/entities.pack");
         this.gamePort = new StretchViewport(DankDungeon.V_WIDTH / PPM, DankDungeon.V_HEIGHT / PPM , cam);
         this.tiles = new Texture("textures/dungeontiles-light.png");
         this.hud = new GameHud(game.batch);
@@ -94,7 +92,7 @@ public class GameScreen implements Screen {
 
         // set camera
         cam.position.set(gamePort.getWorldWidth() / PPM, gamePort.getWorldHeight() / 2 / PPM, 0);
-        cam.zoom -= 0.6f;
+        cam.zoom -= 0.5f;
         mapRenderer.setView(cam);
     }
 
@@ -134,14 +132,17 @@ public class GameScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         mapRenderer.render();
-        b2dr.render(world, cam.combined);
+
+        if(Gdx.input.isKeyPressed(Input.Keys.NUM_1)){
+            b2dr.render(world, cam.combined);
+        }
 
         game.batch.setProjectionMatrix(cam.combined);
         game.batch.begin();
         player.render(game.batch);
-//        for(B2DSprite sprite : entityList){
-//            sprite.render(game.batch);
-//        }
+        for(B2DSprite sprite : entityList){
+            sprite.render(game.batch);
+        }
         game.batch.end();
 
         // draw hud
@@ -160,7 +161,6 @@ public class GameScreen implements Screen {
             if( b instanceof Enemy ){
                 // give the player score based on the enemy
                 hud.updateScore(((Enemy) b).getScoreValue());
-                enemies.removeValue((Enemy) b, true);
             }
             world.destroyBody(b.getBody());
             b.dispose();
@@ -197,8 +197,7 @@ public class GameScreen implements Screen {
 
         this.map = caveGen.generateCave(seed);
         player.redefine(caveGen.getRandomPlace());
-        enemies = caveGen.generateEnemies(seed);
-        entityList.addAll(enemies);
+        entityList.addAll(caveGen.generateEnemies(seed));
         mapRenderer.setMap(map);
     }
 
@@ -217,7 +216,6 @@ public class GameScreen implements Screen {
             }
         }
         entityList.clear();
-        enemies.clear();
         generateLevel(floor);
     }
 
@@ -225,6 +223,7 @@ public class GameScreen implements Screen {
         entityList.add(b);
     }
 
+    // cheats - remove
     public void handleInput(float dt){
         if (Gdx.input.isKeyPressed(Input.Keys.Q)){
             cam.zoom -= 0.1f;
@@ -268,9 +267,7 @@ public class GameScreen implements Screen {
     private float accumulator = 0;
 
     private void stepWorld() {
-        float delta = Gdx.graphics.getDeltaTime();
-
-        accumulator += Math.min(delta, 0.25f);
+        accumulator += Math.min(Gdx.graphics.getDeltaTime(), 0.25f);
 
         if (accumulator >= STEP_TIME) {
             accumulator -= STEP_TIME;

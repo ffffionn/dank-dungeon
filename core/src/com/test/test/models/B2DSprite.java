@@ -5,18 +5,16 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
-import com.test.test.utils.Animation;
 
 import static com.test.test.DankDungeon.PPM;
 
 /**
- * Created by Fionn on 20/11/2016.
+ * World entity that has a physics body and a graphic sprite.
  */
 public class B2DSprite{
 
     protected Body b2body;
     protected Sprite sprite;
-    protected Animation animation;
     protected float width;
     protected float height;
 
@@ -26,50 +24,40 @@ public class B2DSprite{
     protected int health;
 
     public B2DSprite(){
-        animation = new Animation();
+        sprite = new Sprite();
         destroyed = false;
         setToDestroy = false;
-        sprite = new Sprite();
     }
 
-    public B2DSprite(Body body){
+    public B2DSprite(Body body, Sprite sprite){
         this.b2body = body;
-        animation = new Animation();
+        this.sprite = sprite;
         destroyed = false;
         setToDestroy = false;
-        sprite = new Sprite();
+        sprite.setPosition(b2body.getPosition().x - sprite.getWidth() / 2,
+                b2body.getPosition().y - sprite.getHeight() / 2);
     }
 
-    public void setTexture(TextureRegion texture){
-        sprite.setBounds(0, 0, texture.getRegionWidth() / PPM, texture.getRegionHeight() / PPM);
+    public void setTexture(TextureRegion texture, int size){
+        sprite.setBounds(0, 0, size / PPM, size / PPM);
         sprite.setRegion(texture);
         sprite.setOriginCenter();
-    }
-
-    public void setAnimation(TextureRegion[] reg, float delay) {
-        animation.setFrames(reg, delay);
-        width = reg[0].getRegionWidth();
-        height = reg[0].getRegionHeight();
     }
 
     public void update(float dt) {
         if(sprite != null){
             sprite.setPosition(b2body.getPosition().x - sprite.getWidth() / 2,
                            b2body.getPosition().y - sprite.getHeight() / 2);
-//          animation.update(dt);
-
         }
     }
 
     public void render(SpriteBatch sb) {
-        sprite.setRegion(animation.getFrame());
         sprite.draw(sb);
     }
 
     public void dispose(){
         this.b2body = null;
         this.sprite = null;
-        this.animation = null;
     }
 
     public void damage(int dmgAmount){

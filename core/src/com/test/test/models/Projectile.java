@@ -1,5 +1,6 @@
 package com.test.test.models;
 
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -13,7 +14,9 @@ import static com.test.test.utils.WorldContactListener.*;
 /**
  * Created by Fionn on 20/11/2016.
  */
-public class Projectile extends B2DSprite {
+public class Projectile extends AnimatedB2DSprite {
+
+    private static TextureRegion[] fireballAnimation;
 
     protected int damageAmount;
     protected float speed;
@@ -28,6 +31,13 @@ public class Projectile extends B2DSprite {
         defineProjectile(startPosition, target);
         velocity = target.cpy().sub(startPosition).nor().scl(speed);
         b2body.setLinearVelocity(velocity);
+
+        if(fireballAnimation == null){
+            fireballAnimation = screen.getAtlas().findRegion("fireball").split(64, 64)[4];
+            System.out.println(fireballAnimation.length);
+        }
+        setTexture(fireballAnimation[0], 12);
+        setAnimation(fireballAnimation, 1 / 12f);
     }
 
     public Projectile(GameScreen screen, Vector2 startPosition, Vector2 target, int damage, float s){
@@ -42,6 +52,11 @@ public class Projectile extends B2DSprite {
     public void update(float delta) {
         if( setToDestroy && !destroyed ){
             destroyed = true;
+        }else{
+            animation.update(delta);
+            sprite.setPosition(b2body.getPosition().x - sprite.getWidth() / 2,
+                    b2body.getPosition().y - sprite.getHeight() / 2);
+            sprite.setRotation(b2body.getAngle() * MathUtils.radiansToDegrees);
         }
     }
 

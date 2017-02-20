@@ -8,9 +8,10 @@ public class DesktopLauncher {
 	public static void main (String[] arg) {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
 		config.resizable = true;
-		config.width = 800;
-		config.height = 480;
+		config.width = 1024;
+		config.height = 800;
 		config.vSyncEnabled = true;
+//		config.fullscreen = true;
 		new LwjglApplication(new DankDungeon(), config);
 	}
 }

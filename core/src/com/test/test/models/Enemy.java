@@ -11,9 +11,10 @@ import static com.test.test.utils.CaveGenerator.worldPositionToCell;
 import static com.test.test.utils.WorldContactListener.*;
 
 /**
- * Basic Enemy class.
+ * Abstract Enemy class. Has default behaviour to move towards target if
+ * in sight.
  */
-public abstract class Enemy extends B2DSprite {
+public abstract class Enemy extends AnimatedB2DSprite {
 
     protected GameScreen screen;
     protected Vector2 target;
@@ -44,12 +45,13 @@ public abstract class Enemy extends B2DSprite {
         // attribute defaults
         this.health = 80;
         this.radius = 5.5f;
-        this.max_speed =  0.75f;
+        this.max_speed =  0.6f;
         this.score_value = 20;
         this.attackDamage = 5;
         this.maxSight = 2.0f;
         this.coneAngle = 60 * MathUtils.degreesToRadians;
         this.target = screen.getPlayer().getPosition();
+
     }
 
     public Enemy(GameScreen screen, Vector2 startPosition, float speed, int hp){
@@ -58,13 +60,16 @@ public abstract class Enemy extends B2DSprite {
         this.health = hp;
     }
 
+    @Override
     public void update(float dt){
         if( setToDestroy && !destroyed ){
             destroyed = true;
-        }else if( !destroyed && !stunned ){
-            move();
-            // sprite stuff
+        }else if(!destroyed){
+            if(!stunned){
+                move();
+            }
         }
+        super.update(dt);
     }
 
     /**
@@ -75,6 +80,18 @@ public abstract class Enemy extends B2DSprite {
         screen.getWorld().destroyBody(b2body);
         define(newPosition);
     }
+
+    @Override
+    public void damage(int dmgAmount){
+        this.health -= dmgAmount;
+        if( health < 0){
+            setDeathAnimation();
+            setToDestroy();
+        }
+    }
+
+    /** Override and set animation */
+    protected void setDeathAnimation(){}
 
     /**
      * Stun this enemy for a duration.
@@ -122,7 +139,6 @@ public abstract class Enemy extends B2DSprite {
 
     protected float angleToTarget(){
         return MathUtils.atan2((target.y - b2body.getPosition().y), (target.x - b2body.getPosition().x));
-
     }
 
     protected boolean targetInSight(){
@@ -130,8 +146,8 @@ public abstract class Enemy extends B2DSprite {
         float boundA = b2body.getAngle() + coneAngle;
         float boundB = b2body.getAngle() - coneAngle;
 
-        if( b2body.getPosition().dst(target) < this.maxSight &&
-                (angleToPlayer <= Math.max(boundA, boundB) && angleToPlayer > Math.min(boundA, boundB)) ){
+        if(angleToPlayer <= Math.max(boundA, boundB) && angleToPlayer > Math.min(boundA, boundB)
+                && b2body.getPosition().dst(target) < this.maxSight){
             screen.getWorld().rayCast(callback, b2body.getPosition(), target);
             return callback.playerInSight();
         }else{
@@ -147,7 +163,6 @@ public abstract class Enemy extends B2DSprite {
         // if not moving, start moving in a random direction
         if( dir.x == 0 && dir.y == 0){
             dir = new Vector2(MathUtils.randomTriangular(-0.2f, 0.2f), MathUtils.randomTriangular(-0.2f, 0.2f));
-
         }
 
         // if no surrounding walls, add a random bit of turning
@@ -227,7 +242,6 @@ public abstract class Enemy extends B2DSprite {
     }
 
     public void setTarget(Vector2 target){this.target = target;}
-    public Vector2 getPosition(){ return b2body.getPosition();}
     public int getAttackDamage(){ return this.attackDamage; }
     public int getScoreValue(){ return this.score_value;}
 
