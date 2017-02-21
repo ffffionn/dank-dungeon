@@ -25,6 +25,7 @@ public class Hero extends AnimatedB2DSprite {
     // hero attributes
     public static final float MAX_VELOCITY = 2.5f;
     public static final int MAX_HEALTH = 100;
+    public static final int MAX_MANA = 100;
     private static final float INVINCIBILITY_TIMER = 0.85f;
     private static final int HERO_SIZE = 20;
     private static int MAX_FIREBALLS = 5;
@@ -158,7 +159,7 @@ public class Hero extends AnimatedB2DSprite {
                     }
                 }, INVINCIBILITY_TIMER);
             }
-            screen.getHud().updatePlayerHealth(this.health);
+            screen.getHud().updateHealth(this.health);
         }
     }
 

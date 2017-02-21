@@ -1,5 +1,8 @@
 package com.test.test.models;
 
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
@@ -28,11 +31,14 @@ public abstract class Enemy extends AnimatedB2DSprite {
     protected int attackDamage;
     protected boolean canAttack;
 
+    protected int maxHealth;
+
 
     protected PlayerSearchCallback callback = new PlayerSearchCallback();
     protected float maxSight;
     protected float coneAngle;
 
+    protected HealthBar healthBar;
 
 
     public Enemy(GameScreen screen, Vector2 startPosition){
@@ -43,7 +49,7 @@ public abstract class Enemy extends AnimatedB2DSprite {
         this.canAttack = true;
 
         // attribute defaults
-        this.health = 80;
+        this.health = this.maxHealth = 80;
         this.radius = 5.5f;
         this.max_speed =  0.6f;
         this.score_value = 20;
@@ -52,12 +58,13 @@ public abstract class Enemy extends AnimatedB2DSprite {
         this.coneAngle = 60 * MathUtils.degreesToRadians;
         this.target = screen.getPlayer().getPosition();
 
+        this.healthBar = new HealthBar(this, new Texture("ui/empty_bar.png"), new Texture("ui/healthbar.png"));
     }
 
     public Enemy(GameScreen screen, Vector2 startPosition, float speed, int hp){
         this(screen, startPosition);
         this.max_speed = speed;
-        this.health = hp;
+        this.health = maxHealth = hp;
     }
 
     @Override
@@ -69,6 +76,7 @@ public abstract class Enemy extends AnimatedB2DSprite {
                 move();
             }
         }
+        healthBar.update();
         super.update(dt);
     }
 
@@ -122,7 +130,6 @@ public abstract class Enemy extends AnimatedB2DSprite {
             faceDirection(b2body.getLinearVelocity().angleRad());
         }
     }
-
 
     protected void moveTowards(Vector2 position){
         // if not going full speed move towards a location
@@ -241,9 +248,50 @@ public abstract class Enemy extends AnimatedB2DSprite {
         b2body.setUserData(this);
     }
 
+    @Override
+    public void render(SpriteBatch sb) {
+        super.render(sb);
+        healthBar.draw(sb);
+    }
+
     public void setTarget(Vector2 target){this.target = target;}
     public int getAttackDamage(){ return this.attackDamage; }
     public int getScoreValue(){ return this.score_value;}
+
+    protected class HealthBar{
+        private Enemy owner;
+        private Sprite healthBarBG;
+        private Sprite healthBarFG;
+
+        public HealthBar(Enemy e, Texture bg, Texture fg){
+            this.owner = e;
+
+            healthBarBG = new Sprite(bg);
+            healthBarFG = new Sprite(fg);
+
+            healthBarBG.setX(owner.getSprite().getX());
+            healthBarBG.setY(owner.getSprite().getY() + owner.getSprite().getHeight() + 20);
+
+            healthBarFG.setX(owner.getSprite().getX());
+            healthBarFG.setY(owner.getSprite().getY() + owner.getSprite().getHeight() + 20);
+            healthBarFG.setOrigin(0,0);
+        }
+
+        public void draw(SpriteBatch batch){
+            healthBarBG.draw(batch);
+//            healthBarFG.draw(batch);
+        }
+
+        public void update(){
+            healthBarBG.setX(owner.getSprite().getX());
+            healthBarBG.setY(owner.getSprite().getY() + owner.getSprite().getHeight());
+
+            healthBarFG.setX(owner.getSprite().getX());
+            healthBarFG.setY(owner.getSprite().getY() + owner.getSprite().getHeight() + 20);
+
+            healthBarFG.setScale(Enemy.this.health / ((float) Enemy.this.maxHealth), 1);
+        }
+    }
 
     // custom callback class to see if the player is in sight
     protected class PlayerSearchCallback implements RayCastCallback {

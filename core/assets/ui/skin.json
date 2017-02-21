@@ -7,7 +7,7 @@
         red: { r: 0.54, g: 0.03, b: 0.03, a: 1 },
     },
     com.badlogic.gdx.graphics.g2d.BitmapFont: {
-        default : { file: fonts/segoe-ui.fnt }
+        default-font : { file: fonts/segoe-ui.fnt }
     },
 
 }

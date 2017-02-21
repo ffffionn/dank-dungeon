@@ -140,14 +140,15 @@ public class GameScreen implements Screen {
         game.batch.setProjectionMatrix(cam.combined);
         game.batch.begin();
         player.render(game.batch);
+        hud.draw(game.batch);
         for(B2DSprite sprite : entityList){
             sprite.render(game.batch);
         }
         game.batch.end();
 
-        // draw hud
         game.batch.setProjectionMatrix(hud.getStage().getCamera().combined);
         hud.getStage().draw();
+        // draw hud
     }
 
     private void deleteUselessBodies(){
