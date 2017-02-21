@@ -99,6 +99,7 @@ public class WorldContactListener implements ContactListener{
                 ((Enemy) enemyBody.getUserData()).stun(1.0f);
             }
             Vector2 v = enemyBody.getLinearVelocity();
+            v.scl(2.0f);
             enemyBody.setLinearVelocity(new Vector2(-v.x, -v.y));
             body.setLinearVelocity(new Vector2(v.x, v.y));
         }

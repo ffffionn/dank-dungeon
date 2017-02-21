@@ -1,10 +1,8 @@
 package com.test.test.models;
 
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
 import com.test.test.screens.GameScreen;
 
 
@@ -20,13 +18,13 @@ public class Wolf extends Enemy {
         super(screen, startPosition);
 
         // Wolf attributes
-        this.health = 300;
+        this.health = this.maxHealth = 300;
         this.max_speed = 0.35f;
         this.score_value = 200;
         this.attackDamage = 9;
         this.radius = 9.0f;
         this.maxSight = 1.8f;
-        this.coneAngle = 55 * MathUtils.degreesToRadians;
+        this.coneAngle = 60 * MathUtils.degreesToRadians;
 
         // first enemy fetches animation frames from TextureAtlas
         if(moveAnimation == null || attackAnimation == null){
@@ -48,8 +46,8 @@ public class Wolf extends Enemy {
     protected void move() {
         if(targetInSight()){
             moveTowards(target);
-            if( b2body.getPosition().dst(target) < 0.2f ) {
-                // flee opposite direction if player too close
+            if( b2body.getPosition().cpy().dst(target) < 0.2f ) {
+                // attack when in range
                 attack();
             }
         }else{
@@ -60,14 +58,6 @@ public class Wolf extends Enemy {
 
     private void attack(){
 
-    }
-
-    @Override
-    public void render(SpriteBatch batch){
-        sprite.setRegion(animation.getFrame());
-        // rotate region 90 first for perf.
-        sprite.rotate90(true);
-        sprite.draw(batch);
     }
 
     public static void defineAnimations(GameScreen screen){
@@ -88,6 +78,7 @@ public class Wolf extends Enemy {
                 attackAnimation[index++] = frames[x][y];
             }
         }
+
     }
 
 }

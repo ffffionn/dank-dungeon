@@ -81,7 +81,7 @@ public class GameScreen implements Screen {
         this.atlas = new TextureAtlas("animations/entities.pack");
         this.gamePort = new StretchViewport(DankDungeon.V_WIDTH / PPM, DankDungeon.V_HEIGHT / PPM , cam);
         this.tiles = new Texture("textures/dungeontiles-light.png");
-        this.hud = new GameHud(game.batch);
+        this.hud = new GameHud(game.batch, new TextureAtlas("ui/hud.pack"));
         this.entityList = new Array<B2DSprite>();
         this.deleteList = new Array<B2DSprite>();
         this.caveGen = new CaveGenerator(this, tiles);
@@ -116,11 +116,11 @@ public class GameScreen implements Screen {
                 ((Enemy) b).setTarget(player.getPosition());
             }
         }
-
         // keep camera centered on player
         cam.position.x = player.getPosition().x;
         cam.position.y = player.getPosition().y;
         cam.update();
+        hud.update(delta);
         mapRenderer.setView(cam);
 
         // draw the game
@@ -140,14 +140,15 @@ public class GameScreen implements Screen {
         game.batch.setProjectionMatrix(cam.combined);
         game.batch.begin();
         player.render(game.batch);
+        hud.draw(game.batch);
         for(B2DSprite sprite : entityList){
             sprite.render(game.batch);
         }
         game.batch.end();
 
-        // draw hud
         game.batch.setProjectionMatrix(hud.getStage().getCamera().combined);
         hud.getStage().draw();
+        // draw hud
     }
 
     private void deleteUselessBodies(){

@@ -3,6 +3,7 @@ package com.test.test.models;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 
@@ -48,6 +49,7 @@ public class B2DSprite{
         if(sprite != null){
             sprite.setPosition(b2body.getPosition().x - sprite.getWidth() / 2,
                            b2body.getPosition().y - sprite.getHeight() / 2);
+            sprite.setRotation(b2body.getAngle() * MathUtils.radiansToDegrees);
         }
     }
 

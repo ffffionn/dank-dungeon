@@ -1,5 +1,6 @@
 package com.test.test.models;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
@@ -23,7 +24,7 @@ public class Scorpion extends Enemy{
         this.coneAngle = 120 * MathUtils.degreesToRadians;
         this.max_speed =  0.55f;
         this.score_value = 150;
-        this.health = 60;
+        this.health = this.maxHealth = 70;
         define(startPosition);
 
         if(moveAnimation == null){
@@ -96,20 +97,12 @@ public class Scorpion extends Enemy{
     }
 
     @Override
-    public void render(SpriteBatch batch){
-        sprite.setRegion(animation.getFrame());
-        // rotate region 90 first for perf.
-        sprite.rotate90(true);
-        sprite.draw(batch);
-    }
-
-    @Override
     public void damage(int dmgAmount){
         if( health > 30 && (health - dmgAmount) < 30){
 
         }
         this.health -= dmgAmount;
-        if( health < 0){
+        if( health <= 0){
             setToDestroy();
         }
     }

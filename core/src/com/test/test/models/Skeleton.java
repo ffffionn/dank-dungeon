@@ -16,7 +16,8 @@ public class Skeleton extends Enemy {
     public Skeleton(GameScreen screen, Vector2 startPosition){
         super(screen, startPosition);
         this.max_speed = 0.4f;
-        this.health = 40;
+        this.health = this.maxHealth = 40;
+        this.radius = 3.0f;
         define(startPosition);
 
         if(moveAnimation == null){
@@ -30,12 +31,5 @@ public class Skeleton extends Enemy {
 
     }
 
-    @Override
-    public void render(SpriteBatch batch){
-        sprite.setRegion(animation.getFrame());
-        // rotate region 90 first for perf.
-        sprite.rotate90(true);
-        sprite.draw(batch);
-    }
 
 }

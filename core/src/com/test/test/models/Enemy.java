@@ -1,5 +1,10 @@
 package com.test.test.models;
 
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
@@ -28,12 +33,16 @@ public abstract class Enemy extends AnimatedB2DSprite {
     protected int attackDamage;
     protected boolean canAttack;
 
+    protected int maxHealth;
+
 
     protected PlayerSearchCallback callback = new PlayerSearchCallback();
     protected float maxSight;
     protected float coneAngle;
 
+    protected HealthBar healthBar;
 
+    protected static TextureAtlas uiAtlas = new TextureAtlas("ui/hud.pack");
 
     public Enemy(GameScreen screen, Vector2 startPosition){
         super();
@@ -43,21 +52,22 @@ public abstract class Enemy extends AnimatedB2DSprite {
         this.canAttack = true;
 
         // attribute defaults
-        this.health = 80;
+        this.health = this.maxHealth = 80;
         this.radius = 5.5f;
-        this.max_speed =  0.6f;
+        this.max_speed =  0.65f;
         this.score_value = 20;
         this.attackDamage = 5;
         this.maxSight = 2.0f;
         this.coneAngle = 60 * MathUtils.degreesToRadians;
         this.target = screen.getPlayer().getPosition();
 
+        this.healthBar = new HealthBar(this, uiAtlas.findRegion("empty_bar"), uiAtlas.findRegion("healthbar"));
     }
 
     public Enemy(GameScreen screen, Vector2 startPosition, float speed, int hp){
         this(screen, startPosition);
         this.max_speed = speed;
-        this.health = hp;
+        this.health = maxHealth = hp;
     }
 
     @Override
@@ -70,6 +80,26 @@ public abstract class Enemy extends AnimatedB2DSprite {
             }
         }
         super.update(dt);
+        healthBar.update();
+    }
+
+    @Override
+    public void render(SpriteBatch sb) {
+        sprite.setRegion(animation.getFrame());
+        // rotate region 90 first for perf.
+        sprite.rotate90(true);
+        sprite.draw(sb);
+        healthBar.draw(sb);
+    }
+
+    @Override
+    public void damage(int dmgAmount){
+        this.health -= dmgAmount;
+        if( health <= 0){
+            setDeathAnimation();
+            // wait for animation to play before destroying
+            setToDestroy();
+        }
     }
 
     /**
@@ -79,15 +109,6 @@ public abstract class Enemy extends AnimatedB2DSprite {
     public void redefine(Vector2 newPosition){
         screen.getWorld().destroyBody(b2body);
         define(newPosition);
-    }
-
-    @Override
-    public void damage(int dmgAmount){
-        this.health -= dmgAmount;
-        if( health < 0){
-            setDeathAnimation();
-            setToDestroy();
-        }
     }
 
     /** Override and set animation */
@@ -123,11 +144,10 @@ public abstract class Enemy extends AnimatedB2DSprite {
         }
     }
 
-
     protected void moveTowards(Vector2 position){
         // if not going full speed move towards a location
         if( b2body.getLinearVelocity().x < max_speed || b2body.getLinearVelocity().y < max_speed){
-            faceDirection(MathUtils.atan2((target.y - b2body.getPosition().y), (target.x - b2body.getPosition().x)));
+            faceDirection(angleToTarget());
             b2body.setLinearVelocity(position.sub(b2body.getPosition()).nor().scl(max_speed));
         }
     }
@@ -146,8 +166,15 @@ public abstract class Enemy extends AnimatedB2DSprite {
         float boundA = b2body.getAngle() + coneAngle;
         float boundB = b2body.getAngle() - coneAngle;
 
-        if(angleToPlayer <= Math.max(boundA, boundB) && angleToPlayer > Math.min(boundA, boundB)
-                && b2body.getPosition().dst(target) < this.maxSight){
+        float distance = b2body.getPosition().dst(target);
+
+        // FIX ANGLES
+
+//        System.out.printf("%f / %f  \n", b2body.getAngle(), b2body.getLinearVelocity().angleRad());
+//        System.out.printf(" %f -- %f -- %f \t (%f +/- %f) \n", angleToPlayer, boundA, boundB, b2body.getAngle(), coneAngle);
+
+        if(angleToPlayer < Math.max(boundA, boundB) && angleToPlayer > Math.min(boundA, boundB)
+                && distance < this.maxSight && distance > 0){
             screen.getWorld().rayCast(callback, b2body.getPosition(), target);
             return callback.playerInSight();
         }else{
@@ -160,6 +187,7 @@ public abstract class Enemy extends AnimatedB2DSprite {
         avoidWalls(pos);
 
         Vector2 dir = b2body.getLinearVelocity();
+
         // if not moving, start moving in a random direction
         if( dir.x == 0 && dir.y == 0){
             dir = new Vector2(MathUtils.randomTriangular(-0.2f, 0.2f), MathUtils.randomTriangular(-0.2f, 0.2f));
@@ -232,7 +260,6 @@ public abstract class Enemy extends AnimatedB2DSprite {
         CircleShape shape = new CircleShape();
         shape.setRadius(this.radius / PPM);
         fdef.shape = shape;
-        fdef.friction = 0.75f;
         fdef.restitution = 0.0f;
         fdef.filter.categoryBits = ENEMY;
         fdef.filter.maskBits = WALL | PLAYER | PLAYER_PROJECTILE | BARRIER | ENEMY;
@@ -244,6 +271,37 @@ public abstract class Enemy extends AnimatedB2DSprite {
     public void setTarget(Vector2 target){this.target = target;}
     public int getAttackDamage(){ return this.attackDamage; }
     public int getScoreValue(){ return this.score_value;}
+
+    protected class HealthBar{
+        private Enemy owner;
+        private Sprite healthBarBG;
+        private Sprite healthBarFG;
+
+        public HealthBar(Enemy e, TextureRegion bg, TextureRegion fg){
+            this.owner = e;
+            healthBarBG = new Sprite(bg);
+            healthBarFG = new Sprite(fg);
+
+            healthBarBG.setBounds(0, 0, 20 / PPM, 2 / PPM);
+            healthBarFG.setBounds(0, 0, 20 / PPM, 2 / PPM);
+
+            healthBarFG.setOrigin(0,0);
+        }
+
+        public void draw(SpriteBatch batch){
+            healthBarBG.draw(batch);
+            healthBarFG.draw(batch);
+        }
+
+        public void update(){
+            healthBarBG.setX(owner.getSprite().getX());
+            healthBarBG.setY(owner.getSprite().getY() + owner.getSprite().getHeight() + 2 / PPM);
+            healthBarFG.setX(owner.getSprite().getX());
+            healthBarFG.setY(owner.getSprite().getY() + owner.getSprite().getHeight() + 2 / PPM);
+
+            healthBarFG.setScale(health / ((float) maxHealth), 1);
+        }
+    }
 
     // custom callback class to see if the player is in sight
     protected class PlayerSearchCallback implements RayCastCallback {
