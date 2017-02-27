@@ -45,6 +45,8 @@ public class Scorpion extends Enemy{
         }
         setTexture(moveAnimation[0], 18);
         setAnimation(moveAnimation, 1 / 12f);
+
+        this.healthBar = new HealthBar(this, new Texture("ui/empty_bar.png"), new Texture("ui/healthbar.png"));
     }
 
     public Scorpion(GameScreen screen, Vector2 startPosition, float speed, int hp){
