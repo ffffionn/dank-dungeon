@@ -15,8 +15,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.viewport.StretchViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
+import com.badlogic.gdx.utils.viewport.*;
 import com.test.test.models.*;
 import com.test.test.DankDungeon;
 import com.test.test.scenes.GameHud;
@@ -69,22 +68,21 @@ public class GameScreen implements Screen {
     private boolean levelUp;
 
     public GameScreen(DankDungeon game){
+        this.floor = 1;
+        this.levelUp = false;
         this.game = game;
         this.world = new World(new Vector2(0, 0), true);
+        world.setContactListener(new WorldContactListener(this));
         this.b2dr = new Box2DDebugRenderer();
         this.cam = new OrthographicCamera();
         cam.setToOrtho(false, V_WIDTH / 2 / PPM, V_HEIGHT / 2 / PPM);
-        this.floor = 1;
-        this.levelUp = false;
-        world.setContactListener(new WorldContactListener(this));
         this.assetManager = new AssetManager();
         this.atlas = new TextureAtlas("animations/entities.pack");
-        this.gamePort = new StretchViewport(DankDungeon.V_WIDTH / PPM, DankDungeon.V_HEIGHT / PPM , cam);
-        this.tiles = new Texture("textures/dungeontiles-light.png");
-        this.hud = new GameHud(game.batch, new TextureAtlas("ui/hud.pack"));
+        this.gamePort = new ExtendViewport(DankDungeon.V_WIDTH / PPM, DankDungeon.V_HEIGHT / PPM , cam);
+        this.hud = new GameHud(game.batch);
         this.entityList = new Array<B2DSprite>();
         this.deleteList = new Array<B2DSprite>();
-        this.caveGen = new CaveGenerator(this, tiles);
+        this.caveGen = new CaveGenerator(this);
         this.player = new Hero(this, new Vector2(0, 0));
         this.mapRenderer = new OrthogonalTiledMapRenderer(map, 1 / PPM);
 
@@ -92,7 +90,7 @@ public class GameScreen implements Screen {
 
         // set camera
         cam.position.set(gamePort.getWorldWidth() / PPM, gamePort.getWorldHeight() / 2 / PPM, 0);
-        cam.zoom -= 0.5f;
+        cam.zoom -= 0.7f;
         mapRenderer.setView(cam);
     }
 
@@ -140,15 +138,14 @@ public class GameScreen implements Screen {
         game.batch.setProjectionMatrix(cam.combined);
         game.batch.begin();
         player.render(game.batch);
-        hud.draw(game.batch);
         for(B2DSprite sprite : entityList){
             sprite.render(game.batch);
         }
         game.batch.end();
 
+        // draw hud
         game.batch.setProjectionMatrix(hud.getStage().getCamera().combined);
         hud.getStage().draw();
-        // draw hud
     }
 
     private void deleteUselessBodies(){
@@ -280,6 +277,7 @@ public class GameScreen implements Screen {
     @Override
     public void resize(int width, int height){
         gamePort.update(width, height);
+        hud.resize(width, height);
     }
 
     @Override

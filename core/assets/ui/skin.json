@@ -5,8 +5,14 @@
         wine: { r: 0.23, g: 0.011, b: 0.14, a: 1},
         blue: { r: 0.376, g: 0.87, b: 0.9, a: 1 },
         red: { r: 0.54, g: 0.03, b: 0.03, a: 1 },
+        grey: { r: 0.20, g: 0.20, b: 0.20, a: 0.75 },
     },
     com.badlogic.gdx.graphics.g2d.BitmapFont: {
         default-font : { file: fonts/segoe-ui.fnt }
-    }
+    },
+    com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
+        score-label: { font: default-font, fontColor: red },
+        floor-label: { font: default-font, fontColor: blue },
+    },
+
 }

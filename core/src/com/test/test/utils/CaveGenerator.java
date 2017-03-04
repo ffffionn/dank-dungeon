@@ -42,25 +42,38 @@ public class CaveGenerator {
     private TiledMap map;
 
     private Array<TextureRegion> floorTiles;
+    private Array<TextureRegion> wallTiles;
     private Array<Body> wallBodies;
 
     private TextureRegion goalTexture;
+    private TextureRegion wallTexture;
 
 
-    public CaveGenerator(GameScreen screen, Texture worldTileSheet){
+    public CaveGenerator(GameScreen screen){
         this.screen = screen;
         this.wallBodies = new Array<Body>();
         this.map = new TiledMap();
         this.floorTiles = new Array<TextureRegion>();
+        this.wallTiles = new Array<TextureRegion>();
 
+        defineCaveTextures(new Texture("textures/dungeontiles-sand.png"));
+    }
 
-        TextureRegion[][] splitTiles = TextureRegion.split(worldTileSheet, TILE_SIZE, TILE_SIZE);
+    private void defineCaveTextures(Texture tiles){
+        TextureRegion[][] splitTiles = TextureRegion.split(tiles, TILE_SIZE, TILE_SIZE);
+        floorTiles.clear();
+        wallTiles.clear();
+
         for(int x = 0; x < splitTiles[0].length; x++){
             floorTiles.add(splitTiles[0][x]);
         }
 
-        goalTexture = splitTiles[1][7];
+        for(int x = 1; x <= 3; x++){
+            wallTiles.add(splitTiles[1][x]);
+        }
+        wallTiles.add(splitTiles[1][5]);
 
+        goalTexture = splitTiles[1][7];
     }
 
     /**
@@ -73,14 +86,29 @@ public class CaveGenerator {
         mapWidth = mapHeight = Math.round(seed * 64) + minimumSize;
         System.out.printf("Generating new cave - %d x %d   (min - %d) \n", mapWidth, mapHeight, minimumSize);
 
-        boolean[][] optimisedCave;
+        // TODO:    atlas --  blue -> poison -> dark
+        Array<String> maps = new Array<String>();
+        maps.add("blue");
+        maps.add("dark");
+        maps.add("poison");
+
+        defineCaveTextures(new Texture("textures/dungeontiles-dark.png"));
+
         // keep generating caves until floor area is at least 45% of map
+        boolean[][] optimisedCave;
         do{
             initialiseMap();
             simulateCave();
             optimisedCave = floodFill();
         }while(numFloorTiles(optimisedCave) < Math.round(mapWidth * mapHeight * MINIMUM_AREA_COVERAGE));
 
+        // place border walls
+        for(int i = 0; i < mapWidth; i++){
+            optimisedCave[0][i] = true;
+            optimisedCave[i][0] = true;
+            optimisedCave[mapWidth - 1][i] = true;
+            optimisedCave[i][mapWidth - 1] = true;
+        }
         caveCells = optimisedCave;
 
         defineLevel();
@@ -314,26 +342,14 @@ public class CaveGenerator {
         terrainLayer = new TiledMapTileLayer(mapWidth, mapHeight, TILE_SIZE, TILE_SIZE);
         for(int x = 0; x < mapWidth; x++){
             for(int y = 0; y < mapHeight; y++){
-                if(!caveCells[x][y]){
-                    TiledMapTileLayer.Cell cell = new TiledMapTileLayer.Cell();
-                    cell.setTile(new StaticTiledMapTile(randomFloorTile()));
-                    terrainLayer.setCell(x, y, cell);
-                }else{ // is wall
+                TiledMapTileLayer.Cell cell = new TiledMapTileLayer.Cell();
+                if(caveCells[x][y]){ // tile is wall
                     placeWall(x, y);
+                    cell.setTile(new StaticTiledMapTile(randomWallTile()));
+                }else{
+                    cell.setTile(new StaticTiledMapTile(randomFloorTile()));
                 }
-                // place border walls
-                if(y == 0){
-                    placeWall(x, y - 1);
-                }
-                if(x == 0){
-                    placeWall(x - 1, y);
-                }
-                if(y == mapHeight - 1){
-                    placeWall(x, y + 1);
-                }
-                if(x == mapWidth - 1){
-                    placeWall(x + 1, y);
-                }
+                terrainLayer.setCell(x, y, cell);
             }
         }
     }
@@ -387,14 +403,15 @@ public class CaveGenerator {
         wallBodies.add(body);
 
         wall.dispose();
-        /* SET WALL TEXTURE */
-//        wallTexture = splitTiles[3][17];
     }
 
     private TextureRegion randomFloorTile(){
         return floorTiles.random();
     }
 
+    private TextureRegion randomWallTile(){
+        return wallTiles.random();
+    }
 
     /**
      * Cell class - just a wrapper for a Vector2.

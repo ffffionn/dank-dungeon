@@ -56,9 +56,12 @@ public class Wolf extends Enemy {
         }
     }
 
+
     private void attack(){
+        // do stuff
 
     }
+
 
     public static void defineAnimations(GameScreen screen){
         TextureRegion[][] frames = screen.getAtlas().findRegion("wolfbeast-move").split(64, 64);

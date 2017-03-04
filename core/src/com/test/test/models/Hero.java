@@ -74,7 +74,7 @@ public class Hero extends AnimatedB2DSprite {
             currentState.update(dt, this);
             if( currentState == standing && mana < 100.0f){
                 this.mana += (((StandingState) currentState).getTimeStanding() / 2.0 * dt);
-                screen.getHud().updatePlayerMana(MathUtils.floor(this.mana));
+                screen.getHud().updateMana(MathUtils.floor(this.mana));
             }
         }else{  // player is dead
             // set game over animation
@@ -133,7 +133,7 @@ public class Hero extends AnimatedB2DSprite {
         }
 
         // update hud
-        screen.getHud().updatePlayerMana(MathUtils.floor(this.mana));
+        screen.getHud().updateMana(MathUtils.floor(this.mana));
     }
 
     /**

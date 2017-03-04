@@ -1,7 +1,5 @@
 package com.test.test.models;
 
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -45,8 +43,6 @@ public class Scorpion extends Enemy{
         }
         setTexture(moveAnimation[0], 18);
         setAnimation(moveAnimation, 1 / 12f);
-
-        this.healthBar = new HealthBar(this, new Texture("ui/empty_bar.png"), new Texture("ui/healthbar.png"));
     }
 
     public Scorpion(GameScreen screen, Vector2 startPosition, float speed, int hp){
@@ -100,9 +96,6 @@ public class Scorpion extends Enemy{
 
     @Override
     public void damage(int dmgAmount){
-        if( health > 30 && (health - dmgAmount) < 30){
-
-        }
         this.health -= dmgAmount;
         if( health <= 0){
             setToDestroy();
