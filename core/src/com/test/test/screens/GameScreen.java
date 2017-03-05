@@ -114,9 +114,14 @@ public class GameScreen implements Screen {
                 ((Enemy) b).setTarget(player.getPosition());
             }
         }
-        // keep camera centered on player
+
+        // camera offset slightly towards cursor
+        Vector2 pos = new Vector2();
+        pos.clamp(-0.1f, 0.1f);
+        pos = cursorBody.getPosition().cpy().sub(player.getPosition()).nor().scl(0.05f);
         cam.position.x = player.getPosition().x;
         cam.position.y = player.getPosition().y;
+        cam.translate(pos);
         cam.update();
         hud.update(delta);
         mapRenderer.setView(cam);
@@ -158,6 +163,9 @@ public class GameScreen implements Screen {
         for( B2DSprite b : deleteList ){
             if( b instanceof Enemy ){
                 // give the player score based on the enemy
+//                ((Enemy) b).getScoreValue();
+//                map.getLayers().get(1);
+//                b.getPosition();
                 hud.updateScore(((Enemy) b).getScoreValue());
             }
             world.destroyBody(b.getBody());
@@ -194,7 +202,7 @@ public class GameScreen implements Screen {
         if(floor > 1) caveGen.destroyLevel();
 
         this.map = caveGen.generateCave(seed);
-        player.redefine(caveGen.getRandomPlace());
+        player.redefine(caveGen.getHeroSpawn());
         entityList.addAll(caveGen.generateEnemies(seed));
         mapRenderer.setMap(map);
     }

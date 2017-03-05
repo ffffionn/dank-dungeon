@@ -1,6 +1,5 @@
 package com.test.test.models;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -10,6 +9,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Timer;
 import com.test.test.screens.GameScreen;
+
 
 import static com.test.test.DankDungeon.PPM;
 import static com.test.test.utils.CaveGenerator.worldPositionToCell;
@@ -29,10 +29,10 @@ public abstract class Enemy extends AnimatedB2DSprite {
     protected float max_speed;
     protected int score_value;
     protected boolean stunned;
+    protected boolean dead;
     protected float radius;
     protected int attackDamage;
     protected boolean canAttack;
-
     protected int maxHealth;
 
 
@@ -49,6 +49,7 @@ public abstract class Enemy extends AnimatedB2DSprite {
         this.screen = screen;
         this.floor = screen.getLevelMap();
         this.stunned = false;
+        this.dead = false;
         this.canAttack = true;
 
         // attribute defaults
@@ -75,7 +76,7 @@ public abstract class Enemy extends AnimatedB2DSprite {
         if( setToDestroy && !destroyed ){
             destroyed = true;
         }else if(!destroyed){
-            if(!stunned){
+            if(!stunned && !dead){
                 move();
             }
         }
@@ -85,9 +86,11 @@ public abstract class Enemy extends AnimatedB2DSprite {
 
     @Override
     public void render(SpriteBatch sb) {
-        sprite.setRegion(animation.getFrame());
+        if(!stunned){
+            sprite.setRegion(animation.getFrame());
+            sprite.rotate90(true);
+        }
         // rotate region 90 first for perf.
-        sprite.rotate90(true);
         sprite.draw(sb);
         healthBar.draw(sb);
     }
@@ -95,10 +98,11 @@ public abstract class Enemy extends AnimatedB2DSprite {
     @Override
     public void damage(int dmgAmount){
         this.health -= dmgAmount;
-        if( health <= 0){
-            setDeathAnimation();
-            // wait for animation to play before destroying
-            setToDestroy();
+        if(health <= 0){
+            this.health = 0;
+            if(!dead){
+               die();
+            }
         }
     }
 
@@ -111,16 +115,30 @@ public abstract class Enemy extends AnimatedB2DSprite {
         define(newPosition);
     }
 
-    /** Override and set animation */
+    /**
+     * Override and set animation
+     */
     protected void setDeathAnimation(){}
+
+    private void die(){
+        dead = true;
+        stunned = false;
+        setDeathAnimation();
+        // wait for animation to play before destroying
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                setToDestroy();
+            }
+        }, 1.0f);
+    }
 
     /**
      * Stun this enemy for a duration.
      * @param stunDuration The amount of seconds to stun for. (1.0f is 1 second)
      */
     public void stun(float stunDuration){
-        if(!stunned){
-            System.out.println("STUN!");
+        if(!stunned && !dead){
             stunned = true;
             Timer.schedule(new Timer.Task() {
                 @Override
@@ -168,7 +186,7 @@ public abstract class Enemy extends AnimatedB2DSprite {
 
         float distance = b2body.getPosition().dst(target);
 
-        // FIX ANGLES
+        // TODO: FIX ANGLES
 
 //        System.out.printf("%f / %f  \n", b2body.getAngle(), b2body.getLinearVelocity().angleRad());
 //        System.out.printf(" %f -- %f -- %f \t (%f +/- %f) \n", angleToPlayer, boundA, boundB, b2body.getAngle(), coneAngle);

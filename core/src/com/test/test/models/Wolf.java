@@ -3,6 +3,7 @@ package com.test.test.models;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Timer;
 import com.test.test.screens.GameScreen;
 
 
@@ -13,6 +14,7 @@ public class Wolf extends Enemy {
 
     private static TextureRegion[] moveAnimation;
     private static TextureRegion[] attackAnimation;
+    private static TextureRegion[] deathAnimation;
 
     public Wolf(GameScreen screen, Vector2 startPosition){
         super(screen, startPosition);
@@ -25,7 +27,7 @@ public class Wolf extends Enemy {
         this.radius = 9.0f;
         this.maxSight = 1.8f;
         this.coneAngle = 60 * MathUtils.degreesToRadians;
-
+        this.canAttack = true;
         // first enemy fetches animation frames from TextureAtlas
         if(moveAnimation == null || attackAnimation == null){
             defineAnimations(screen);
@@ -46,7 +48,8 @@ public class Wolf extends Enemy {
     protected void move() {
         if(targetInSight()){
             moveTowards(target);
-            if( b2body.getPosition().cpy().dst(target) < 0.2f ) {
+            System.out.println(b2body.getPosition().dst(target));
+            if( b2body.getPosition().dst(target) <= 0.5f && canAttack ) {
                 // attack when in range
                 attack();
             }
@@ -56,12 +59,32 @@ public class Wolf extends Enemy {
         }
     }
 
-
     private void attack(){
         // do stuff
-
+        // play attack animation for duration
+        System.out.println("!");
+        setAnimation(attackAnimation, 1 / 24f);
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                if(!destroyed && !setToDestroy) setAnimation(moveAnimation, 1 / 12f);
+            }
+        }, 0.8f);
+        // can't shoot again for 1s
+        this.canAttack = false;
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                canAttack = true;
+            }
+        }, 1f);
     }
 
+
+    @Override
+    protected void setDeathAnimation() {
+        setAnimation(deathAnimation, 1 / 12f);
+    }
 
     public static void defineAnimations(GameScreen screen){
         TextureRegion[][] frames = screen.getAtlas().findRegion("wolfbeast-move").split(64, 64);
@@ -79,6 +102,15 @@ public class Wolf extends Enemy {
         for(int x = 0; x < frames.length; x++){
             for(int y = 0; y < frames[x].length; y++){
                 attackAnimation[index++] = frames[x][y];
+            }
+        }
+
+        frames = screen.getAtlas().findRegion("wolfbeast-death").split(64, 64);
+        deathAnimation = new TextureRegion[32];
+        index = 0;
+        for(int x = 0; x < frames.length; x++){
+            for(int y = 0; y < frames[x].length; y++){
+                deathAnimation[index++] = frames[x][y];
             }
         }
 

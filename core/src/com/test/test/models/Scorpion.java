@@ -25,6 +25,27 @@ public class Scorpion extends Enemy{
         this.health = this.maxHealth = 70;
         define(startPosition);
 
+        if(moveAnimation == null || attackAnimation == null){
+            defineAnimations(screen);
+        }
+
+        setTexture(moveAnimation[0], 18);
+        setAnimation(moveAnimation, 1 / 12f);
+    }
+
+    public Scorpion(GameScreen screen, Vector2 startPosition, float speed, int hp){
+        this(screen, startPosition);
+        this.max_speed = speed;
+        this.health = hp;
+    }
+
+
+    @Override
+    protected void setDeathAnimation() {
+        setAnimation(deathAnimation, 1 / 12f);
+    }
+
+    public static void defineAnimations(GameScreen screen){
         if(moveAnimation == null){
             moveAnimation = screen.getAtlas().findRegion("scorpion-move").split(64, 64)[0];
         }
@@ -41,14 +62,10 @@ public class Scorpion extends Enemy{
                 deathAnimation[index++] = t;
             }
         }
-        setTexture(moveAnimation[0], 18);
-        setAnimation(moveAnimation, 1 / 12f);
     }
 
-    public Scorpion(GameScreen screen, Vector2 startPosition, float speed, int hp){
-        this(screen, startPosition);
-        this.max_speed = speed;
-        this.health = hp;
+    protected TextureRegion[] getDeathAnimation() {
+        return deathAnimation;
     }
 
     @Override
@@ -56,6 +73,7 @@ public class Scorpion extends Enemy{
        if(targetInSight()){
            if( b2body.getPosition().dst(target) < 0.3f ){
                // flee opposite direction if player too close
+               System.out.println("!!");
                Vector2 approach = b2body.getPosition().cpy().sub(target);
                moveTowards(approach.add(b2body.getPosition()));
            }else{
@@ -73,32 +91,23 @@ public class Scorpion extends Enemy{
     }
 
     private void shoot(Vector2 target){
-        if(canAttack){
-            this.canAttack = false;
-            screen.add(new Projectile(screen, getPosition(), target, 10, 1.25f));
-            // play attack animation for duration
-            setAnimation(attackAnimation, 1 / 18f);
-            Timer.schedule(new Timer.Task() {
-                @Override
-                public void run() {
-                    if(!destroyed && !setToDestroy) setAnimation(moveAnimation, 1 / 12f);
-                }
-            }, 0.3f);
-            // can't shoot again for 1s
-            Timer.schedule(new Timer.Task() {
+        this.canAttack = false;
+        screen.add(new Projectile(screen, getPosition(), target, 10, 1.25f));
+        // play attack animation for duration
+        setAnimation(attackAnimation, 1 / 18f);
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                if(!destroyed && !setToDestroy) setAnimation(moveAnimation, 1 / 12f);
+            }
+        }, 0.3f);
+        // can't shoot again for 1s
+        Timer.schedule(new Timer.Task() {
                 @Override
                 public void run() {
                     canAttack = true;
                 }
             }, 1f);
-        }
     }
 
-    @Override
-    public void damage(int dmgAmount){
-        this.health -= dmgAmount;
-        if( health <= 0){
-            setToDestroy();
-        }
-    }
 }

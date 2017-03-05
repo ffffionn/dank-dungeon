@@ -46,11 +46,11 @@ public class Hero extends AnimatedB2DSprite {
         this.previousState = standing;
         this.fireballs = new Array<Projectile>(MAX_FIREBALLS);
         this.health = MAX_HEALTH;
+        this.mana = MAX_MANA;
         this.invincible = false;
         this.flashColour = Color.RED;
         define(position);
         this.shield = new Barrier(screen, this);
-        this.mana = 15.0f;
 
         // define animations
         HeroState.defineAnimations(screen.getAtlas());
@@ -174,7 +174,7 @@ public class Hero extends AnimatedB2DSprite {
     public void changeState(HeroState s){
         previousState = currentState;
         currentState = s;
-        System.out.printf("**STATE:\t%s  ->  %s\n", previousState.toString(), currentState.toString());
+//        System.out.printf("**STATE:\t%s  ->  %s\n", previousState.toString(), currentState.toString());
         // trigger state change effects
         previousState.leave(this);
         currentState.enter(this);

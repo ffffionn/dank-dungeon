@@ -13,7 +13,12 @@ public class AnimatedB2DSprite extends B2DSprite {
 
     public AnimatedB2DSprite(){
         super();
-        animation = new Animation();
+        this.animation = new Animation();
+    }
+
+    public AnimatedB2DSprite(TextureRegion[] frames){
+        super();
+        this.animation = new Animation(frames);
     }
 
     @Override

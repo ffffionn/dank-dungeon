@@ -114,23 +114,25 @@ public class CaveGenerator {
         defineLevel();
         createGoal();
         map.getLayers().add(terrainLayer);
+
+        // add powerups
         return map;
     }
 
     public Array<Enemy> generateEnemies(float seed){
         Array<Enemy> array = new Array<Enemy>();
 
-        int numSkels = Math.round(MathUtils.sin(seed * seed) * 100);
+        int numRats = Math.round(MathUtils.sin(seed * seed) * 100);
         int numRoaches = Math.round(MathUtils.sin((seed * seed) / 2) * 50);
         int numWolves = (seed > 0.2f) ? Math.round((seed/2.0f) * (seed - 0.2f) * 25) : 0;
 
-//        numSkels = 0;
-//        numWolves = 1;
-//        numRoaches = 0;
-        System.out.printf("SEED: %f   (%d/%d/%d) \n", seed, numSkels, numRoaches, numWolves);
+        numRats = 0;
+        numWolves = 1;
+        numRoaches = 1;
+        System.out.printf("SEED: %f   (%d/%d/%d) \n", seed, numRats, numRoaches, numWolves);
 
-        for( int i = 0; i < numSkels; i++){
-            array.add( new Skeleton(screen, cellToWorldPosition(getRandomPlace())) );
+        for( int i = 0; i < numRats; i++){
+            array.add( new Rat(screen, cellToWorldPosition(getRandomPlace())) );
         }
         for( int i = 0; i < numRoaches; i++){
             array.add( new Scorpion(screen, cellToWorldPosition(getRandomPlace())) );
@@ -180,6 +182,18 @@ public class CaveGenerator {
                 return new Vector2((float) randomX, (float) randomY);
             }
         }
+    }
+
+    /**
+     * Get a spawn point for the player at least half the map's size from the goal.
+     * @return The random Cell location to spawn in.
+     */
+    public Vector2 getHeroSpawn(){
+        Vector2 spawn = getRandomPlace();
+        while(spawn.dst(worldPositionToCell(goal.getPosition())) <= (mapWidth / 2f)){
+            spawn = getRandomPlace();
+        }
+        return spawn;
     }
 
     /**
