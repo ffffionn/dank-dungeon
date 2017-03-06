@@ -16,8 +16,6 @@ public class B2DSprite{
 
     protected Body b2body;
     protected Sprite sprite;
-    protected float width;
-    protected float height;
 
     protected boolean setToDestroy;
     protected boolean destroyed;
@@ -40,7 +38,11 @@ public class B2DSprite{
     }
 
     public void setTexture(TextureRegion texture, int size){
-        sprite.setBounds(0, 0, size / PPM, size / PPM);
+        setTexture(texture, size, size);
+    }
+
+    public void setTexture(TextureRegion texture, int width, int height){
+        sprite.setBounds(0, 0, width / PPM, height / PPM);
         sprite.setRegion(texture);
         sprite.setOriginCenter();
     }
@@ -69,13 +71,10 @@ public class B2DSprite{
         }
     }
 
-    public void setToDestroy(){ setToDestroy = true; }
-    public boolean isSetToDestroy(){ return setToDestroy; }
-    public boolean isDestroyed(){ return destroyed; }
-    public Sprite getSprite(){ return this.sprite; }
     public Body getBody() { return b2body; }
+    public Sprite getSprite(){ return this.sprite; }
+    public void setToDestroy(){ setToDestroy = true; }
+    public boolean isDestroyed(){ return destroyed; }
+    public boolean isSetToDestroy(){ return setToDestroy; }
     public Vector2 getPosition() { return b2body.getPosition(); }
-
-    public float getWidth() { return width; }
-    public float getHeight() { return height; }
 }

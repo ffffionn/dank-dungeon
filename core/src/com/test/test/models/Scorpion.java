@@ -73,7 +73,6 @@ public class Scorpion extends Enemy{
        if(targetInSight()){
            if( b2body.getPosition().dst(target) < 0.3f ){
                // flee opposite direction if player too close
-               System.out.println("!!");
                Vector2 approach = b2body.getPosition().cpy().sub(target);
                moveTowards(approach.add(b2body.getPosition()));
            }else{

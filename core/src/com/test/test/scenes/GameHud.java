@@ -85,7 +85,7 @@ public class GameHud {
     private void addStats(){
         Table table = new Table();
         table.setFillParent(true);
-        table.setDebug(true);
+//        table.setDebug(true);
         BitmapFont font =  skin.get("default-font", BitmapFont.class);
 
         scoreLabel = new Label(String.format("SCORE: %06d", score), skin, "score-label");

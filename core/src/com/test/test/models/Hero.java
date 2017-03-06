@@ -3,7 +3,6 @@ package com.test.test.models;
 import static com.test.test.DankDungeon.PPM;
 import static com.test.test.models.HeroState.attacking;
 import static com.test.test.models.HeroState.standing;
-import static com.test.test.screens.GameScreen.TILE_SIZE;
 import static com.test.test.utils.WorldContactListener.*;
 
 import com.badlogic.gdx.Gdx;
@@ -33,6 +32,7 @@ public class Hero extends AnimatedB2DSprite {
     private float mana;
     private Color flashColour;
 
+    private Pickup activePower;
     private HeroState currentState;
     private HeroState previousState;
     private Array<Projectile> fireballs;
@@ -42,6 +42,7 @@ public class Hero extends AnimatedB2DSprite {
     public Hero(GameScreen screen, Vector2 position){
         super();
         this.screen = screen;
+        this.activePower = null;
         this.currentState = standing;
         this.previousState = standing;
         this.fireballs = new Array<Projectile>(MAX_FIREBALLS);
@@ -57,14 +58,6 @@ public class Hero extends AnimatedB2DSprite {
         setTexture(HeroState.standAnimation[0], HERO_SIZE);
         currentState.enter(this);
     }
-
-    public void redefine(Vector2 position){
-        fireballs.clear();
-        screen.getWorld().destroyBody(b2body);
-        define(position);
-    }
-
-    public int getMana(){ return MathUtils.floor(mana);}
 
     public void update(float dt){
         animation.update(dt);
@@ -98,22 +91,19 @@ public class Hero extends AnimatedB2DSprite {
         if(Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) screen.dispose();
     }
 
-    public void block(){
-        changeState(HeroState.blocking);
-        shield.raise();
-    }
-
-    public void unblock(){
-        changeState(standing);
-        shield.lower();
-    }
-
     /**
      * Fires a fireball to direction the hero is facing.
      */
     public void shoot(){
         if(fireballs.size < MAX_FIREBALLS && mana > 1.0f){
-            mana -= 0.5f;
+            adjustMana(-0.5f);
+            if(activePower != null){
+                switch(activePower.TYPE){
+                    case MULTI_FIRE:
+
+                    default:
+                }
+            }
             Projectile fb = new Projectile(screen, getPosition(), screen.getCursor().getPosition());
             screen.add(fb);
             fireballs.add(fb);
@@ -121,19 +111,31 @@ public class Hero extends AnimatedB2DSprite {
         }
     }
 
+    public void pickup(Pickup p){
+        activePower = p;
+        p.activate(this);
+    }
+
     public boolean isDead(){
         return currentState == HeroState.dead;
     }
 
-    public void drain(float amount){
-        if( mana < 0 ){
+    public void adjustMana(float amount){
+        this.mana += amount;
+        if(mana < 0){
             mana = 0;
-        }else{
-            this.mana -= amount;
+        }else if(mana > MAX_MANA){
+            mana = MAX_MANA;
         }
 
         // update hud
         screen.getHud().updateMana(MathUtils.floor(this.mana));
+    }
+
+    public void addHealth(int amount){
+        this.health += amount;
+        if (health > MAX_HEALTH) health = MAX_HEALTH;
+        screen.getHud().updateHealth(this.health);
     }
 
     /**
@@ -163,8 +165,25 @@ public class Hero extends AnimatedB2DSprite {
         }
     }
 
-    public HeroState getCurrentState(){ return this.currentState; }
+    public void block(){
+        changeState(HeroState.blocking);
+        shield.raise();
+    }
 
+    public void unblock(){
+        changeState(standing);
+        shield.lower();
+    }
+
+    public void redefine(Vector2 position){
+        fireballs.clear();
+        screen.getWorld().destroyBody(b2body);
+        define(position);
+    }
+
+    public int getMana(){ return MathUtils.floor(mana);}
+    public Pickup getActivePower(){ return this.activePower; }
+    public HeroState getCurrentState(){ return this.currentState; }
     public HeroState getPreviousState(){ return this.previousState; }
 
     /**
@@ -174,10 +193,10 @@ public class Hero extends AnimatedB2DSprite {
     public void changeState(HeroState s){
         previousState = currentState;
         currentState = s;
-//        System.out.printf("**STATE:\t%s  ->  %s\n", previousState.toString(), currentState.toString());
         // trigger state change effects
         previousState.leave(this);
         currentState.enter(this);
+//        System.out.printf("**STATE:\t%s  ->  %s\n", previousState.toString(), currentState.toString());
     }
 
     /**
@@ -220,7 +239,7 @@ public class Hero extends AnimatedB2DSprite {
      */
     private void define(Vector2 position){
         BodyDef bdef = new BodyDef();
-        bdef.position.set((position.x + 0.5f) * TILE_SIZE / PPM, (position.y + 0.5f) * TILE_SIZE / PPM);
+        bdef.position.set(position);
         bdef.type = BodyDef.BodyType.DynamicBody;
         bdef.linearDamping = 10.0f;
         bdef.fixedRotation = true;

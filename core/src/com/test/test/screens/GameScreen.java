@@ -8,8 +8,11 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -63,6 +66,8 @@ public class GameScreen implements Screen {
     private CaveGenerator caveGen;
     private int floor;
 
+    private TextureRegion[][] powerTiles;
+
     public static final int TILE_SIZE = 24;
 
     private boolean levelUp;
@@ -78,6 +83,7 @@ public class GameScreen implements Screen {
         cam.setToOrtho(false, V_WIDTH / 2 / PPM, V_HEIGHT / 2 / PPM);
         this.assetManager = new AssetManager();
         this.atlas = new TextureAtlas("animations/entities.pack");
+        this.powerTiles = TextureRegion.split(new Texture("textures/dungeonitems.png"), 25, 25);
         this.gamePort = new ExtendViewport(DankDungeon.V_WIDTH / PPM, DankDungeon.V_HEIGHT / PPM , cam);
         this.hud = new GameHud(game.batch);
         this.entityList = new Array<B2DSprite>();
@@ -163,9 +169,13 @@ public class GameScreen implements Screen {
         for( B2DSprite b : deleteList ){
             if( b instanceof Enemy ){
                 // give the player score based on the enemy
-//                ((Enemy) b).getScoreValue();
-//                map.getLayers().get(1);
-//                b.getPosition();
+                System.out.println(map.getLayers().getCount());
+                TiledMapTileLayer l = (TiledMapTileLayer) map.getLayers().get("objects");
+                Vector2 c = CaveGenerator.worldPositionToCell(b.getPosition());
+                TiledMapTileLayer.Cell cell = new TiledMapTileLayer.Cell();
+                cell.setTile(new StaticTiledMapTile(powerTiles[2][8]));
+                System.out.println(c);
+                l.setCell(Math.round(c.x), Math.round(c.y), cell);
                 hud.updateScore(((Enemy) b).getScoreValue());
             }
             world.destroyBody(b.getBody());
@@ -202,7 +212,7 @@ public class GameScreen implements Screen {
         if(floor > 1) caveGen.destroyLevel();
 
         this.map = caveGen.generateCave(seed);
-        player.redefine(caveGen.getHeroSpawn());
+        player.redefine(CaveGenerator.cellToWorldPosition(caveGen.getHeroSpawn()));
         entityList.addAll(caveGen.generateEnemies(seed));
         mapRenderer.setMap(map);
     }

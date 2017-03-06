@@ -270,7 +270,7 @@ public abstract class Enemy extends AnimatedB2DSprite {
         BodyDef bdef = new BodyDef();
         bdef.position.set(startPoint);
         bdef.type = BodyDef.BodyType.DynamicBody;
-        bdef.linearDamping = 6.0f;
+        bdef.linearDamping = 10.0f;
         bdef.fixedRotation = true;
         this.b2body = screen.getWorld().createBody(bdef);
 

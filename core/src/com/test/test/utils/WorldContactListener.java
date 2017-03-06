@@ -58,15 +58,20 @@ public class WorldContactListener implements ContactListener{
                     EnemyCollisionHandler.collide(fb.getBody(), fa.getBody());
                 }else if(fb.getUserData().equals("goal")){
                     screen.levelUp();
+                }else if(b == PICKUP){
+                    ((Hero) fa.getBody().getUserData()).pickup((Pickup) fb.getBody().getUserData());
+                    ((Pickup) fb.getBody().getUserData()).setToDestroy();
                 }
             }else if(b == PLAYER){
                 if(a == ENEMY){
                     EnemyCollisionHandler.collide(fa.getBody(), fb.getBody());
                 }else if(fa.getUserData().equals("goal")){
                     screen.levelUp();
+                }else if(a == PICKUP){
+                    ((Hero) fb.getBody().getUserData()).pickup((Pickup) fa.getBody().getUserData());
+                    ((Pickup) fa.getBody().getUserData()).setToDestroy();
                 }
             }
-
 
         }
 

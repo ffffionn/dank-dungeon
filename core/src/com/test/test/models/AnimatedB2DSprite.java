@@ -27,13 +27,13 @@ public class AnimatedB2DSprite extends B2DSprite {
         animation.update(dt);
     }
 
-    public void setAnimation(TextureRegion[] reg, float delay) {
-        animation.setFrames(reg, delay);
-    }
-
     @Override
     public void render(SpriteBatch sb) {
         sprite.setRegion(animation.getFrame());
         sprite.draw(sb);
+    }
+
+    public void setAnimation(TextureRegion[] reg, float delay) {
+        animation.setFrames(reg, delay);
     }
 }

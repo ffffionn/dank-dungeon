@@ -37,6 +37,7 @@ public class CaveGenerator {
     private int mapHeight;
 
     private TiledMapTileLayer terrainLayer;
+    private TiledMapTileLayer objectLayer;
     private GameScreen screen;
     private Body goal;
     private TiledMap map;
@@ -48,11 +49,15 @@ public class CaveGenerator {
     private TextureRegion goalTexture;
     private TextureRegion wallTexture;
 
+    private TextureRegion[][] powerTiles;
+
 
     public CaveGenerator(GameScreen screen){
         this.screen = screen;
         this.wallBodies = new Array<Body>();
         this.map = new TiledMap();
+        this.powerTiles = TextureRegion.split(new Texture("textures/dungeonitems.png"), 25, 25);
+        Pickup.definePickupTextures(new Texture("textures/dungeonitems.png"));
         this.floorTiles = new Array<TextureRegion>();
         this.wallTiles = new Array<TextureRegion>();
 
@@ -99,24 +104,37 @@ public class CaveGenerator {
         do{
             initialiseMap();
             simulateCave();
+            // place border walls
+            for(int i = 0; i < mapWidth; i++){
+                caveCells[0][i] = true;
+                caveCells[i][0] = true;
+                caveCells[mapWidth - 1][i] = true;
+                caveCells[i][mapWidth - 1] = true;
+            }
             optimisedCave = floodFill();
         }while(numFloorTiles(optimisedCave) < Math.round(mapWidth * mapHeight * MINIMUM_AREA_COVERAGE));
 
-        // place border walls
-        for(int i = 0; i < mapWidth; i++){
-            optimisedCave[0][i] = true;
-            optimisedCave[i][0] = true;
-            optimisedCave[mapWidth - 1][i] = true;
-            optimisedCave[i][mapWidth - 1] = true;
-        }
         caveCells = optimisedCave;
 
         defineLevel();
         createGoal();
+        terrainLayer.setName("terrain");
         map.getLayers().add(terrainLayer);
-
         // add powerups
+        objectLayer = new TiledMapTileLayer(mapWidth, mapHeight, TILE_SIZE, TILE_SIZE);
+        objectLayer.setName("objects");
+        map.getLayers().add(objectLayer);
+        addPowerups(seed);
         return map;
+    }
+
+    private void addPowerups(float seed){
+        int amount = 3;
+        for(int i = 0; i < amount; i++){
+            screen.add(new Pickup.HealthPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 7));
+            screen.add(new Pickup.ManaPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 7));
+            screen.add(new Pickup.ChilliPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 10));
+        }
     }
 
     public Array<Enemy> generateEnemies(float seed){
@@ -126,9 +144,9 @@ public class CaveGenerator {
         int numRoaches = Math.round(MathUtils.sin((seed * seed) / 2) * 50);
         int numWolves = (seed > 0.2f) ? Math.round((seed/2.0f) * (seed - 0.2f) * 25) : 0;
 
-        numRats = 0;
-        numWolves = 1;
-        numRoaches = 1;
+        numRats = 2;
+        numWolves = 2;
+        numRoaches = 2;
         System.out.printf("SEED: %f   (%d/%d/%d) \n", seed, numRats, numRoaches, numWolves);
 
         for( int i = 0; i < numRats; i++){
@@ -225,6 +243,7 @@ public class CaveGenerator {
         wallBodies.clear();
         screen.getWorld().destroyBody(goal);
         screen.getMap().getLayers().remove(terrainLayer);
+        screen.getMap().getLayers().remove(objectLayer);
         for(int x=0; x < mapWidth; x++){
             for(int y=0; y < mapHeight; y++){
                 caveCells[x][y] = false;
@@ -394,8 +413,11 @@ public class CaveGenerator {
         goal.createFixture(fdef).setUserData("goal");
         goal.setUserData(goal);
 
+        Cell goalCell = new Cell(goalPosition);
         // replace floor texture with goal texture
-        terrainLayer.getCell(Math.round(goalPosition.x), Math.round(goalPosition.y)).getTile().setTextureRegion(goalTexture);
+        terrainLayer.getCell(goalCell.x, goalCell.y).getTile().setTextureRegion(goalTexture);
+        // avoids picking the goal cell as a random location
+        caveCells[goalCell.x][goalCell.y] = true;
     }
 
     private void placeWall(int x, int y){

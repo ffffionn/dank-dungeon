@@ -48,7 +48,6 @@ public class Wolf extends Enemy {
     protected void move() {
         if(targetInSight()){
             moveTowards(target);
-            System.out.println(b2body.getPosition().dst(target));
             if( b2body.getPosition().dst(target) <= 0.5f && canAttack ) {
                 // attack when in range
                 attack();

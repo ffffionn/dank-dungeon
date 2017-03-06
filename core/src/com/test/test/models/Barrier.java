@@ -32,7 +32,7 @@ public class Barrier extends B2DSprite{
     public void update(float dt) {
         b2body.setTransform(hero.getPosition(), hero.angleToCursor());
         if(raised){
-            hero.drain(5 * dt);
+            hero.adjustMana(-5 * dt);
         }
     }
 
