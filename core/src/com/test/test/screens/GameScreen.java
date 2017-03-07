@@ -210,9 +210,8 @@ public class GameScreen implements Screen {
         if(floor > 1) caveGen.destroyLevel();
 
         this.map = caveGen.generateCave(seed);
-        player.redefine(CaveGenerator.cellToWorldPosition(caveGen.getHeroSpawn()));
-        entityList.addAll(caveGen.generateEnemies(seed));
         mapRenderer.setMap(map);
+        player.redefine(CaveGenerator.cellToWorldPosition(caveGen.getHeroSpawn()));
     }
 
     public void levelUp(){

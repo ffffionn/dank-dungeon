@@ -27,7 +27,6 @@ public class Hero extends AnimatedB2DSprite {
     public static final int MAX_MANA = 100;
     private static final float INVINCIBILITY_TIMER = 0.85f;
     private static final int HERO_SIZE = 20;
-    private static int MAX_FIREBALLS = 5;
     private boolean invincible;
     private float mana;
     private Color flashColour;
@@ -45,7 +44,7 @@ public class Hero extends AnimatedB2DSprite {
         this.activePower = null;
         this.currentState = standing;
         this.previousState = standing;
-        this.fireballs = new Array<Projectile>(MAX_FIREBALLS);
+        this.fireballs = new Array<Projectile>();
         this.health = MAX_HEALTH;
         this.mana = MAX_MANA;
         this.invincible = false;
@@ -66,7 +65,7 @@ public class Hero extends AnimatedB2DSprite {
             shield.update(dt);
             currentState.update(dt, this);
             if( currentState == standing && mana < 100.0f){
-                this.mana += (((StandingState) currentState).getTimeStanding() / 2.0 * dt);
+                this.mana += (((StandingState) currentState).getTimeStanding() / 1.5 * dt);
                 screen.getHud().updateMana(MathUtils.floor(this.mana));
             }
         }else{  // player is dead
@@ -95,41 +94,41 @@ public class Hero extends AnimatedB2DSprite {
      * Fires a fireball to direction the hero is facing.
      */
     public void shoot(){
-//        if(fireballs.size < MAX_FIREBALLS && mana > 1.0f){
-        if(mana > 1.0f){
-            Array<Projectile> newFireballs = new Array<Projectile>();
-            if(activePower == null){
-                newFireballs.add(new Projectile(screen, getPosition(), screen.getCursor().getPosition()));
-            }else{
-                switch(activePower.TYPE){
-                    case MULTI_FIRE:
-                        float a = 15 * MathUtils.degreesToRadians;
-                        float dst = getPosition().dst(screen.getCursor().getPosition());
-
-                        float x = getPosition().x + dst * MathUtils.cos(b2body.getAngle() + a);
-                        float y = getPosition().y + dst * MathUtils.sin(b2body.getAngle() + a);
-                        newFireballs.add(new Projectile(screen, getPosition(), new Vector2(x, y)));
-
-                        x = getPosition().x + dst * MathUtils.cos(b2body.getAngle() - a);
-                        y = getPosition().y + dst * MathUtils.sin(b2body.getAngle() - a);
-
-                        newFireballs.add(new Projectile(screen, getPosition(), new Vector2(x, y)));
-
-                        newFireballs.add(new Projectile(screen, getPosition(), screen.getCursor().getPosition()));
-                        break;
-                    case DOUBLE_DMG:
-                        newFireballs.add(new Projectile(screen, getPosition(), screen.getCursor().getPosition(),
-                                2 * Projectile.DEFAULT_DAMAGE, 1.2f * Projectile.DEFAULT_SPEED, Color.RED));
-                        break;
-                    default:
-                        newFireballs.add(new Projectile(screen, getPosition(), screen.getCursor().getPosition()));
-                }
-            }
-            adjustMana(-1.0f * newFireballs.size);
-            screen.add(newFireballs);
-            fireballs.addAll(newFireballs);
-            changeState(attacking);
+        if(mana < 1.0f) {
+            return;
         }
+        Array<Projectile> newFireballs = new Array<Projectile>();
+        if(activePower == null){
+            newFireballs.add(new Projectile(screen, getPosition(), screen.getCursor().getPosition()));
+        }else{
+            switch(activePower.TYPE){
+                case MULTI_FIRE:
+                    float a = 15 * MathUtils.degreesToRadians;
+                    float dst = getPosition().dst(screen.getCursor().getPosition());
+
+                    float x = getPosition().x + dst * MathUtils.cos(b2body.getAngle() + a);
+                    float y = getPosition().y + dst * MathUtils.sin(b2body.getAngle() + a);
+                    newFireballs.add(new Projectile(screen, getPosition(), new Vector2(x, y)));
+
+                    x = getPosition().x + dst * MathUtils.cos(b2body.getAngle() - a);
+                    y = getPosition().y + dst * MathUtils.sin(b2body.getAngle() - a);
+
+                    newFireballs.add(new Projectile(screen, getPosition(), new Vector2(x, y)));
+
+                    newFireballs.add(new Projectile(screen, getPosition(), screen.getCursor().getPosition()));
+                    break;
+                case DOUBLE_DMG:
+                    newFireballs.add(new Projectile(screen, getPosition(), screen.getCursor().getPosition(),
+                            2 * Projectile.DEFAULT_DAMAGE, 1.2f * Projectile.DEFAULT_SPEED, Color.RED));
+                    break;
+                default:
+                    newFireballs.add(new Projectile(screen, getPosition(), screen.getCursor().getPosition()));
+            }
+        }
+        adjustMana(-1.0f);
+        screen.add(newFireballs);
+        fireballs.addAll(newFireballs);
+        changeState(attacking);
     }
 
     public void pickup(Pickup p){

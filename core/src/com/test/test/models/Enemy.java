@@ -92,7 +92,9 @@ public abstract class Enemy extends AnimatedB2DSprite {
         }
         // rotate region 90 first for perf.
         sprite.draw(sb);
-        healthBar.draw(sb);
+        if(!dead){
+            healthBar.draw(sb);
+        }
     }
 
     @Override
@@ -124,6 +126,10 @@ public abstract class Enemy extends AnimatedB2DSprite {
         dead = true;
         stunned = false;
         setDeathAnimation();
+        // deactivate the physics body while the animation plays
+        Fixture f = b2body.getFixtureList().first();
+        f.setSensor(true);
+        f.setUserData(null);
         // wait for animation to play before destroying
         Timer.schedule(new Timer.Task() {
             @Override
@@ -329,13 +335,13 @@ public abstract class Enemy extends AnimatedB2DSprite {
         public float reportRayFixture(Fixture fixture, Vector2 point, Vector2 normal, float fraction) {
             if (fixture.getUserData() == null) {
                 lastHit = Type.OTHER;
-                System.out.println("null?");
                 return -1;
             }else if(fixture.getUserData().equals("wall")){
                 lastHit = Type.WALL;
                 return 0;
             } else if (fixture.getUserData().equals("player") || fixture.getUserData().equals("barrier")) {
                 lastHit = Type.PLAYER;
+                return fraction;
             } else if (fixture.getBody().getUserData() instanceof Projectile ||
                     fixture.getBody().getUserData() instanceof Enemy) {
                 lastHit = Type.OTHER;
@@ -344,7 +350,6 @@ public abstract class Enemy extends AnimatedB2DSprite {
                 lastHit = Type.OTHER;
                 return -1;
             }
-            return fraction;
         }
 
         public boolean playerInSight() {

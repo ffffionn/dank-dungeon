@@ -36,49 +36,26 @@ public class CaveGenerator {
     private int mapWidth;
     private int mapHeight;
 
+    private GameScreen screen;
     private TiledMapTileLayer terrainLayer;
     private TiledMapTileLayer objectLayer;
-    private GameScreen screen;
-    private Body goal;
     private TiledMap map;
 
-    private Array<TextureRegion> floorTiles;
-    private Array<TextureRegion> wallTiles;
+    private Body goal;
     private Array<Body> wallBodies;
-
+    private Array<TextureRegion> wallTiles;
+    private Array<TextureRegion> floorTiles;
     private TextureRegion goalTexture;
-    private TextureRegion wallTexture;
-
-    private TextureRegion[][] powerTiles;
-
 
     public CaveGenerator(GameScreen screen){
         this.screen = screen;
-        this.wallBodies = new Array<Body>();
         this.map = new TiledMap();
-        this.powerTiles = TextureRegion.split(new Texture("textures/dungeonitems.png"), 25, 25);
+        this.wallBodies = new Array<Body>();
         Pickup.definePickupTextures(new Texture("textures/dungeonitems.png"));
         this.floorTiles = new Array<TextureRegion>();
         this.wallTiles = new Array<TextureRegion>();
 
         defineCaveTextures(new Texture("textures/dungeontiles-sand.png"));
-    }
-
-    private void defineCaveTextures(Texture tiles){
-        TextureRegion[][] splitTiles = TextureRegion.split(tiles, TILE_SIZE, TILE_SIZE);
-        floorTiles.clear();
-        wallTiles.clear();
-
-        for(int x = 0; x < splitTiles[0].length; x++){
-            floorTiles.add(splitTiles[0][x]);
-        }
-
-        for(int x = 1; x <= 3; x++){
-            wallTiles.add(splitTiles[1][x]);
-        }
-        wallTiles.add(splitTiles[1][5]);
-
-        goalTexture = splitTiles[1][7];
     }
 
     /**
@@ -89,6 +66,11 @@ public class CaveGenerator {
     public TiledMap generateCave(float seed){
         int minimumSize = (10 + Math.round(seed * 15));
         mapWidth = mapHeight = Math.round(seed * 64) + minimumSize;
+        terrainLayer = new TiledMapTileLayer(mapWidth, mapHeight, TILE_SIZE, TILE_SIZE);
+        terrainLayer.setName("terrain");
+        objectLayer = new TiledMapTileLayer(mapWidth, mapHeight, TILE_SIZE, TILE_SIZE);
+        objectLayer.setName("objects");
+
         System.out.printf("Generating new cave - %d x %d   (min - %d) \n", mapWidth, mapHeight, minimumSize);
 
         // TODO:    atlas --  blue -> poison -> dark
@@ -117,50 +99,46 @@ public class CaveGenerator {
         caveCells = optimisedCave;
 
         defineLevel();
-        createGoal();
-        terrainLayer.setName("terrain");
-        map.getLayers().add(terrainLayer);
-        // add powerups
-        objectLayer = new TiledMapTileLayer(mapWidth, mapHeight, TILE_SIZE, TILE_SIZE);
-        objectLayer.setName("objects");
-        map.getLayers().add(objectLayer);
+        addGoal();
         addPowerups(seed);
+        addEnemies(seed);
         return map;
     }
 
     private void addPowerups(float seed){
-        int amount = 3;
+        int amount = 2;
         for(int i = 0; i < amount; i++){
             screen.add(new Pickup.ManaPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 7));
             screen.add(new Pickup.HealthPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 7));
             screen.add(new Pickup.MultifirePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 10));
             screen.add(new Pickup.DoubleDamagePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 10));
         }
+        map.getLayers().add(objectLayer);
     }
 
-    public Array<Enemy> generateEnemies(float seed){
-        Array<Enemy> array = new Array<Enemy>();
+    public void addEnemies(float seed){
+        Array<Enemy> enemies = new Array<Enemy>();
 
         int numRats = Math.round(MathUtils.sin(seed * seed) * 100);
         int numScorpions = Math.round(MathUtils.sin((seed * seed) / 2) * 50);
         int numWolves = (seed > 0.2f) ? Math.round((seed/2.0f) * (seed - 0.2f) * 25) : 0;
+        System.out.printf("SEED: %f   (%d/%d/%d) \n", seed, numRats, numScorpions, numWolves);
 
 //        numRats = 2;
 //        numScorpions = 2;
 //        numWolves = 2;
-        System.out.printf("SEED: %f   (%d/%d/%d) \n", seed, numRats, numScorpions, numWolves);
 
         for( int i = 0; i < numRats; i++){
-            array.add( new Rat(screen, cellToWorldPosition(getRandomPlace())) );
+            enemies.add( new Rat(screen, cellToWorldPosition(getRandomPlace())) );
         }
         for( int i = 0; i < numScorpions; i++){
-            array.add( new Scorpion(screen, cellToWorldPosition(getRandomPlace())) );
+            enemies.add( new Scorpion(screen, cellToWorldPosition(getRandomPlace())) );
         }
         for( int i = 0; i < numWolves; i++){
-            array.add( new Wolf(screen, cellToWorldPosition(getRandomPlace())) );
+            enemies.add( new Wolf(screen, cellToWorldPosition(getRandomPlace())) );
         }
 
-        return array;
+        screen.add(enemies);
     }
 
     /**
@@ -178,13 +156,12 @@ public class CaveGenerator {
             y = Math.round(position.y);
             if(!caveCells[x][y]){
                 int surroundingWalls = countAliveNeighbours(caveCells, x, y, 1);
-                if(surroundingWalls >= rarity){
+                if(surroundingWalls >= rarity && objectLayer.getCell(x, y) == null){
                     spotFound = true;
                 }
             }
         }while(!spotFound);
-        // avoids picking the cell as another treasure spot
-        caveCells[x][y] = true;
+        objectLayer.setCell(x, y, new TiledMapTileLayer.Cell());
         return position;
     }
 
@@ -374,7 +351,6 @@ public class CaveGenerator {
      * Creates the terrain bodies and textures for the cave.
      */
     private void defineLevel(){
-        terrainLayer = new TiledMapTileLayer(mapWidth, mapHeight, TILE_SIZE, TILE_SIZE);
         for(int x = 0; x < mapWidth; x++){
             for(int y = 0; y < mapHeight; y++){
                 TiledMapTileLayer.Cell cell = new TiledMapTileLayer.Cell();
@@ -387,12 +363,13 @@ public class CaveGenerator {
                 terrainLayer.setCell(x, y, cell);
             }
         }
+        map.getLayers().add(terrainLayer);
     }
 
     /**
      * Create the cave level exit, ensuring to be at least a certain distance from the player.
      */
-    private void createGoal(){
+    private void addGoal(){
         BodyDef bdef = new BodyDef();
 
         Vector2 goalPosition = getTreasureSpot(5);
@@ -413,11 +390,13 @@ public class CaveGenerator {
 
         this.goal = screen.getWorld().createBody(bdef);
         goal.createFixture(fdef).setUserData("goal");
-        goal.setUserData(goal);
 
         Cell goalCell = new Cell(goalPosition);
         // replace floor texture with goal texture
         terrainLayer.getCell(goalCell.x, goalCell.y).getTile().setTextureRegion(goalTexture);
+
+        // avoids picking the cell as another treasure spot
+        caveCells[goalCell.x][goalCell.y] = true;
     }
 
     private void placeWall(int x, int y){
@@ -447,6 +426,23 @@ public class CaveGenerator {
 
     private TextureRegion randomWallTile(){
         return wallTiles.random();
+    }
+
+    private void defineCaveTextures(Texture tiles){
+        TextureRegion[][] splitTiles = TextureRegion.split(tiles, TILE_SIZE, TILE_SIZE);
+        floorTiles.clear();
+        wallTiles.clear();
+
+        for(int x = 0; x < splitTiles[0].length; x++){
+            floorTiles.add(splitTiles[0][x]);
+        }
+
+        for(int x = 1; x <= 3; x++){
+            wallTiles.add(splitTiles[1][x]);
+        }
+        wallTiles.add(splitTiles[1][5]);
+
+        goalTexture = splitTiles[1][7];
     }
 
     /**
