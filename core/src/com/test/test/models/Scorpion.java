@@ -1,5 +1,6 @@
 package com.test.test.models;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -64,10 +65,6 @@ public class Scorpion extends Enemy{
         }
     }
 
-    protected TextureRegion[] getDeathAnimation() {
-        return deathAnimation;
-    }
-
     @Override
     protected void move() {
        if(targetInSight()){
@@ -91,7 +88,7 @@ public class Scorpion extends Enemy{
 
     private void shoot(Vector2 target){
         this.canAttack = false;
-        screen.add(new Projectile(screen, getPosition(), target, 10, 1.25f));
+        screen.add(new Projectile(screen, getPosition(), target, this.attackDamage, 1.0f, Color.BLUE));
         // play attack animation for duration
         setAnimation(attackAnimation, 1 / 18f);
         Timer.schedule(new Timer.Task() {

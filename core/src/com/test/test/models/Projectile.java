@@ -1,5 +1,7 @@
 package com.test.test.models;
 
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -12,22 +14,28 @@ import static com.test.test.DankDungeon.PPM;
 import static com.test.test.utils.WorldContactListener.*;
 
 /**
- * Created by Fionn on 20/11/2016.
+ * Projectiles fired by scorpions and the player.
  */
 public class Projectile extends AnimatedB2DSprite {
 
-    private static TextureRegion[] fireballAnimation;
+    public static final float DEFAULT_SPEED = 1.75f;
+    public static final int DEFAULT_DAMAGE = 20;
+
+    protected static TextureRegion[] fireballAnimation;
 
     protected int damageAmount;
     protected float speed;
     protected Vector2 velocity;
     protected GameScreen screen;
 
+    protected Color tint;
+
     public Projectile(GameScreen screen, Vector2 startPosition, Vector2 target){
         super();
         this.screen = screen;
-        this.speed = 1.75f;
-        this.damageAmount = 20;
+        this.speed = DEFAULT_SPEED;
+        this.damageAmount = DEFAULT_DAMAGE;
+        this.tint = Color.valueOf("#efefef");
         defineProjectile(startPosition, target);
         velocity = target.cpy().sub(startPosition).nor().scl(speed);
         b2body.setLinearVelocity(velocity);
@@ -48,6 +56,17 @@ public class Projectile extends AnimatedB2DSprite {
         velocity = target.cpy().sub(startPosition).nor().scl(speed);
         b2body.setLinearVelocity(velocity);
     }
+
+    public Projectile(GameScreen screen, Vector2 startPosition, Vector2 target, Color tint){
+        this(screen, startPosition, target);
+        this.tint = tint;
+    }
+
+    public Projectile(GameScreen screen, Vector2 startPosition, Vector2 target, int damage, float s, Color tint){
+        this(screen, startPosition, target, damage, s);
+        this.tint = tint;
+    }
+
 
     public void update(float delta) {
         if( setToDestroy && !destroyed ){
@@ -93,9 +112,16 @@ public class Projectile extends AnimatedB2DSprite {
         b2body.setUserData(this);
     }
 
+    @Override
+    public void render(SpriteBatch sb) {
+        sprite.setRegion(animation.getFrame());
+        sprite.setColor(tint);
+        sprite.draw(sb);
+    }
+
+
+    public void setTint(Color tint){ this.tint = tint; }
+    protected boolean isFriendly(){ return true; }
     public int getDamageAmount(){ return this.damageAmount; }
 
-    private boolean isFriendly(){
-        return true;
-    }
 }

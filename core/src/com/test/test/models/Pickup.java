@@ -17,7 +17,7 @@ import static com.test.test.utils.WorldContactListener.*;
  */
 public class Pickup extends B2DSprite {
 
-    public enum Type{ MULTI_FIRE, SPEEDUP, EXTRA_DMG }
+    public enum Type{ MULTI_FIRE, SPEEDUP, DOUBLE_DMG, POTION }
     public Type TYPE;
 
     protected int size;
@@ -25,6 +25,7 @@ public class Pickup extends B2DSprite {
     protected static TextureRegion healthBottle;
     protected static TextureRegion manaBottle;
     protected static TextureRegion chilli;
+    protected static TextureRegion cheese;
 
     public Pickup(GameScreen screen, TextureRegion texture, Vector2 startPosition, int size){
         super();
@@ -49,6 +50,7 @@ public class Pickup extends B2DSprite {
         healthBottle = items[2][1];
         manaBottle = items[2][2];
         chilli = items[5][4];
+        cheese = items[5][3];
     }
 
     protected void define(GameScreen screen, Vector2 position){
@@ -81,6 +83,7 @@ public class Pickup extends B2DSprite {
     public static class HealthPickup extends Pickup {
         public HealthPickup(GameScreen screen, Vector2 startPosition, int size){
             super(screen, healthBottle, startPosition, size);
+            TYPE = Type.POTION;
         }
 
         @Override
@@ -93,6 +96,7 @@ public class Pickup extends B2DSprite {
     public static class ManaPickup extends Pickup {
         public ManaPickup(GameScreen screen, Vector2 startPosition, int size){
             super(screen, manaBottle, startPosition, size);
+            TYPE = Type.POTION;
         }
 
         @Override
@@ -102,11 +106,23 @@ public class Pickup extends B2DSprite {
     }
 
     /** GIVE PLAYER MORE FIREBALLS */
-    public static class ChilliPickup extends Pickup {
-        public ChilliPickup(GameScreen screen, Vector2 startPosition, int size){
+    public static class MultifirePickup extends Pickup {
+        public MultifirePickup(GameScreen screen, Vector2 startPosition, int size){
             super(screen, chilli, startPosition, size);
             TYPE = Type.MULTI_FIRE;
-            System.out.println("???");
+        }
+
+        @Override
+        public void activate(Hero hero){
+
+        }
+    }
+
+    /** GIVE PLAYER MORE FIREBALLS */
+    public static class DoubleDamagePickup extends Pickup {
+        public DoubleDamagePickup(GameScreen screen, Vector2 startPosition, int size){
+            super(screen, cheese, startPosition, size);
+            TYPE = Type.DOUBLE_DMG;
         }
 
         @Override

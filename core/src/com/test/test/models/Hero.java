@@ -95,24 +95,47 @@ public class Hero extends AnimatedB2DSprite {
      * Fires a fireball to direction the hero is facing.
      */
     public void shoot(){
-        if(fireballs.size < MAX_FIREBALLS && mana > 1.0f){
-            adjustMana(-0.5f);
-            if(activePower != null){
+//        if(fireballs.size < MAX_FIREBALLS && mana > 1.0f){
+        if(mana > 1.0f){
+            Array<Projectile> newFireballs = new Array<Projectile>();
+            if(activePower == null){
+                newFireballs.add(new Projectile(screen, getPosition(), screen.getCursor().getPosition()));
+            }else{
                 switch(activePower.TYPE){
                     case MULTI_FIRE:
+                        float a = 15 * MathUtils.degreesToRadians;
+                        float dst = getPosition().dst(screen.getCursor().getPosition());
 
+                        float x = getPosition().x + dst * MathUtils.cos(b2body.getAngle() + a);
+                        float y = getPosition().y + dst * MathUtils.sin(b2body.getAngle() + a);
+                        newFireballs.add(new Projectile(screen, getPosition(), new Vector2(x, y)));
+
+                        x = getPosition().x + dst * MathUtils.cos(b2body.getAngle() - a);
+                        y = getPosition().y + dst * MathUtils.sin(b2body.getAngle() - a);
+
+                        newFireballs.add(new Projectile(screen, getPosition(), new Vector2(x, y)));
+
+                        newFireballs.add(new Projectile(screen, getPosition(), screen.getCursor().getPosition()));
+                        break;
+                    case DOUBLE_DMG:
+                        newFireballs.add(new Projectile(screen, getPosition(), screen.getCursor().getPosition(),
+                                2 * Projectile.DEFAULT_DAMAGE, 1.2f * Projectile.DEFAULT_SPEED, Color.RED));
+                        break;
                     default:
+                        newFireballs.add(new Projectile(screen, getPosition(), screen.getCursor().getPosition()));
                 }
             }
-            Projectile fb = new Projectile(screen, getPosition(), screen.getCursor().getPosition());
-            screen.add(fb);
-            fireballs.add(fb);
+            adjustMana(-1.0f * newFireballs.size);
+            screen.add(newFireballs);
+            fireballs.addAll(newFireballs);
             changeState(attacking);
         }
     }
 
     public void pickup(Pickup p){
-        activePower = p;
+        if(p.TYPE != Pickup.Type.POTION){
+            activePower = p;
+        }
         p.activate(this);
     }
 

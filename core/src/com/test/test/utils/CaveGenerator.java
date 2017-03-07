@@ -131,9 +131,10 @@ public class CaveGenerator {
     private void addPowerups(float seed){
         int amount = 3;
         for(int i = 0; i < amount; i++){
-            screen.add(new Pickup.HealthPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 7));
             screen.add(new Pickup.ManaPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 7));
-            screen.add(new Pickup.ChilliPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 10));
+            screen.add(new Pickup.HealthPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 7));
+            screen.add(new Pickup.MultifirePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 10));
+            screen.add(new Pickup.DoubleDamagePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 10));
         }
     }
 
@@ -141,18 +142,18 @@ public class CaveGenerator {
         Array<Enemy> array = new Array<Enemy>();
 
         int numRats = Math.round(MathUtils.sin(seed * seed) * 100);
-        int numRoaches = Math.round(MathUtils.sin((seed * seed) / 2) * 50);
+        int numScorpions = Math.round(MathUtils.sin((seed * seed) / 2) * 50);
         int numWolves = (seed > 0.2f) ? Math.round((seed/2.0f) * (seed - 0.2f) * 25) : 0;
 
-        numRats = 2;
-        numWolves = 2;
-        numRoaches = 2;
-        System.out.printf("SEED: %f   (%d/%d/%d) \n", seed, numRats, numRoaches, numWolves);
+//        numRats = 2;
+//        numScorpions = 2;
+//        numWolves = 2;
+        System.out.printf("SEED: %f   (%d/%d/%d) \n", seed, numRats, numScorpions, numWolves);
 
         for( int i = 0; i < numRats; i++){
             array.add( new Rat(screen, cellToWorldPosition(getRandomPlace())) );
         }
-        for( int i = 0; i < numRoaches; i++){
+        for( int i = 0; i < numScorpions; i++){
             array.add( new Scorpion(screen, cellToWorldPosition(getRandomPlace())) );
         }
         for( int i = 0; i < numWolves; i++){
@@ -182,6 +183,8 @@ public class CaveGenerator {
                 }
             }
         }while(!spotFound);
+        // avoids picking the cell as another treasure spot
+        caveCells[x][y] = true;
         return position;
     }
 
@@ -341,7 +344,6 @@ public class CaveGenerator {
                     cellQueue.addLast(new Cell(new Vector2(cell.x, cell.y + 1)));
                 }
             }
-
         }
 
         return cavern;
@@ -416,8 +418,6 @@ public class CaveGenerator {
         Cell goalCell = new Cell(goalPosition);
         // replace floor texture with goal texture
         terrainLayer.getCell(goalCell.x, goalCell.y).getTile().setTextureRegion(goalTexture);
-        // avoids picking the goal cell as a random location
-        caveCells[goalCell.x][goalCell.y] = true;
     }
 
     private void placeWall(int x, int y){

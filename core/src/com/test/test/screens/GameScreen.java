@@ -168,14 +168,12 @@ public class GameScreen implements Screen {
 
         for( B2DSprite b : deleteList ){
             if( b instanceof Enemy ){
-                // give the player score based on the enemy
-                System.out.println(map.getLayers().getCount());
-                TiledMapTileLayer l = (TiledMapTileLayer) map.getLayers().get("objects");
+                // create a pool of blood on the tile they died on
                 Vector2 c = CaveGenerator.worldPositionToCell(b.getPosition());
                 TiledMapTileLayer.Cell cell = new TiledMapTileLayer.Cell();
                 cell.setTile(new StaticTiledMapTile(powerTiles[2][8]));
-                System.out.println(c);
-                l.setCell(Math.round(c.x), Math.round(c.y), cell);
+                ((TiledMapTileLayer) map.getLayers().get("objects")).setCell(Math.round(c.x), Math.round(c.y), cell);
+                // give the player score based on the enemy
                 hud.updateScore(((Enemy) b).getScoreValue());
             }
             world.destroyBody(b.getBody());
@@ -237,6 +235,9 @@ public class GameScreen implements Screen {
 
     public void add(B2DSprite b){
         entityList.add(b);
+    }
+    public void add(Array<? extends B2DSprite> bodyList){
+        entityList.addAll(bodyList);
     }
 
     // cheats - remove
