@@ -108,6 +108,7 @@ public class GameScreen implements Screen {
         }
         stepWorld();
         deleteUselessBodies();
+
         handleInput(delta);
 
         player.update(delta);

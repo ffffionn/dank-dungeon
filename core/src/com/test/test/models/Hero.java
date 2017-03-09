@@ -64,6 +64,7 @@ public class Hero extends AnimatedB2DSprite {
             rotate(angleToCursor());
             shield.update(dt);
             currentState.update(dt, this);
+            tickPower(dt);
             if( currentState == standing && mana < 100.0f){
                 this.mana += (((StandingState) currentState).getTimeStanding() / 1.5 * dt);
                 screen.getHud().updateMana(MathUtils.floor(this.mana));
@@ -136,6 +137,16 @@ public class Hero extends AnimatedB2DSprite {
             activePower = p;
         }
         p.activate(this);
+    }
+
+    private void tickPower(float dt){
+        if (activePower != null && activePower instanceof Pickup.TimedPickup) {
+            activePower.update(dt);
+            if(((Pickup.TimedPickup) activePower).isTimeUp()){
+                activePower.deactivate();
+                activePower = null;
+            }
+        }
     }
 
     public boolean isDead(){

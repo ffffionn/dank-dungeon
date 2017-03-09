@@ -10,7 +10,6 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Timer;
 import com.test.test.screens.GameScreen;
 
-
 import static com.test.test.DankDungeon.PPM;
 import static com.test.test.utils.CaveGenerator.worldPositionToCell;
 import static com.test.test.utils.WorldContactListener.*;
@@ -34,7 +33,6 @@ public abstract class Enemy extends AnimatedB2DSprite {
     protected int attackDamage;
     protected boolean canAttack;
     protected int maxHealth;
-
 
     protected PlayerSearchCallback callback = new PlayerSearchCallback();
     protected float maxSight;

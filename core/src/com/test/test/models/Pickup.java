@@ -36,6 +36,7 @@ public class Pickup extends B2DSprite {
 
     public void update(float dt){ super.update(dt); }
     public void activate(Hero hero){}
+    public void deactivate(){}
 
     protected void playSound(){
 
@@ -76,6 +77,29 @@ public class Pickup extends B2DSprite {
     }
 
 
+    public static class TimedPickup extends Pickup {
+        protected float powerTimer;
+        protected float timerCount;
+
+        public TimedPickup(GameScreen screen, TextureRegion texture, Vector2 startPosition, int size) {
+            super(screen, texture, startPosition, size);
+            TYPE = Type.POTION;
+        }
+
+        @Override
+        public void update(float dt) {
+            super.update(dt);
+            timerCount += dt;
+        }
+
+        @Override
+        public void activate(Hero hero) {
+            timerCount = 0;
+        }
+
+        public boolean isTimeUp(){ return timerCount >= powerTimer; }
+    }
+
     // CONCRETE PICKUP OBJECTS BELOW
 
 
@@ -106,28 +130,32 @@ public class Pickup extends B2DSprite {
     }
 
     /** GIVE PLAYER MORE FIREBALLS */
-    public static class MultifirePickup extends Pickup {
+    public static class MultifirePickup extends TimedPickup{
         public MultifirePickup(GameScreen screen, Vector2 startPosition, int size){
             super(screen, chilli, startPosition, size);
             TYPE = Type.MULTI_FIRE;
+            powerTimer = 5.0f;
+            timerCount = 0;
         }
 
         @Override
         public void activate(Hero hero){
-
+            timerCount = 0.0f;
         }
     }
 
-    /** GIVE PLAYER MORE FIREBALLS */
-    public static class DoubleDamagePickup extends Pickup {
+    /** GIVE FIREBALLS DOUBLE DAMAGE */
+    public static class DoubleDamagePickup extends TimedPickup {
         public DoubleDamagePickup(GameScreen screen, Vector2 startPosition, int size){
             super(screen, cheese, startPosition, size);
             TYPE = Type.DOUBLE_DMG;
+            powerTimer = 5.0f;
+            timerCount = 0;
         }
 
         @Override
         public void activate(Hero hero){
-
+            timerCount = 0.0f;
         }
     }
 

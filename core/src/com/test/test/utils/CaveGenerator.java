@@ -394,9 +394,6 @@ public class CaveGenerator {
         Cell goalCell = new Cell(goalPosition);
         // replace floor texture with goal texture
         terrainLayer.getCell(goalCell.x, goalCell.y).getTile().setTextureRegion(goalTexture);
-
-        // avoids picking the cell as another treasure spot
-        caveCells[goalCell.x][goalCell.y] = true;
     }
 
     private void placeWall(int x, int y){
