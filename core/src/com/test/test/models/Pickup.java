@@ -100,8 +100,8 @@ public class Pickup extends B2DSprite {
         public boolean isTimeUp(){ return timerCount >= powerTimer; }
     }
 
-    // CONCRETE PICKUP OBJECTS BELOW
 
+    // CONCRETE PICKUP OBJECTS BELOW
 
     /** GIVE PLAYER +15 HEALTH */
     public static class HealthPickup extends Pickup {

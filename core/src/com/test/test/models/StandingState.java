@@ -2,6 +2,7 @@ package com.test.test.models;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Music;
 
 /**
  * Created by Fionn on 04/02/2017.
@@ -15,11 +16,11 @@ public class StandingState extends HeroState {
     public void update(float dt, Hero hero) {
         timeStanding += dt;
 
-        if(Gdx.input.isKeyPressed(Input.Keys.SPACE) && hero.getMana() > 10.0f){
-            hero.block();
-        }
-        if(Gdx.input.justTouched()){
+        if(Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
             hero.shoot();
+        }
+        if(Gdx.input.isButtonPressed(Input.Buttons.RIGHT) && hero.getMana() > 5.0f){
+            hero.block();
         }
         if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) && sprinting.canRun()){
             hero.changeState(sprinting);
@@ -32,9 +33,11 @@ public class StandingState extends HeroState {
             if(!still){
                 still = true;
                 hero.setAnimation(standAnimation, 0f);
+                hero.footsteps.stop();
             }
         }else if(still){
-            hero.setAnimation(standAnimation, 1/8f);
+            hero.setAnimation(standAnimation, 1 / 8f);
+            hero.footsteps.play();
             still = false;
         }
         handleMovement(hero);

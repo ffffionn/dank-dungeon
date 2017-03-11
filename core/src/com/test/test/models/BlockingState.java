@@ -11,8 +11,8 @@ public class BlockingState extends HeroState {
 
     @Override
     public void update(float dt, Hero hero) {
-        // if space released or mana empty, return to previous state
-        if (!Gdx.input.isKeyPressed(Input.Keys.SPACE) || hero.getMana() < 2.5f){
+        // if right mouse is released or mana empty, return to previous state
+        if (!Gdx.input.isButtonPressed(Input.Buttons.RIGHT) || hero.getMana() < 2.5f){
             hero.unblock();
         }
         handleMovement(hero);

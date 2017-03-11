@@ -1,9 +1,12 @@
 package com.test.test.screens;
 
+import com.badlogic.gdx.Audio;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -51,12 +54,9 @@ public class GameScreen implements Screen {
     private World world;
     private Box2DDebugRenderer b2dr;
 
-
     // objects
     private Hero player;
     private Body cursorBody;
-
-    private Texture tiles;
 
     private Array<B2DSprite> entityList;
     private Array<B2DSprite> deleteList;
@@ -65,6 +65,8 @@ public class GameScreen implements Screen {
     private AssetManager assetManager;
     private CaveGenerator caveGen;
     private int floor;
+
+    private Music music;
 
     private TextureRegion[][] powerTiles;
 
@@ -82,6 +84,16 @@ public class GameScreen implements Screen {
         this.cam = new OrthographicCamera();
         cam.setToOrtho(false, V_WIDTH / 2 / PPM, V_HEIGHT / 2 / PPM);
         this.assetManager = new AssetManager();
+        assetManager.load("sounds/main-loop-100.ogg", Music.class);
+        assetManager.load("sounds/main-loop-110.ogg", Music.class);
+        assetManager.load("sounds/main-loop-120.ogg", Music.class);
+        assetManager.load("sounds/main-loop-130.ogg", Music.class);
+        assetManager.load("sounds/steps.wav", Music.class);
+        assetManager.load("sounds/barrier.ogg", Music.class);
+        assetManager.load("sounds/fire.ogg", Sound.class);
+        assetManager.load("sounds/cast-spell.wav", Sound.class);
+        assetManager.finishLoading();
+        music = assetManager.get("sounds/main-loop-100.ogg", Music.class);
         this.atlas = new TextureAtlas("animations/entities.pack");
         this.powerTiles = TextureRegion.split(new Texture("textures/dungeonitems.png"), 25, 25);
         this.gamePort = new ExtendViewport(DankDungeon.V_WIDTH / PPM, DankDungeon.V_HEIGHT / PPM , cam);
@@ -91,6 +103,7 @@ public class GameScreen implements Screen {
         this.caveGen = new CaveGenerator(this);
         this.player = new Hero(this, new Vector2(0, 0));
         this.mapRenderer = new OrthogonalTiledMapRenderer(map, 1 / PPM);
+        playMusic("main-loop-100");
 
         generateLevel(floor);
 
@@ -98,6 +111,21 @@ public class GameScreen implements Screen {
         cam.position.set(gamePort.getWorldWidth() / PPM, gamePort.getWorldHeight() / 2 / PPM, 0);
         cam.zoom -= 0.7f;
         mapRenderer.setView(cam);
+    }
+
+    private void playMusic(String musicID) {
+        float position = 0;
+        if (music.isPlaying()) {
+            System.out.println("!!");
+            position = music.getPosition();
+            music.stop();
+        }
+        System.out.printf("play: %s  - %f\n", musicID, position);
+        music = assetManager.get("sounds/" + musicID + ".ogg", Music.class);
+        music.setLooping(true);
+        music.setVolume(0.3f);
+        music.play();
+        music.setPosition(position > 0 ? position - 10 : 0);
     }
 
     @Override
@@ -221,6 +249,13 @@ public class GameScreen implements Screen {
 
     private void newFloor(){
         floor++;
+        if(floor == 5){
+            playMusic("main-loop-110");
+        }else if(floor == 10){
+            playMusic("main-loop-120");
+        }else if(floor == 15){
+            playMusic("main-loop-130");
+        }
         hud.setFloor(floor);
         player.unblock();
         world.clearForces();
@@ -334,4 +369,5 @@ public class GameScreen implements Screen {
     public TiledMap getMap(){ return this.map; }
     public Hero getPlayer(){ return this.player; }
     public Body getCursor() { return this.cursorBody; }
+    public AssetManager getAssetManager(){ return this.assetManager; }
 }

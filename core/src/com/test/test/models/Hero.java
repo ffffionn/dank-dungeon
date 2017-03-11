@@ -7,6 +7,8 @@ import static com.test.test.utils.WorldContactListener.*;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.MathUtils;
@@ -38,6 +40,11 @@ public class Hero extends AnimatedB2DSprite {
     private GameScreen screen;
     private Barrier shield;
 
+    Music footsteps;
+    Music barrierSound;
+    Sound castSound;
+
+
     public Hero(GameScreen screen, Vector2 position){
         super();
         this.screen = screen;
@@ -51,6 +58,12 @@ public class Hero extends AnimatedB2DSprite {
         this.flashColour = Color.RED;
         define(position);
         this.shield = new Barrier(screen, this);
+        castSound = screen.getAssetManager().get("sounds/fire.ogg", Sound.class);
+        barrierSound = screen.getAssetManager().get("sounds/barrier.ogg", Music.class);
+        barrierSound.setLooping(true);
+        footsteps = screen.getAssetManager().get("sounds/steps.wav", Music.class);
+        footsteps.setLooping(true);
+        footsteps.setVolume(0.4f);
 
         // define animations
         HeroState.defineAnimations(screen.getAtlas());
@@ -113,7 +126,6 @@ public class Hero extends AnimatedB2DSprite {
 
                     x = getPosition().x + dst * MathUtils.cos(b2body.getAngle() - a);
                     y = getPosition().y + dst * MathUtils.sin(b2body.getAngle() - a);
-
                     newFireballs.add(new Projectile(screen, getPosition(), new Vector2(x, y)));
 
                     newFireballs.add(new Projectile(screen, getPosition(), screen.getCursor().getPosition()));
@@ -130,6 +142,7 @@ public class Hero extends AnimatedB2DSprite {
         screen.add(newFireballs);
         fireballs.addAll(newFireballs);
         changeState(attacking);
+        screen.getAssetManager().get("sounds/cast-spell.wav", Sound.class).play(0.3f);
     }
 
     public void pickup(Pickup p){
@@ -201,11 +214,13 @@ public class Hero extends AnimatedB2DSprite {
     public void block(){
         changeState(HeroState.blocking);
         shield.raise();
+        barrierSound.play();
     }
 
     public void unblock(){
         changeState(standing);
         shield.lower();
+        barrierSound.stop();
     }
 
     public void redefine(Vector2 position){
@@ -216,6 +231,7 @@ public class Hero extends AnimatedB2DSprite {
 
     public int getMana(){ return MathUtils.floor(mana);}
     public Pickup getActivePower(){ return this.activePower; }
+    public GameScreen getScreen(){ return this.screen; }
     public HeroState getCurrentState(){ return this.currentState; }
     public HeroState getPreviousState(){ return this.previousState; }
 

@@ -108,10 +108,11 @@ public class CaveGenerator {
     private void addPowerups(float seed){
         int amount = 2;
         for(int i = 0; i < amount; i++){
-            screen.add(new Pickup.ManaPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 7));
-            screen.add(new Pickup.HealthPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 7));
-            screen.add(new Pickup.MultifirePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 10));
-            screen.add(new Pickup.DoubleDamagePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 10));
+            System.out.println(i);
+            screen.add(new Pickup.ManaPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 15));
+            screen.add(new Pickup.HealthPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 15));
+            screen.add(new Pickup.MultifirePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+            screen.add(new Pickup.DoubleDamagePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
         }
         map.getLayers().add(objectLayer);
     }
@@ -147,6 +148,7 @@ public class CaveGenerator {
      * @return A Vector2 of the position.
      */
     public Vector2 getTreasureSpot(int rarity){
+        System.out.print(".");
         Vector2 position;
         boolean spotFound = false;
         int x, y;
