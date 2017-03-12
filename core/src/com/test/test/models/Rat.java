@@ -1,5 +1,6 @@
 package com.test.test.models;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.test.test.screens.GameScreen;
@@ -31,6 +32,17 @@ public class Rat extends Enemy {
     @Override
     protected void setDeathAnimation() {
         setAnimation(deathAnimation, 1 / 8f);
+    }
+
+
+    @Override
+    protected void playDeathSound() {
+        screen.getAssetManager().get("sounds/rat-death.ogg", Sound.class).play(0.6f);
+    }
+
+    @Override
+    protected void playHurtSound() {
+        screen.getAssetManager().get("sounds/rat-pain.ogg", Sound.class).play(0.6f);
     }
 
 

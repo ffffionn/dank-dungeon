@@ -1,5 +1,6 @@
 package com.test.test.models;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -83,6 +84,16 @@ public class Wolf extends Enemy {
     @Override
     protected void setDeathAnimation() {
         setAnimation(deathAnimation, 1 / 12f);
+    }
+
+    @Override
+    protected void playDeathSound() {
+        screen.getAssetManager().get("sounds/wolf-death.wav", Sound.class).play();
+    }
+
+    @Override
+    protected void playHurtSound() {
+        screen.getAssetManager().get("sounds/wolf-pain.wav", Sound.class).play();
     }
 
     public static void defineAnimations(GameScreen screen){

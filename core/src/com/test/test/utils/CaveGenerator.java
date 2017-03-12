@@ -111,8 +111,8 @@ public class CaveGenerator {
             System.out.println(i);
             screen.add(new Pickup.ManaPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 15));
             screen.add(new Pickup.HealthPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 15));
-            screen.add(new Pickup.MultifirePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
-            screen.add(new Pickup.DoubleDamagePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+//            screen.add(new Pickup.MultifirePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+//            screen.add(new Pickup.DoubleDamagePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
         }
         map.getLayers().add(objectLayer);
     }

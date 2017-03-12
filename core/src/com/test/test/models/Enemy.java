@@ -101,8 +101,11 @@ public abstract class Enemy extends AnimatedB2DSprite {
         if(health <= 0){
             this.health = 0;
             if(!dead){
-               die();
+                playDeathSound();
+                die();
             }
+        }else{
+            playHurtSound();
         }
     }
 
@@ -119,6 +122,8 @@ public abstract class Enemy extends AnimatedB2DSprite {
      * Override and set animation
      */
     protected void setDeathAnimation(){}
+    protected void playDeathSound(){}
+    protected void playHurtSound(){}
 
     private void die(){
         dead = true;

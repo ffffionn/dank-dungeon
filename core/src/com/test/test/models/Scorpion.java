@@ -1,5 +1,6 @@
 package com.test.test.models;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
@@ -44,6 +45,16 @@ public class Scorpion extends Enemy{
     @Override
     protected void setDeathAnimation() {
         setAnimation(deathAnimation, 1 / 12f);
+    }
+
+    @Override
+    protected void playDeathSound() {
+        screen.getAssetManager().get("sounds/scorpion-death.wav", Sound.class).play();
+    }
+
+    @Override
+    protected void playHurtSound() {
+        screen.getAssetManager().get("sounds/scorpion-pain.wav", Sound.class).play();
     }
 
     public static void defineAnimations(GameScreen screen){

@@ -66,7 +66,7 @@ public class GameScreen implements Screen {
     private CaveGenerator caveGen;
     private int floor;
 
-    private Music music;
+    private Music bgm;
 
     private TextureRegion[][] powerTiles;
 
@@ -90,10 +90,22 @@ public class GameScreen implements Screen {
         assetManager.load("sounds/main-loop-130.ogg", Music.class);
         assetManager.load("sounds/steps.wav", Music.class);
         assetManager.load("sounds/barrier.ogg", Music.class);
-        assetManager.load("sounds/fire.ogg", Sound.class);
         assetManager.load("sounds/cast-spell.wav", Sound.class);
+        assetManager.load("sounds/rat-pain.ogg", Sound.class);
+        assetManager.load("sounds/rat-death.ogg", Sound.class);
+        assetManager.load("sounds/scorpion-pain.wav", Sound.class);
+        assetManager.load("sounds/scorpion-death.wav", Sound.class);
+        assetManager.load("sounds/hero-death.wav", Sound.class);
+        assetManager.load("sounds/hero-pain1.ogg", Sound.class);
+        assetManager.load("sounds/hero-pain2.ogg", Sound.class);
+        assetManager.load("sounds/hero-pain3.ogg", Sound.class);
+        assetManager.load("sounds/hero-munch.ogg", Sound.class);
+        assetManager.load("sounds/hero-heal.ogg", Sound.class);
+        assetManager.load("sounds/hero-healed.ogg", Sound.class);
+        assetManager.load("sounds/wolf-pain.wav", Sound.class);
+        assetManager.load("sounds/wolf-death.wav", Sound.class);
         assetManager.finishLoading();
-        music = assetManager.get("sounds/main-loop-100.ogg", Music.class);
+        bgm = assetManager.get("sounds/main-loop-100.ogg", Music.class);
         this.atlas = new TextureAtlas("animations/entities.pack");
         this.powerTiles = TextureRegion.split(new Texture("textures/dungeonitems.png"), 25, 25);
         this.gamePort = new ExtendViewport(DankDungeon.V_WIDTH / PPM, DankDungeon.V_HEIGHT / PPM , cam);
@@ -115,17 +127,17 @@ public class GameScreen implements Screen {
 
     private void playMusic(String musicID) {
         float position = 0;
-        if (music.isPlaying()) {
+        if (bgm.isPlaying()) {
             System.out.println("!!");
-            position = music.getPosition();
-            music.stop();
+            position = bgm.getPosition();
+            bgm.stop();
         }
         System.out.printf("play: %s  - %f\n", musicID, position);
-        music = assetManager.get("sounds/" + musicID + ".ogg", Music.class);
-        music.setLooping(true);
-        music.setVolume(0.3f);
-        music.play();
-        music.setPosition(position > 0 ? position - 10 : 0);
+        bgm = assetManager.get("sounds/" + musicID + ".ogg", Music.class);
+        bgm.setLooping(true);
+        bgm.setVolume(0.3f);
+//        bgm.setPosition(position > 0 ? position - 10 : 0);
+        bgm.play();
     }
 
     @Override

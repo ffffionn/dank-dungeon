@@ -58,7 +58,7 @@ public class Hero extends AnimatedB2DSprite {
         this.flashColour = Color.RED;
         define(position);
         this.shield = new Barrier(screen, this);
-        castSound = screen.getAssetManager().get("sounds/fire.ogg", Sound.class);
+        castSound = screen.getAssetManager().get("sounds/cast-spell.wav", Sound.class);
         barrierSound = screen.getAssetManager().get("sounds/barrier.ogg", Music.class);
         barrierSound.setLooping(true);
         footsteps = screen.getAssetManager().get("sounds/steps.wav", Music.class);
@@ -142,7 +142,8 @@ public class Hero extends AnimatedB2DSprite {
         screen.add(newFireballs);
         fireballs.addAll(newFireballs);
         changeState(attacking);
-        screen.getAssetManager().get("sounds/cast-spell.wav", Sound.class).play(0.3f);
+        castSound.play(0.3f);
+//        screen.getAssetManager().get("sounds/cast-spell.wav", Sound.class).play(0.3f);
     }
 
     public void pickup(Pickup p){
@@ -173,13 +174,17 @@ public class Hero extends AnimatedB2DSprite {
         }else if(mana > MAX_MANA){
             mana = MAX_MANA;
         }
-
+        if(amount > 0){
+            screen.getAssetManager().get("sounds/hero-healed.ogg", Sound.class).play(0.3f);
+        }
         // update hud
         screen.getHud().updateMana(MathUtils.floor(this.mana));
     }
 
     public void addHealth(int amount){
         this.health += amount;
+        screen.getAssetManager().get("sounds/hero-heal.ogg", Sound.class).play(0.5f);
+        // don't overheal
         if (health > MAX_HEALTH) health = MAX_HEALTH;
         screen.getHud().updateHealth(this.health);
     }
@@ -193,9 +198,11 @@ public class Hero extends AnimatedB2DSprite {
         if(!invincible && health > 0){
             this.health -= damageAmount;
             if (health <= 0){
+                screen.getAssetManager().get("sounds/hero-death.wav", Sound.class).play();
                 die();
             }else{
                 invincible = true;
+                screen.getAssetManager().get("sounds/hero-pain" + MathUtils.random(1,3) + ".ogg", Sound.class).play();
                 sprite.setColor(Color.WHITE.cpy().lerp(Color.GOLD, 0.8f));
                 // tint the player/screen red while invincible
                 Timer.schedule(new Timer.Task() {
@@ -261,6 +268,7 @@ public class Hero extends AnimatedB2DSprite {
     }
 
     private void die(){
+        if(footsteps.isPlaying()) footsteps.stop();
         changeState(HeroState.dead);
     }
 
