@@ -34,6 +34,9 @@ public class GameHud {
     private int playerHealth;
     private int playerMana;
 
+    private Sprite overlay;
+    private float alpha;
+
     public GameHud(SpriteBatch sb){
         score = 0;
         floor = 1;
@@ -42,6 +45,11 @@ public class GameHud {
         viewport = new StretchViewport(DankDungeon.V_WIDTH, DankDungeon.V_HEIGHT, new OrthographicCamera());
         stage = new Stage(viewport, sb);
         skin = new Skin(Gdx.files.internal("ui/skin.json"));
+        Pixmap pix = new Pixmap(DankDungeon.V_WIDTH, DankDungeon.V_HEIGHT, Pixmap.Format.RGBA8888);
+        pix.setColor(skin.getColor("red"));
+        Texture red = new Texture(pix);
+        overlay = new Sprite(red);
+        alpha = 1.0f;
 
         addStats();
         addBars();
@@ -67,6 +75,10 @@ public class GameHud {
         manaBar.setValue(playerMana);
     }
 
+    public void draw(SpriteBatch batch){
+        overlay.draw(batch);
+    }
+
     public void resize(int width, int height){
         viewport.update(width, height);
     }
@@ -89,7 +101,7 @@ public class GameHud {
         BitmapFont font =  skin.get("default-font", BitmapFont.class);
 
         scoreLabel = new Label(String.format("SCORE: %06d", score), skin, "score-label");
-        floorLabel = new Label(String.format("FLOOR: %03d", 100), skin, "floor-label");
+        floorLabel = new Label(String.format("FLOOR: %03d", floor), skin, "floor-label");
 
         table.top().add(scoreLabel).height(20).expandX().padTop(5);
         table.add().expandX().padTop(5);

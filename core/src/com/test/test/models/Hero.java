@@ -53,6 +53,7 @@ public class Hero extends AnimatedB2DSprite {
         this.previousState = standing;
         this.fireballs = new Array<Projectile>();
         this.health = MAX_HEALTH;
+        this.health = 15;
         this.mana = MAX_MANA;
         this.invincible = false;
         this.flashColour = Color.RED;
@@ -143,7 +144,6 @@ public class Hero extends AnimatedB2DSprite {
         fireballs.addAll(newFireballs);
         changeState(attacking);
         castSound.play(0.3f);
-//        screen.getAssetManager().get("sounds/cast-spell.wav", Sound.class).play(0.3f);
     }
 
     public void pickup(Pickup p){
@@ -313,5 +313,14 @@ public class Hero extends AnimatedB2DSprite {
 
         b2body.createFixture(fdef).setUserData("player");
         b2body.setUserData(this);
+    }
+
+    public void dispose(){
+        footsteps.stop();
+        footsteps.dispose();
+        barrierSound.stop();
+        barrierSound.dispose();
+        castSound.dispose();
+        screen.getWorld().destroyBody(shield.getBody());
     }
 }

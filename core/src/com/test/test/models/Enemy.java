@@ -189,22 +189,29 @@ public abstract class Enemy extends AnimatedB2DSprite {
     }
 
     protected boolean targetInSight(){
-        float angleToPlayer = target.cpy().sub(b2body.getPosition()).angleRad();
-        float boundA = b2body.getAngle() + coneAngle;
-        float boundB = b2body.getAngle() - coneAngle;
+        float angleToPlayer = target.cpy().sub(b2body.getPosition()).angleRad() + MathUtils.PI2;
+        float boundA = b2body.getAngle() + coneAngle + MathUtils.PI2;
+        float boundB = b2body.getAngle() - coneAngle + MathUtils.PI2;
 
         float distance = b2body.getPosition().dst(target);
 
         // TODO: FIX ANGLES
 
-//        System.out.printf("%f / %f  \n", b2body.getAngle(), b2body.getLinearVelocity().angleRad());
+
+        System.out.printf(" %f -- %f -- %f \t (%f +/- %f) \n", angleToPlayer, boundA, boundB, b2body.getAngle(), coneAngle);
 //        System.out.printf(" %f -- %f -- %f \t (%f +/- %f) \n", angleToPlayer, boundA, boundB, b2body.getAngle(), coneAngle);
+
+        if (distance <= 0){
+            System.out.println("WUUUT");
+            System.out.println(distance);
+        }
 
         if(angleToPlayer < Math.max(boundA, boundB) && angleToPlayer > Math.min(boundA, boundB)
                 && distance < this.maxSight && distance > 0){
             screen.getWorld().rayCast(callback, b2body.getPosition(), target);
             return callback.playerInSight();
         }else{
+            System.out.print("!!!!");
             return false;
         }
     }

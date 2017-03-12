@@ -52,8 +52,6 @@ public class Rat extends Enemy {
         deathAnimation = new TextureRegion[8];
         TextureRegion[][] frames = screen.getAtlas().findRegion("rat-death").split(128, 128);
         int index = 0;
-        System.out.println(frames.length);
-        System.out.println(frames[0].length);
         for (int x = 0; x < frames.length; x++) {
             for (int y = 0; y < frames[x].length; y++) {
                 deathAnimation[index++] = frames[x][y];

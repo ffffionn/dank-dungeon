@@ -64,31 +64,4 @@ public abstract class HeroState{
         dieAnimation = atlas.findRegion("player-die").split(64, 64)[0];
     }
 
-//
-//    public static class AttackingState extends HeroState {
-//
-//        private float timer;
-//
-//        @Override
-//        public void update(float dt, Hero hero) {
-//            // if space released or mana empty, return to previous state
-//            handleMovement(hero);
-//            timer += dt;
-//            if(timer > 0.15f){
-//                hero.changeState(hero.getPreviousState());
-//            }
-//            System.out.println("?!");
-//        }
-//
-//        @Override
-//        public void enter(Hero hero){
-//            timer = 0.0f;
-//            hero.setAnimation(castAnimation, 1 / 32f);
-//        }
-//
-//        public String toString(){ return "attacking"; }
-//
-//
-//    }
-
 }

@@ -42,7 +42,6 @@ public class Projectile extends AnimatedB2DSprite {
 
         if(fireballAnimation == null){
             fireballAnimation = screen.getAtlas().findRegion("fireball").split(64, 64)[4];
-            System.out.println(fireballAnimation.length);
         }
         setTexture(fireballAnimation[0], 12);
         setAnimation(fireballAnimation, 1 / 12f);

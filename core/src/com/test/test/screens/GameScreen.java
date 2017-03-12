@@ -1,6 +1,5 @@
 package com.test.test.screens;
 
-import com.badlogic.gdx.Audio;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -21,6 +20,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.*;
 import com.test.test.models.*;
 import com.test.test.DankDungeon;
@@ -88,8 +88,11 @@ public class GameScreen implements Screen {
         assetManager.load("sounds/main-loop-110.ogg", Music.class);
         assetManager.load("sounds/main-loop-120.ogg", Music.class);
         assetManager.load("sounds/main-loop-130.ogg", Music.class);
+        assetManager.load("sounds/main-loop-140.ogg", Music.class);
+        assetManager.load("sounds/main-loop-150.ogg", Music.class);
         assetManager.load("sounds/steps.wav", Music.class);
         assetManager.load("sounds/barrier.ogg", Music.class);
+
         assetManager.load("sounds/cast-spell.wav", Sound.class);
         assetManager.load("sounds/rat-pain.ogg", Sound.class);
         assetManager.load("sounds/rat-death.ogg", Sound.class);
@@ -126,18 +129,18 @@ public class GameScreen implements Screen {
     }
 
     private void playMusic(String musicID) {
-        float position = 0;
         if (bgm.isPlaying()) {
-            System.out.println("!!");
-            position = bgm.getPosition();
             bgm.stop();
         }
-        System.out.printf("play: %s  - %f\n", musicID, position);
         bgm = assetManager.get("sounds/" + musicID + ".ogg", Music.class);
         bgm.setLooping(true);
         bgm.setVolume(0.3f);
-//        bgm.setPosition(position > 0 ? position - 10 : 0);
         bgm.play();
+    }
+
+    public void gameOver(){
+        dispose();
+        game.setScreen(new GameOverScreen(game));
     }
 
     @Override
@@ -175,6 +178,10 @@ public class GameScreen implements Screen {
 
         // draw the game
         draw();
+
+        if(player.isSetToDestroy()){
+            gameOver();
+        }
     }
 
     private void draw(){
@@ -189,6 +196,7 @@ public class GameScreen implements Screen {
 
         game.batch.setProjectionMatrix(cam.combined);
         game.batch.begin();
+        hud.draw(game.batch);
         player.render(game.batch);
         for(B2DSprite sprite : entityList){
             sprite.render(game.batch);
@@ -267,6 +275,10 @@ public class GameScreen implements Screen {
             playMusic("main-loop-120");
         }else if(floor == 15){
             playMusic("main-loop-130");
+        }else if(floor == 20){
+            playMusic("main-loop-140");
+        }else if(floor == 25){
+            playMusic("main-loop-150");
         }
         hud.setFloor(floor);
         player.unblock();
@@ -358,28 +370,41 @@ public class GameScreen implements Screen {
 
     @Override
     public void hide() {
-        System.out.println("bye bye");
-        dispose();
+//        dispose();
     }
 
     @Override
     public void dispose() {
-        deleteUselessBodies();
+        bgm.stop();
+        bgm.dispose();
+        System.out.println(Timer.instance().isEmpty());
+        Timer.instance().clear();
+        System.out.println(Timer.instance().isEmpty());
+        world.clearForces();
+        for( B2DSprite entity : entityList ){
+            if (!entity.isDestroyed()){
+                world.destroyBody(entity.getBody());
+            }
+        }
+        entityList.clear();
         caveGen.destroyLevel();
         map.dispose();
-        mapRenderer.dispose();
+        world.destroyBody(cursorBody);
+        player.dispose();
+        world.destroyBody(player.getBody());
+        assetManager.dispose();
         world.dispose();
         b2dr.dispose();
         hud.dispose();
     }
 
-    public boolean[][] getLevelMap(){ return caveGen.getCellMap(); }
-    public OrthographicCamera getCam() { return this.cam; }
     public GameHud getHud(){ return this.hud; }
-    public TextureAtlas getAtlas(){ return this.atlas; }
     public World getWorld(){ return this.world; }
     public TiledMap getMap(){ return this.map; }
     public Hero getPlayer(){ return this.player; }
     public Body getCursor() { return this.cursorBody; }
+    public boolean[][] getLevelMap(){ return caveGen.getCellMap(); }
+    public TextureAtlas getAtlas(){ return this.atlas; }
     public AssetManager getAssetManager(){ return this.assetManager; }
+    public OrthographicCamera getCam() { return this.cam; }
 }

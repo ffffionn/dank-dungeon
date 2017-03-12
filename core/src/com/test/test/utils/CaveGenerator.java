@@ -125,9 +125,9 @@ public class CaveGenerator {
         int numWolves = (seed > 0.2f) ? Math.round((seed/2.0f) * (seed - 0.2f) * 25) : 0;
         System.out.printf("SEED: %f   (%d/%d/%d) \n", seed, numRats, numScorpions, numWolves);
 
-//        numRats = 2;
-//        numScorpions = 2;
-//        numWolves = 2;
+        numRats = 0;
+        numScorpions = 0;
+        numWolves = 1;
 
         for( int i = 0; i < numRats; i++){
             enemies.add( new Rat(screen, cellToWorldPosition(getRandomPlace())) );
