@@ -57,7 +57,7 @@ public abstract class Enemy extends AnimatedB2DSprite {
         this.score_value = 20;
         this.attackDamage = 5;
         this.maxSight = 2.0f;
-        this.coneAngle = 60 * MathUtils.degreesToRadians;
+        this.coneAngle = 45 * MathUtils.degreesToRadians;
         this.target = screen.getPlayer().getPosition();
 
         this.healthBar = new HealthBar(this, uiAtlas.findRegion("empty_bar"), uiAtlas.findRegion("healthbar"));
@@ -189,29 +189,17 @@ public abstract class Enemy extends AnimatedB2DSprite {
     }
 
     protected boolean targetInSight(){
-        float angleToPlayer = target.cpy().sub(b2body.getPosition()).angleRad() + MathUtils.PI2;
-        float boundA = b2body.getAngle() + coneAngle + MathUtils.PI2;
-        float boundB = b2body.getAngle() - coneAngle + MathUtils.PI2;
-
         float distance = b2body.getPosition().dst(target);
+        Vector2 ownerOrientation = new Vector2(MathUtils.cos(b2body.getAngle()), MathUtils.sin(b2body.getAngle()));
+        Vector2 targetOffset = target.cpy().sub(b2body.getPosition());
 
-        // TODO: FIX ANGLES
+        float product = ownerOrientation.nor().dot(targetOffset.nor());
+        float checkAngle = (float) Math.acos(product);
 
-
-        System.out.printf(" %f -- %f -- %f \t (%f +/- %f) \n", angleToPlayer, boundA, boundB, b2body.getAngle(), coneAngle);
-//        System.out.printf(" %f -- %f -- %f \t (%f +/- %f) \n", angleToPlayer, boundA, boundB, b2body.getAngle(), coneAngle);
-
-        if (distance <= 0){
-            System.out.println("WUUUT");
-            System.out.println(distance);
-        }
-
-        if(angleToPlayer < Math.max(boundA, boundB) && angleToPlayer > Math.min(boundA, boundB)
-                && distance < this.maxSight && distance > 0){
+        if( checkAngle < (this.maxSight / 2) && distance < this.maxSight && distance > 0){
             screen.getWorld().rayCast(callback, b2body.getPosition(), target);
             return callback.playerInSight();
         }else{
-            System.out.print("!!!!");
             return false;
         }
     }

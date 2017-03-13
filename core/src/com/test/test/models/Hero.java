@@ -53,7 +53,7 @@ public class Hero extends AnimatedB2DSprite {
         this.previousState = standing;
         this.fireballs = new Array<Projectile>();
         this.health = MAX_HEALTH;
-        this.health = 15;
+//        this.health = 15;
         this.mana = MAX_MANA;
         this.invincible = false;
         this.flashColour = Color.RED;

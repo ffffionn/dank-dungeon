@@ -27,7 +27,7 @@ public class Wolf extends Enemy {
         this.attackDamage = 9;
         this.radius = 9.0f;
         this.maxSight = 1.8f;
-        this.coneAngle = 60 * MathUtils.degreesToRadians;
+        this.coneAngle = 30 * MathUtils.degreesToRadians;
         this.canAttack = true;
         // first enemy fetches animation frames from TextureAtlas
         if(moveAnimation == null || attackAnimation == null){
@@ -62,7 +62,6 @@ public class Wolf extends Enemy {
     private void attack(){
         // do stuff
         // play attack animation for duration
-        System.out.println("!");
         setAnimation(attackAnimation, 1 / 24f);
         Timer.schedule(new Timer.Task() {
             @Override

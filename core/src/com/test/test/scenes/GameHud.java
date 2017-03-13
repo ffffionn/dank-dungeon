@@ -37,14 +37,14 @@ public class GameHud {
     private Sprite overlay;
     private float alpha;
 
-    public GameHud(SpriteBatch sb){
+    public GameHud(SpriteBatch sb, Skin skin){
         score = 0;
         floor = 1;
         playerHealth = Hero.MAX_HEALTH;
         playerMana = Hero.MAX_MANA;
         viewport = new StretchViewport(DankDungeon.V_WIDTH, DankDungeon.V_HEIGHT, new OrthographicCamera());
         stage = new Stage(viewport, sb);
-        skin = new Skin(Gdx.files.internal("ui/skin.json"));
+        this.skin = skin;
         Pixmap pix = new Pixmap(DankDungeon.V_WIDTH, DankDungeon.V_HEIGHT, Pixmap.Format.RGBA8888);
         pix.setColor(skin.getColor("red"));
         Texture red = new Texture(pix);

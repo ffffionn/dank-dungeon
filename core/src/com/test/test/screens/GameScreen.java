@@ -19,6 +19,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.*;
@@ -84,6 +85,9 @@ public class GameScreen implements Screen {
         this.cam = new OrthographicCamera();
         cam.setToOrtho(false, V_WIDTH / 2 / PPM, V_HEIGHT / 2 / PPM);
         this.assetManager = new AssetManager();
+        assetManager.load("ui/skin.json", Skin.class);
+//        assetManager.load("ui/skin.json", Skin.class);
+//        Skin uiSkin = new Skin(Gdx.files.internal("ui/skin.json"));
         assetManager.load("sounds/main-loop-100.ogg", Music.class);
         assetManager.load("sounds/main-loop-110.ogg", Music.class);
         assetManager.load("sounds/main-loop-120.ogg", Music.class);
@@ -107,12 +111,14 @@ public class GameScreen implements Screen {
         assetManager.load("sounds/hero-healed.ogg", Sound.class);
         assetManager.load("sounds/wolf-pain.wav", Sound.class);
         assetManager.load("sounds/wolf-death.wav", Sound.class);
-        assetManager.finishLoading();
+        while(!assetManager.update()){
+            Gdx.app.log("loading", (assetManager.getProgress() * 100) + " %");
+        }
         bgm = assetManager.get("sounds/main-loop-100.ogg", Music.class);
         this.atlas = new TextureAtlas("animations/entities.pack");
         this.powerTiles = TextureRegion.split(new Texture("textures/dungeonitems.png"), 25, 25);
         this.gamePort = new ExtendViewport(DankDungeon.V_WIDTH / PPM, DankDungeon.V_HEIGHT / PPM , cam);
-        this.hud = new GameHud(game.batch);
+        this.hud = new GameHud(game.batch, assetManager.get("ui/skin.json", Skin.class));
         this.entityList = new Array<B2DSprite>();
         this.deleteList = new Array<B2DSprite>();
         this.caveGen = new CaveGenerator(this);
@@ -140,7 +146,7 @@ public class GameScreen implements Screen {
 
     public void gameOver(){
         dispose();
-        game.setScreen(new GameOverScreen(game));
+        game.setScreen(new GameOverScreen(game, assetManager));
     }
 
     @Override
@@ -242,23 +248,13 @@ public class GameScreen implements Screen {
     }
 
     private void generateLevel(int level){
-        if(cursorBody != null){
-            world.destroyBody(cursorBody);
-        }
+        if(cursorBody != null) world.destroyBody(cursorBody);
         defineCursorBody();
-
-        // calculate seed
-        float seedFloor = (float) Math.log(level) / 15;
-        float seedCeiling = (float) Math.log(3 * level) / 6;
-        float seed = MathUtils.random(seedFloor, seedCeiling);
-
-        System.out.printf(" ***FLOOR %d*** \n", level);
-        System.out.printf("Picking seed (%f) from between - (%f, %f) \n", seed, seedFloor, seedCeiling);
 
         // previous floor needs to be cleaned up
         if(floor > 1) caveGen.destroyLevel();
 
-        this.map = caveGen.generateCave(seed);
+        this.map = caveGen.generateCave(floor);
         mapRenderer.setMap(map);
         player.redefine(CaveGenerator.cellToWorldPosition(caveGen.getHeroSpawn()));
     }
@@ -377,9 +373,7 @@ public class GameScreen implements Screen {
     public void dispose() {
         bgm.stop();
         bgm.dispose();
-        System.out.println(Timer.instance().isEmpty());
         Timer.instance().clear();
-        System.out.println(Timer.instance().isEmpty());
         world.clearForces();
         for( B2DSprite entity : entityList ){
             if (!entity.isDestroyed()){
@@ -392,7 +386,6 @@ public class GameScreen implements Screen {
         world.destroyBody(cursorBody);
         player.dispose();
         world.destroyBody(player.getBody());
-        assetManager.dispose();
         world.dispose();
         b2dr.dispose();
         hud.dispose();

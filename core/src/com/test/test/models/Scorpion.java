@@ -21,7 +21,7 @@ public class Scorpion extends Enemy{
         super(screen, startPosition);
         this.radius = 4.50f;
         this.maxSight = 3.0f;
-        this.coneAngle = 120 * MathUtils.degreesToRadians;
+        this.coneAngle = 90 * MathUtils.degreesToRadians;
         this.max_speed =  0.55f;
         this.score_value = 150;
         this.health = this.maxHealth = 70;

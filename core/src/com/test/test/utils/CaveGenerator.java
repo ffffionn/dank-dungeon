@@ -63,7 +63,17 @@ public class CaveGenerator {
      * @param seed A random number between 0 and 1 that decides the cave size.
      * @return A TiledMap with the new cavern as a Layer.
      */
-    public TiledMap generateCave(float seed){
+    public TiledMap generateCave(int floor){
+
+        // calculate seed
+        float seedFloor = (float) Math.log(floor) / 15;
+        float seedCeiling = (float) Math.log(3 * floor) / 6;
+        float seed = MathUtils.random(seedFloor, seedCeiling);
+
+        System.out.printf(" ***FLOOR %d*** \n", floor);
+        System.out.printf("Picking seed (%f) from between - (%f, %f) \n", seed, seedFloor, seedCeiling);
+
+
         int minimumSize = (10 + Math.round(seed * 15));
         mapWidth = mapHeight = Math.round(seed * 64) + minimumSize;
         terrainLayer = new TiledMapTileLayer(mapWidth, mapHeight, TILE_SIZE, TILE_SIZE);
@@ -106,13 +116,13 @@ public class CaveGenerator {
     }
 
     private void addPowerups(float seed){
-        int amount = 2;
+        int amount = 1;
         for(int i = 0; i < amount; i++){
             System.out.println(i);
             screen.add(new Pickup.ManaPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 15));
             screen.add(new Pickup.HealthPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 15));
-//            screen.add(new Pickup.MultifirePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
-//            screen.add(new Pickup.DoubleDamagePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+            screen.add(new Pickup.MultifirePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+            screen.add(new Pickup.DoubleDamagePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
         }
         map.getLayers().add(objectLayer);
     }
@@ -125,9 +135,9 @@ public class CaveGenerator {
         int numWolves = (seed > 0.2f) ? Math.round((seed/2.0f) * (seed - 0.2f) * 25) : 0;
         System.out.printf("SEED: %f   (%d/%d/%d) \n", seed, numRats, numScorpions, numWolves);
 
-        numRats = 0;
-        numScorpions = 0;
-        numWolves = 1;
+//        numRats = 2;
+//        numScorpions = 2;
+//        numWolves = 2;
 
         for( int i = 0; i < numRats; i++){
             enemies.add( new Rat(screen, cellToWorldPosition(getRandomPlace())) );
@@ -148,7 +158,6 @@ public class CaveGenerator {
      * @return A Vector2 of the position.
      */
     public Vector2 getTreasureSpot(int rarity){
-        System.out.print(".");
         Vector2 position;
         boolean spotFound = false;
         int x, y;
