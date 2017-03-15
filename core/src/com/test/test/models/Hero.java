@@ -80,7 +80,7 @@ public class Hero extends AnimatedB2DSprite {
             currentState.update(dt, this);
             tickPower(dt);
             if( currentState == standing && mana < 100.0f){
-                this.mana += (((StandingState) currentState).getTimeStanding() / 1.5 * dt);
+                this.mana += (((StandingState) currentState).getTimeStanding() * dt);
                 screen.getHud().updateMana(MathUtils.floor(this.mana));
             }
         }else{  // player is dead
@@ -149,6 +149,7 @@ public class Hero extends AnimatedB2DSprite {
     public void pickup(Pickup p){
         if(p.TYPE != Pickup.Type.POTION){
             activePower = p;
+            screen.getAssetManager().get("sounds/hero-munch.ogg", Sound.class).play();
         }
         p.activate(this);
     }

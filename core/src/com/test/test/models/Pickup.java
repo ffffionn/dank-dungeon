@@ -125,7 +125,7 @@ public class Pickup extends B2DSprite {
 
         @Override
         public void activate(Hero hero){
-            hero.adjustMana(10f);
+            hero.adjustMana(20.0f);
         }
     }
 

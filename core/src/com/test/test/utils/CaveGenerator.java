@@ -26,6 +26,7 @@ public class CaveGenerator {
     // matrix of the current floor's cells
     private boolean[][] caveCells;
 
+
     // cellular automata constants
     private static final float INITIAL_WALL_CHANCE = 0.40f;
     private static final float MINIMUM_AREA_COVERAGE = 0.45f;
@@ -33,6 +34,7 @@ public class CaveGenerator {
     private static final int SURVIVE_LIMIT = 3;    // if surrounded by under this much, become a floor
     private static final int SIMULATION_STEPS = 6;
 
+    private static final int MINIMUM_CAVE_SIZE = 16;
     private int mapWidth;
     private int mapHeight;
 
@@ -60,7 +62,7 @@ public class CaveGenerator {
 
     /**
      * Generates a map with given dimensions.
-     * @param seed A random number between 0 and 1 that decides the cave size.
+     * @param floor The current level.
      * @return A TiledMap with the new cavern as a Layer.
      */
     public TiledMap generateCave(int floor){
@@ -68,20 +70,21 @@ public class CaveGenerator {
         // calculate seed
         float seedFloor = (float) Math.log(floor) / 15;
         float seedCeiling = (float) Math.log(3 * floor) / 6;
+        seedFloor = floor == 1 ? 0.0f : MathUtils.log(5, floor/2) / 5;
+        seedCeiling = floor > 200 ? 1.0f : MathUtils.log(MathUtils.E, ((1+floor)*(1+floor))/2) / 6;
         float seed = MathUtils.random(seedFloor, seedCeiling);
 
         System.out.printf(" ***FLOOR %d*** \n", floor);
         System.out.printf("Picking seed (%f) from between - (%f, %f) \n", seed, seedFloor, seedCeiling);
 
 
-        int minimumSize = (10 + Math.round(seed * 15));
-        mapWidth = mapHeight = Math.round(seed * 64) + minimumSize;
+        mapWidth = mapHeight = Math.round(seed * 64) + MINIMUM_CAVE_SIZE;
         terrainLayer = new TiledMapTileLayer(mapWidth, mapHeight, TILE_SIZE, TILE_SIZE);
         terrainLayer.setName("terrain");
         objectLayer = new TiledMapTileLayer(mapWidth, mapHeight, TILE_SIZE, TILE_SIZE);
         objectLayer.setName("objects");
 
-        System.out.printf("Generating new cave - %d x %d   (min - %d) \n", mapWidth, mapHeight, minimumSize);
+        System.out.printf("Generating new cave - %d x %d   (min - %d) \n", mapWidth, mapHeight, MINIMUM_CAVE_SIZE);
 
         // TODO:    atlas --  blue -> poison -> dark
         Array<String> maps = new Array<String>();
@@ -130,9 +133,9 @@ public class CaveGenerator {
     public void addEnemies(float seed){
         Array<Enemy> enemies = new Array<Enemy>();
 
-        int numRats = Math.round(MathUtils.sin(seed * seed) * 100);
-        int numScorpions = Math.round(MathUtils.sin((seed * seed) / 2) * 50);
-        int numWolves = (seed > 0.2f) ? Math.round((seed/2.0f) * (seed - 0.2f) * 25) : 0;
+        int numRats = Math.round(MathUtils.sin(seed) * 50) + 2;
+        int numScorpions = Math.round((MathUtils.sin(seed * seed) * 70) + seed/3.0f);
+        int numWolves = Math.round((MathUtils.sin(seed*seed) * 40) + seed/5);
         System.out.printf("SEED: %f   (%d/%d/%d) \n", seed, numRats, numScorpions, numWolves);
 
 //        numRats = 2;
@@ -164,7 +167,7 @@ public class CaveGenerator {
         do{
             position = getRandomPlace();
             x = Math.round(position.x);
-            y = Math.round(position.y);
+            int i = y = Math.round(position.y);
             if(!caveCells[x][y]){
                 int surroundingWalls = countAliveNeighbours(caveCells, x, y, 1);
                 if(surroundingWalls >= rarity && objectLayer.getCell(x, y) == null){
