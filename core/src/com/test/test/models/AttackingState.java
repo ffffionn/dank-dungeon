@@ -1,8 +1,7 @@
 package com.test.test.models;
 
-
 /**
- * Created by Fionn on 15/02/2017.
+ * State to briefly play Cast Animation and stop mana regen.
  */
 public class AttackingState extends HeroState {
 

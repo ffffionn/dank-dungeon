@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
 /**
- * A more specialised set of states for the player character.
+ * A specialised set of states for the player character.
  */
 public abstract class HeroState{
 

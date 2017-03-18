@@ -4,16 +4,25 @@
         white: { r: 0.87, g: 0.87, b: 0.87, a: 1 },
         wine: { r: 0.23, g: 0.011, b: 0.14, a: 1},
         blue: { r: 0.376, g: 0.87, b: 0.9, a: 1 },
-        alpha-blue: { r: 0.376, g: 0.87, b: 0.9, a: 0.65 },
+        alpha-blue: { r: 0.376, g: 0.87, b: 0.9, a: 0.75 },
         red: { r: 0.54, g: 0.03, b: 0.03, a: 1 },
         grey: { r: 0.20, g: 0.20, b: 0.20, a: 0.75 },
+        dark-green: {hex: 0b2d40 },
+        green: { hex: 165751 },
+        light-green: { hex: 458c61 },
+        yellow-green: { hex: 9bc26d },
     },
     com.badlogic.gdx.graphics.g2d.BitmapFont: {
-        default-font : { file: fonts/bebas.fnt }
+        default-font : { file: fonts/bebas.fnt },
+        monospaced: { file: fonts/pt_mono.fnt },
+        westfalia: { file: fonts/westfalia.fnt },
+        ui: { file: fonts/segoe-ui.fnt },
     },
     com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
-        score-label: { font: default-font, fontColor: alpha-blue },
-        floor-label: { font: default-font, fontColor: alpha-blue },
+        ui-label: { font: default-font, fontColor: alpha-blue },
+        game-over: { font: default-font, fontColor: red },
+        monospaced: { font: monospaced, fontColor: white },
+        monospaced-green: { font: monospaced, fontColor: green }
     },
 
 }

@@ -9,7 +9,7 @@ import static com.test.test.DankDungeon.PPM;
 import static com.test.test.utils.WorldContactListener.*;
 
 /**
- * Created by Fionn on 22/01/2017.
+ * The Hero's shield. Repels enemies and drains mana while up.
  */
 public class Barrier extends B2DSprite{
 

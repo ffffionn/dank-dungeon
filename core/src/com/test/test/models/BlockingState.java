@@ -4,7 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 
 /**
- * Created by Fionn on 04/02/2017.
+ * Hero's Blocking State
  */
 public class BlockingState extends HeroState {
 

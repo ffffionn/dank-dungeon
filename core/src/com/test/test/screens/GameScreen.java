@@ -6,16 +6,14 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
@@ -34,7 +32,7 @@ import static com.test.test.DankDungeon.V_HEIGHT;
 import static com.test.test.DankDungeon.V_WIDTH;
 
 /**
- * Created by Fionn on 22/10/2016.
+ * The main game Screen.
  */
 public class GameScreen implements Screen {
     // game
@@ -75,7 +73,7 @@ public class GameScreen implements Screen {
 
     private boolean levelUp;
 
-    public GameScreen(DankDungeon game){
+    public GameScreen(DankDungeon game, AssetManager manager){
         this.floor = 1;
         this.levelUp = false;
         this.game = game;
@@ -84,39 +82,11 @@ public class GameScreen implements Screen {
         this.b2dr = new Box2DDebugRenderer();
         this.cam = new OrthographicCamera();
         cam.setToOrtho(false, V_WIDTH / 2 / PPM, V_HEIGHT / 2 / PPM);
-        this.assetManager = new AssetManager();
-        assetManager.load("ui/skin.json", Skin.class);
-//        assetManager.load("ui/skin.json", Skin.class);
-//        Skin uiSkin = new Skin(Gdx.files.internal("ui/skin.json"));
-        assetManager.load("sounds/main-loop-100.ogg", Music.class);
-        assetManager.load("sounds/main-loop-110.ogg", Music.class);
-        assetManager.load("sounds/main-loop-120.ogg", Music.class);
-        assetManager.load("sounds/main-loop-130.ogg", Music.class);
-        assetManager.load("sounds/main-loop-140.ogg", Music.class);
-        assetManager.load("sounds/main-loop-150.ogg", Music.class);
-        assetManager.load("sounds/steps.wav", Music.class);
-        assetManager.load("sounds/barrier.ogg", Music.class);
+        this.assetManager = manager;
 
-        assetManager.load("sounds/cast-spell.wav", Sound.class);
-        assetManager.load("sounds/rat-pain.ogg", Sound.class);
-        assetManager.load("sounds/rat-death.ogg", Sound.class);
-        assetManager.load("sounds/scorpion-pain.wav", Sound.class);
-        assetManager.load("sounds/scorpion-death.wav", Sound.class);
-        assetManager.load("sounds/hero-death.wav", Sound.class);
-        assetManager.load("sounds/hero-pain1.ogg", Sound.class);
-        assetManager.load("sounds/hero-pain2.ogg", Sound.class);
-        assetManager.load("sounds/hero-pain3.ogg", Sound.class);
-        assetManager.load("sounds/hero-munch.ogg", Sound.class);
-        assetManager.load("sounds/hero-heal.ogg", Sound.class);
-        assetManager.load("sounds/hero-healed.ogg", Sound.class);
-        assetManager.load("sounds/wolf-pain.wav", Sound.class);
-        assetManager.load("sounds/wolf-death.wav", Sound.class);
-        while(!assetManager.update()){
-            Gdx.app.log("loading", (assetManager.getProgress() * 100) + " %");
-        }
         bgm = assetManager.get("sounds/main-loop-100.ogg", Music.class);
         this.atlas = new TextureAtlas("animations/entities.pack");
-        this.powerTiles = TextureRegion.split(new Texture("textures/dungeonitems.png"), 25, 25);
+        this.powerTiles = TextureRegion.split(new Texture("textures/items.png"), 25, 25);
         this.gamePort = new ExtendViewport(DankDungeon.V_WIDTH / PPM, DankDungeon.V_HEIGHT / PPM , cam);
         this.hud = new GameHud(game.batch, assetManager.get("ui/skin.json", Skin.class));
         this.entityList = new Array<B2DSprite>();
@@ -125,6 +95,10 @@ public class GameScreen implements Screen {
         this.player = new Hero(this, new Vector2(0, 0));
         this.mapRenderer = new OrthogonalTiledMapRenderer(map, 1 / PPM);
         playMusic("main-loop-100");
+
+        Cursor customCursor = Gdx.graphics.newCursor(new Pixmap(Gdx.files.internal("textures/crosshair.png")), 32, 32);
+        Gdx.graphics.setCursor(customCursor);
+        customCursor.dispose();
 
         generateLevel(floor);
 
@@ -145,8 +119,9 @@ public class GameScreen implements Screen {
     }
 
     public void gameOver(){
+        int score = hud.getScore();
         dispose();
-        game.setScreen(new GameOverScreen(game, assetManager));
+        game.setScreen(new GameOverScreen(game, score, assetManager));
     }
 
     @Override

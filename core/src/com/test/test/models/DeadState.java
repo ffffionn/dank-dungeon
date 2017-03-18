@@ -1,7 +1,7 @@
 package com.test.test.models;
 
 /**
- * Created by Fionn on 04/02/2017.
+ * State to play a Death Animation.
  */
 public class DeadState extends HeroState {
 

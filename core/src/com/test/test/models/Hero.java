@@ -33,7 +33,8 @@ public class Hero extends AnimatedB2DSprite {
     private float mana;
     private Color flashColour;
 
-    private Pickup activePower;
+    private Array<Pickup> activePowers;
+
     private HeroState currentState;
     private HeroState previousState;
     private Array<Projectile> fireballs;
@@ -48,12 +49,11 @@ public class Hero extends AnimatedB2DSprite {
     public Hero(GameScreen screen, Vector2 position){
         super();
         this.screen = screen;
-        this.activePower = null;
+        this.activePowers = new Array<Pickup>();
         this.currentState = standing;
         this.previousState = standing;
         this.fireballs = new Array<Projectile>();
         this.health = MAX_HEALTH;
-//        this.health = 15;
         this.mana = MAX_MANA;
         this.invincible = false;
         this.flashColour = Color.RED;
@@ -86,7 +86,6 @@ public class Hero extends AnimatedB2DSprite {
         }else{  // player is dead
             // set game over animation
             if( animation.getTimesPlayed() == 1 ){
-                System.out.println("game over --------");
                 setToDestroy();
             }
         }
@@ -102,7 +101,7 @@ public class Hero extends AnimatedB2DSprite {
         }
 
         // DEBUG: bail
-        if(Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) screen.dispose();
+        if(Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) die();
     }
 
     /**
@@ -113,32 +112,34 @@ public class Hero extends AnimatedB2DSprite {
             return;
         }
         Array<Projectile> newFireballs = new Array<Projectile>();
-        if(activePower == null){
-            newFireballs.add(new Projectile(screen, getPosition(), screen.getCursor().getPosition()));
-        }else{
-            switch(activePower.TYPE){
-                case MULTI_FIRE:
-                    float a = 15 * MathUtils.degreesToRadians;
-                    float dst = getPosition().dst(screen.getCursor().getPosition());
 
-                    float x = getPosition().x + dst * MathUtils.cos(b2body.getAngle() + a);
-                    float y = getPosition().y + dst * MathUtils.sin(b2body.getAngle() + a);
-                    newFireballs.add(new Projectile(screen, getPosition(), new Vector2(x, y)));
+        int damage = Projectile.DEFAULT_DAMAGE;
+        float speed = 1.2f * Projectile.DEFAULT_SPEED;
 
-                    x = getPosition().x + dst * MathUtils.cos(b2body.getAngle() - a);
-                    y = getPosition().y + dst * MathUtils.sin(b2body.getAngle() - a);
-                    newFireballs.add(new Projectile(screen, getPosition(), new Vector2(x, y)));
+        if(hasPower(Pickup.Type.DOUBLE_DMG)){
+            damage *= 2;
+        }
 
-                    newFireballs.add(new Projectile(screen, getPosition(), screen.getCursor().getPosition()));
-                    break;
-                case DOUBLE_DMG:
-                    newFireballs.add(new Projectile(screen, getPosition(), screen.getCursor().getPosition(),
-                            2 * Projectile.DEFAULT_DAMAGE, 1.2f * Projectile.DEFAULT_SPEED, Color.RED));
-                    break;
-                default:
-                    newFireballs.add(new Projectile(screen, getPosition(), screen.getCursor().getPosition()));
+        newFireballs.add(new Projectile(screen, getPosition(), screen.getCursor().getPosition(), damage, speed));
+        if(hasPower(Pickup.Type.MULTI_FIRE)){
+            float a = 15 * MathUtils.degreesToRadians;
+            float dst = getPosition().dst(screen.getCursor().getPosition());
+
+            float x = getPosition().x + dst * MathUtils.cos(b2body.getAngle() + a);
+            float y = getPosition().y + dst * MathUtils.sin(b2body.getAngle() + a);
+            newFireballs.add(new Projectile(screen, getPosition(), new Vector2(x, y)));
+
+            x = getPosition().x + dst * MathUtils.cos(b2body.getAngle() - a);
+            y = getPosition().y + dst * MathUtils.sin(b2body.getAngle() - a);
+            newFireballs.add(new Projectile(screen, getPosition(), new Vector2(x, y), damage, speed));
+
+        }
+        if(hasPower(Pickup.Type.DOUBLE_DMG)){
+            for(Projectile p : newFireballs){
+                p.tint = Color.RED;
             }
         }
+
         adjustMana(-1.0f);
         screen.add(newFireballs);
         fireballs.addAll(newFireballs);
@@ -148,19 +149,21 @@ public class Hero extends AnimatedB2DSprite {
 
     public void pickup(Pickup p){
         if(p.TYPE != Pickup.Type.POTION){
-            activePower = p;
             screen.getAssetManager().get("sounds/hero-munch.ogg", Sound.class).play();
+            activePowers.add(p);
         }
         p.activate(this);
+
     }
 
     private void tickPower(float dt){
-        if (activePower != null && activePower instanceof Pickup.TimedPickup) {
-            activePower.update(dt);
-            if(((Pickup.TimedPickup) activePower).isTimeUp()){
-                activePower.deactivate();
-                activePower = null;
+        for(Pickup power : activePowers){
+            power.update(dt);
+            if(((Pickup.TimedPickup) power).isTimeUp()){
+                power.deactivate();
+                activePowers.removeValue(power, false);
             }
+
         }
     }
 
@@ -168,7 +171,16 @@ public class Hero extends AnimatedB2DSprite {
         return currentState == HeroState.dead;
     }
 
+    public boolean hasPower(Pickup.Type type){
+        for(Pickup power : activePowers){
+            if (power.TYPE == type) return true;
+        }
+        return false;
+    }
+
     public void adjustMana(float amount){
+        if (hasPower(Pickup.Type.UNLIMITED_MANA)) return;
+
         this.mana += amount;
         if(mana < 0){
             mana = 0;
@@ -238,7 +250,6 @@ public class Hero extends AnimatedB2DSprite {
     }
 
     public int getMana(){ return MathUtils.floor(mana);}
-    public Pickup getActivePower(){ return this.activePower; }
     public GameScreen getScreen(){ return this.screen; }
     public HeroState getCurrentState(){ return this.currentState; }
     public HeroState getPreviousState(){ return this.previousState; }
@@ -318,10 +329,7 @@ public class Hero extends AnimatedB2DSprite {
 
     public void dispose(){
         footsteps.stop();
-        footsteps.dispose();
         barrierSound.stop();
-        barrierSound.dispose();
-        castSound.dispose();
         screen.getWorld().destroyBody(shield.getBody());
     }
 }

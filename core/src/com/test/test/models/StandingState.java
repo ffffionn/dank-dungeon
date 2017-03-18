@@ -2,10 +2,9 @@ package com.test.test.models;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.audio.Music;
 
 /**
- * Created by Fionn on 04/02/2017.
+ * The default state for the Hero, handles input.
  */
 public class StandingState extends HeroState {
 

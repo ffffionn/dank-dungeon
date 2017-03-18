@@ -7,7 +7,7 @@ import com.test.test.screens.GameScreen;
 
 
 /**
- * Created by Fionn on 21/11/2016.
+ * ContactListener for physics bodies in the game.
  */
 public class WorldContactListener implements ContactListener{
 
@@ -99,14 +99,21 @@ public class WorldContactListener implements ContactListener{
         public static void collide(Body enemyBody, Body body) {
             // if it's an entity, damage it
             if(body.getUserData() instanceof Hero){
-                ((Hero) body.getUserData()).damage(((Enemy) enemyBody.getUserData()).getAttackDamage());
+                if(((Hero) body.getUserData()).hasPower(Pickup.Type.INVINCIBLE)){
+                    ((Enemy) enemyBody.getUserData()).damage(9000);
+                }else{
+                    ((Hero) body.getUserData()).damage(((Enemy) enemyBody.getUserData()).getAttackDamage());
+                    Vector2 v = enemyBody.getLinearVelocity();
+                    v.scl(2.5f);
+                    enemyBody.setLinearVelocity(new Vector2(-v.x, -v.y));
+                    body.setLinearVelocity(new Vector2(v.x, v.y));
+                }
             }else if( body.getUserData() instanceof Barrier){
                 ((Enemy) enemyBody.getUserData()).stun(1.0f);
+                Vector2 v = enemyBody.getLinearVelocity();
+                v.scl(2.5f);
+                enemyBody.setLinearVelocity(new Vector2(-v.x, -v.y));
             }
-            Vector2 v = enemyBody.getLinearVelocity();
-            v.scl(2.0f);
-            enemyBody.setLinearVelocity(new Vector2(-v.x, -v.y));
-            body.setLinearVelocity(new Vector2(v.x, v.y));
         }
     }
 

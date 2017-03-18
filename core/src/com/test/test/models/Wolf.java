@@ -22,7 +22,7 @@ public class Wolf extends Enemy {
 
         // Wolf attributes
         this.health = this.maxHealth = 300;
-        this.max_speed = 0.35f;
+        this.max_speed = 0.45f;
         this.score_value = 200;
         this.attackDamage = 9;
         this.radius = 9.0f;

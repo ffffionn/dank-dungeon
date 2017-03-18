@@ -3,22 +3,20 @@ package com.test.test.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.test.test.DankDungeon;
 
-import static com.badlogic.gdx.scenes.scene2d.actions.Actions.fadeIn;
 
 /**
- * Created by Fionn on 27/11/2016.
+ * A simple screen displaying "GAME OVER".
  */
 public class GameOverScreen implements Screen{
 
@@ -26,31 +24,39 @@ public class GameOverScreen implements Screen{
     private Viewport viewport;
     private Stage stage;
     private AssetManager assetManager;
+    private Table table;
 
-    public GameOverScreen(DankDungeon game, AssetManager manager){
+    private int score;
+
+    public GameOverScreen(DankDungeon game, int score, AssetManager manager){
         this.game = game;
         this.assetManager = manager;
+        this.score = score;
         viewport = new FitViewport(game.V_WIDTH, game.V_HEIGHT, new OrthographicCamera());
         stage = new Stage(viewport, game.batch);
 
         Skin skin = assetManager.get("ui/skin.json", Skin.class);
-        Label.LabelStyle font = new Label.LabelStyle(skin.getFont("default-font"), skin.getColor("red"));
+        Label.LabelStyle defaultStyle = new Label.LabelStyle(skin.getFont("default-font"), skin.getColor("red"));
 
-        Table table = new Table();
-        table.center();
+        this.table = new Table();
         table.setFillParent(true);
 
-        Label gameOverLabel = new Label("GAME  OVER", font);
-
-        table.add(gameOverLabel).expandX();
-        table.row();
+        Label gameOverLabel = new Label("GAME OVER", defaultStyle);
+        table.add(gameOverLabel).expandX().expandY().center();
 
         stage.addActor(table);
     }
 
+
     @Override
     public void show() {
-
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                dispose();
+                game.setScreen(new HighScoreScreen(game, score, assetManager));
+            }
+        }, 2.0f);
     }
 
     @Override

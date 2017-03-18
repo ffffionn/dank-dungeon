@@ -3,7 +3,7 @@ package com.test.test;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.test.test.screens.GameScreen;
+import com.test.test.screens.LoadingScreen;
 
 public class DankDungeon extends Game {
 
@@ -20,7 +20,7 @@ public class DankDungeon extends Game {
         this.batch = new SpriteBatch();
         this.log = new FPSLogger();
 
-        setScreen(new GameScreen(this));
+        setScreen(new LoadingScreen(this));
 	}
 
 	@Override

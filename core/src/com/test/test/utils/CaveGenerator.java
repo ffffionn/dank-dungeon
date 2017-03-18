@@ -19,7 +19,7 @@ import static com.test.test.screens.GameScreen.TILE_SIZE;
 import static com.test.test.utils.WorldContactListener.*;
 
 /**
- * Created by fionn on 07/01/17.
+ * Generates random levels populated with enemies that scale with the dungeon level.
  */
 public class CaveGenerator {
 
@@ -53,11 +53,11 @@ public class CaveGenerator {
         this.screen = screen;
         this.map = new TiledMap();
         this.wallBodies = new Array<Body>();
-        Pickup.definePickupTextures(new Texture("textures/dungeonitems.png"));
+        Pickup.definePickupTextures(new Texture("textures/items.png"));
         this.floorTiles = new Array<TextureRegion>();
         this.wallTiles = new Array<TextureRegion>();
 
-        defineCaveTextures(new Texture("textures/dungeontiles-sand.png"));
+        defineCaveTextures(new Texture("textures/dungeontiles-blue.png"));
     }
 
     /**
@@ -66,25 +66,22 @@ public class CaveGenerator {
      * @return A TiledMap with the new cavern as a Layer.
      */
     public TiledMap generateCave(int floor){
+        System.out.printf(" ***FLOOR %d*** \n", floor);
 
         // calculate seed
-        float seedFloor = (float) Math.log(floor) / 15;
-        float seedCeiling = (float) Math.log(3 * floor) / 6;
-        seedFloor = floor == 1 ? 0.0f : MathUtils.log(5, floor/2) / 5;
-        seedCeiling = floor > 200 ? 1.0f : MathUtils.log(MathUtils.E, ((1+floor)*(1+floor))/2) / 6;
+        float seedFloor = floor == 1 ? 0.0f : MathUtils.log(5, floor/2) / 5;
+        float seedCeiling = floor > 200 ? 1.0f : MathUtils.log(MathUtils.E, ((1+floor)*(1+floor))/2) / 6;
         float seed = MathUtils.random(seedFloor, seedCeiling);
-
-        System.out.printf(" ***FLOOR %d*** \n", floor);
         System.out.printf("Picking seed (%f) from between - (%f, %f) \n", seed, seedFloor, seedCeiling);
 
-
         mapWidth = mapHeight = Math.round(seed * 64) + MINIMUM_CAVE_SIZE;
+        System.out.printf("Generating new cave - %d x %d   (min - %d) \n", mapWidth, mapHeight, MINIMUM_CAVE_SIZE);
+
         terrainLayer = new TiledMapTileLayer(mapWidth, mapHeight, TILE_SIZE, TILE_SIZE);
         terrainLayer.setName("terrain");
         objectLayer = new TiledMapTileLayer(mapWidth, mapHeight, TILE_SIZE, TILE_SIZE);
         objectLayer.setName("objects");
 
-        System.out.printf("Generating new cave - %d x %d   (min - %d) \n", mapWidth, mapHeight, MINIMUM_CAVE_SIZE);
 
         // TODO:    atlas --  blue -> poison -> dark
         Array<String> maps = new Array<String>();
@@ -92,7 +89,12 @@ public class CaveGenerator {
         maps.add("dark");
         maps.add("poison");
 
-        defineCaveTextures(new Texture("textures/dungeontiles-dark.png"));
+        if(floor == 5){
+            defineCaveTextures(new Texture("textures/dungeontiles-poison.png"));
+        }else if( floor == 10){
+            defineCaveTextures(new Texture("textures/dungeontiles-dark.png"));
+        }
+
 
         // keep generating caves until floor area is at least 45% of map
         boolean[][] optimisedCave;
@@ -126,6 +128,8 @@ public class CaveGenerator {
             screen.add(new Pickup.HealthPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 15));
             screen.add(new Pickup.MultifirePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
             screen.add(new Pickup.DoubleDamagePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+            screen.add(new Pickup.UnlimitedManaPickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+            screen.add(new Pickup.InvinciblePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
         }
         map.getLayers().add(objectLayer);
     }

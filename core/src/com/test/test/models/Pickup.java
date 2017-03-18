@@ -17,7 +17,7 @@ import static com.test.test.utils.WorldContactListener.*;
  */
 public class Pickup extends B2DSprite {
 
-    public enum Type{ MULTI_FIRE, SPEEDUP, DOUBLE_DMG, POTION }
+    public enum Type{ MULTI_FIRE, INVINCIBLE, DOUBLE_DMG, POTION, UNLIMITED_MANA }
     public Type TYPE;
 
     protected int size;
@@ -26,6 +26,8 @@ public class Pickup extends B2DSprite {
     protected static TextureRegion manaBottle;
     protected static TextureRegion chilli;
     protected static TextureRegion cheese;
+    protected static TextureRegion grapes;
+    protected static TextureRegion mushrooms;
 
     public Pickup(GameScreen screen, TextureRegion texture, Vector2 startPosition, int size){
         super();
@@ -52,6 +54,8 @@ public class Pickup extends B2DSprite {
         manaBottle = items[2][2];
         chilli = items[5][4];
         cheese = items[5][3];
+        grapes = items[5][1];
+        mushrooms = items[5][7];
     }
 
     protected void define(GameScreen screen, Vector2 position){
@@ -134,7 +138,7 @@ public class Pickup extends B2DSprite {
         public MultifirePickup(GameScreen screen, Vector2 startPosition, int size){
             super(screen, chilli, startPosition, size);
             TYPE = Type.MULTI_FIRE;
-            powerTimer = 5.0f;
+            powerTimer = 10.0f;
             timerCount = 0;
         }
 
@@ -149,6 +153,36 @@ public class Pickup extends B2DSprite {
         public DoubleDamagePickup(GameScreen screen, Vector2 startPosition, int size){
             super(screen, cheese, startPosition, size);
             TYPE = Type.DOUBLE_DMG;
+            powerTimer = 10.0f;
+            timerCount = 0;
+        }
+
+        @Override
+        public void activate(Hero hero){
+            timerCount = 0.0f;
+        }
+    }
+
+    /** GIVE PLAYER UNLIMITED MANA */
+    public static class UnlimitedManaPickup extends TimedPickup {
+        public UnlimitedManaPickup(GameScreen screen, Vector2 startPosition, int size){
+            super(screen, grapes, startPosition, size);
+            TYPE = Type.UNLIMITED_MANA;
+            powerTimer = 7.5f;
+            timerCount = 0;
+        }
+
+        @Override
+        public void activate(Hero hero){
+            timerCount = 0.0f;
+        }
+    }
+
+    /** MAKE THE PLAYER INVINCIBLE AND DEAL DMG ON HIT */
+    public static class InvinciblePickup extends TimedPickup {
+        public InvinciblePickup(GameScreen screen, Vector2 startPosition, int size){
+            super(screen, mushrooms, startPosition, size);
+            TYPE = Type.INVINCIBLE;
             powerTimer = 5.0f;
             timerCount = 0;
         }

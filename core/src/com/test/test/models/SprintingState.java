@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Timer;
 
 /**
- * Created by Fionn on 04/02/2017.
+ * SprintingState - Has a cooldown before you can re-enter this state.
  */
 public class SprintingState extends HeroState {
 

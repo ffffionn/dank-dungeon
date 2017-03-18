@@ -1,6 +1,5 @@
 package com.test.test.scenes;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -14,7 +13,7 @@ import com.test.test.DankDungeon;
 import com.test.test.models.Hero;
 
 /**
- * The game HUD.
+ * The game HUD. Displays HP/MP bars, score, dungeon level and active power-ups.
  */
 public class GameHud {
 
@@ -38,18 +37,20 @@ public class GameHud {
     private float alpha;
 
     public GameHud(SpriteBatch sb, Skin skin){
-        score = 0;
-        floor = 1;
-        playerHealth = Hero.MAX_HEALTH;
-        playerMana = Hero.MAX_MANA;
-        viewport = new StretchViewport(DankDungeon.V_WIDTH, DankDungeon.V_HEIGHT, new OrthographicCamera());
-        stage = new Stage(viewport, sb);
+        this.score = 0;
+        this.floor = 1;
+        this.playerHealth = Hero.MAX_HEALTH;
+        this.playerMana = Hero.MAX_MANA;
+        this.viewport = new StretchViewport(DankDungeon.V_WIDTH, DankDungeon.V_HEIGHT, new OrthographicCamera());
+        this.stage = new Stage(viewport, sb);
         this.skin = skin;
+
+        // TODO: flash red
         Pixmap pix = new Pixmap(DankDungeon.V_WIDTH, DankDungeon.V_HEIGHT, Pixmap.Format.RGBA8888);
         pix.setColor(skin.getColor("red"));
         Texture red = new Texture(pix);
-        overlay = new Sprite(red);
-        alpha = 1.0f;
+        this.overlay = new Sprite(red);
+        this.alpha = 0.4f;
 
         addStats();
         addBars();
@@ -58,6 +59,11 @@ public class GameHud {
     public void update(float dt){
         healthBar.act(dt);
         manaBar.act(dt);
+    }
+
+    public void draw(SpriteBatch batch){
+        overlay.setColor(skin.getColor("red"));
+        overlay.draw(batch);
     }
 
     public void setFloor(int floor) {
@@ -75,23 +81,21 @@ public class GameHud {
         manaBar.setValue(playerMana);
     }
 
-    public void draw(SpriteBatch batch){
-        overlay.draw(batch);
+    public void updateScore(int adjustment){
+        score += adjustment;
+        scoreLabel.setText(String.format("SCORE: %06d", score));
     }
 
     public void resize(int width, int height){
         viewport.update(width, height);
     }
 
-    public void updateScore(int adjustment){
-        score += adjustment;
-        scoreLabel.setText(String.format("SCORE: %06d", score));
+    public int getScore(){
+        return this.score;
     }
-
     public void dispose(){
         stage.dispose();
     }
-
     public Stage getStage(){ return stage; }
 
     private void addStats(){
@@ -100,8 +104,8 @@ public class GameHud {
 //        table.setDebug(true);
         BitmapFont font =  skin.get("default-font", BitmapFont.class);
 
-        scoreLabel = new Label(String.format("SCORE: %06d", score), skin, "score-label");
-        floorLabel = new Label(String.format("FLOOR: %03d", floor), skin, "floor-label");
+        scoreLabel = new Label(String.format("SCORE: %06d", score), skin, "ui-label");
+        floorLabel = new Label(String.format("FLOOR: %03d", floor), skin, "ui-label");
 
         table.top().add(scoreLabel).height(20).expandX().padTop(5);
         table.add().expandX().padTop(5);
@@ -119,27 +123,28 @@ public class GameHud {
         skin.add("block", new Texture(block));
 
         ProgressBar.ProgressBarStyle barStyle = new ProgressBar.ProgressBarStyle();
-        barStyle.background = skin.newDrawable("block", skin.getColor("grey"));
-        barStyle.knobBefore = skin.newDrawable("block", skin.getColor("red"));
+
+        // reverse the background and knob to get the bar to reach 0 properly
+        barStyle.background = skin.newDrawable("block", skin.getColor("red"));
+        barStyle.knobAfter = skin.newDrawable("block", skin.getColor("grey"));
 
         healthBar = new ProgressBar(0, Hero.MAX_HEALTH, 1.0f, false, barStyle);
         healthBar.setPosition(10, 50);
         healthBar.setAnimateDuration(0.5f);
-        healthBar.setSize(200, healthBar.getPrefHeight());
+        healthBar.setSize(300, healthBar.getPrefHeight());
         healthBar.setValue(playerHealth);
 
         barStyle = new ProgressBar.ProgressBarStyle();
-        barStyle.background = skin.newDrawable("block", skin.getColor("grey"));
-        barStyle.knobBefore = skin.newDrawable("block", skin.getColor("blue"));
+        barStyle.background = skin.newDrawable("block", skin.getColor("blue"));
+        barStyle.knobAfter = skin.newDrawable("block", skin.getColor("grey"));
 
         manaBar = new ProgressBar(0, Hero.MAX_MANA, 0.5f, false, barStyle);
         manaBar.setPosition(10, 10);
         manaBar.setAnimateDuration(0.5f);
-        manaBar.setSize(200, manaBar.getPrefHeight());
+        manaBar.setSize(300, manaBar.getPrefHeight());
         manaBar.setValue(playerMana);
 
         stage.addActor(healthBar);
         stage.addActor(manaBar);
     }
-
 }
