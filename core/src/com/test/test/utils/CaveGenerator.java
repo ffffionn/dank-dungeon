@@ -69,8 +69,8 @@ public class CaveGenerator {
         System.out.printf(" ***FLOOR %d*** \n", floor);
 
         // calculate seed
-        float seedFloor = floor == 1 ? 0.0f : MathUtils.log(5, floor/2) / 5;
-        float seedCeiling = floor > 200 ? 1.0f : MathUtils.log(MathUtils.E, ((1+floor)*(1+floor))/2) / 6;
+        float seedFloor = floor > 125 ? 1.0f : floor / 125.0f;
+        float seedCeiling = floor > 200 ? 1.0f : MathUtils.log(MathUtils.E, 1+((floor)*(floor)) / 4) / 8;
         float seed = MathUtils.random(seedFloor, seedCeiling);
         System.out.printf("Picking seed (%f) from between - (%f, %f) \n", seed, seedFloor, seedCeiling);
 
@@ -124,12 +124,12 @@ public class CaveGenerator {
         int amount = 1;
         for(int i = 0; i < amount; i++){
             System.out.println(i);
-            screen.add(new Pickup.ManaPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 15));
-            screen.add(new Pickup.HealthPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 15));
             screen.add(new Pickup.MultifirePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
             screen.add(new Pickup.DoubleDamagePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
             screen.add(new Pickup.UnlimitedManaPickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
             screen.add(new Pickup.InvinciblePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+            screen.add(new Pickup.ManaPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 15));
+            screen.add(new Pickup.HealthPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 15));
         }
         map.getLayers().add(objectLayer);
     }
@@ -142,9 +142,9 @@ public class CaveGenerator {
         int numWolves = Math.round((MathUtils.sin(seed*seed) * 40) + seed/5);
         System.out.printf("SEED: %f   (%d/%d/%d) \n", seed, numRats, numScorpions, numWolves);
 
-//        numRats = 2;
-//        numScorpions = 2;
-//        numWolves = 2;
+        numRats = 0;
+        numScorpions = 0;
+        numWolves = 1;
 
         for( int i = 0; i < numRats; i++){
             enemies.add( new Rat(screen, cellToWorldPosition(getRandomPlace())) );

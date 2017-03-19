@@ -277,6 +277,7 @@ public class Hero extends AnimatedB2DSprite {
         // rotate region 90 first for perf.
         sprite.rotate90(true);
         sprite.draw(batch);
+        shield.render(batch);
     }
 
     private void die(){

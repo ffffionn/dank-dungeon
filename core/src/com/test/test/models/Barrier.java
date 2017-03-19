@@ -1,5 +1,9 @@
 package com.test.test.models;
 
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
@@ -11,7 +15,7 @@ import static com.test.test.utils.WorldContactListener.*;
 /**
  * The Hero's shield. Repels enemies and drains mana while up.
  */
-public class Barrier extends B2DSprite{
+public class Barrier extends AnimatedB2DSprite{
 
     private GameScreen screen;
     private Hero hero;
@@ -27,12 +31,33 @@ public class Barrier extends B2DSprite{
         raised = false;
         defineShield(hero.getPosition());
         b2body.setActive(false);
+        TextureRegion[][] split = TextureRegion.split(screen.getAssetManager().get("textures/shield.png", Texture.class), 48, 48);
+        TextureRegion[] frames = new TextureRegion[16];
+        int index = 0;
+        for(int x = 0; x < split.length; x++){
+            for(int y = 0; y < split[0].length; y++){
+                frames[index++] = split[x][y];
+            }
+        }
+        setAnimation(frames, 1/12f);
+        setTexture(frames[0], 24);
     }
 
     public void update(float dt) {
         b2body.setTransform(hero.getPosition(), hero.angleToCursor());
+        super.update(dt);
         if(raised){
             hero.adjustMana(-5 * dt);
+        }
+    }
+
+    @Override
+    public void render(SpriteBatch sb) {
+        if(raised){
+//            super.render(sb);
+            sprite.setRegion(animation.getFrame());
+            sprite.rotate90(true);
+            sprite.draw(sb);
         }
     }
 

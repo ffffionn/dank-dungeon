@@ -142,7 +142,7 @@ public class GameScreen implements Screen {
         for( B2DSprite b : entityList){
              b.update(delta);
             if( b instanceof Enemy){
-                ((Enemy) b).setTarget(player.getPosition());
+                ((Enemy) b).setTarget(player.getPosition().cpy());
             }
         }
 
@@ -166,7 +166,7 @@ public class GameScreen implements Screen {
     }
 
     private void draw(){
-        Gdx.gl.glClearColor(100f / 255f, 100f / 255f, 100f / 255f, 1f);
+        Gdx.gl.glClearColor(50f / 255f, 50f / 255f, 50f / 255f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         mapRenderer.render();

@@ -86,7 +86,14 @@ public class WorldContactListener implements ContactListener{
     private static class ProjectileCollisionHandler{
         public static void collide(Projectile p, Body body) {
             // if it's an entity, damage it
-            if( body.getUserData() instanceof Hero || body.getUserData() instanceof Enemy){
+            if( body.getUserData() instanceof Hero){
+                if(((Hero) body.getUserData()).hasPower(Pickup.Type.INVINCIBLE)){
+//                    p.bounce();
+                }else{
+                    ((Hero) body.getUserData()).damage(p.getDamageAmount());
+                }
+            }else if (body.getUserData() instanceof Enemy){
+
                 ((B2DSprite) body.getUserData()).damage(p.getDamageAmount());
             }else if( body.getUserData() instanceof Projectile){
                 ((Projectile) body.getUserData()).setToDestroy();

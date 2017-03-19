@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -66,6 +67,7 @@ public class LoadingScreen implements Screen {
     @Override
     public void show() {
         assetManager.load("ui/skin.json", Skin.class);
+
         assetManager.load("sounds/main-loop-100.ogg", Music.class);
         assetManager.load("sounds/main-loop-110.ogg", Music.class);
         assetManager.load("sounds/main-loop-120.ogg", Music.class);
@@ -89,7 +91,10 @@ public class LoadingScreen implements Screen {
         assetManager.load("sounds/hero-healed.ogg", Sound.class);
         assetManager.load("sounds/wolf-pain.wav", Sound.class);
         assetManager.load("sounds/wolf-death.wav", Sound.class);
+
         assetManager.load("textures/crosshair.png", Texture.class);
+//        Texture text = new Texture(Gdx.files.local("textures/shield.png"));
+        assetManager.load("textures/shield.png", Texture.class);
     }
 
     @Override
