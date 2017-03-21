@@ -98,7 +98,13 @@ public class WorldContactListener implements ContactListener{
             }else if( body.getUserData() instanceof Projectile){
                 ((Projectile) body.getUserData()).setToDestroy();
             }
-            p.setToDestroy();
+            if( body.getFixtureList().first().getUserData() == "wall"){
+                p.bounce();
+//                p.setBounceReady();
+//                System.out.println("BOUNCE");
+            }else{
+                p.setToDestroy();
+            }
         }
     }
 

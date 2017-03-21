@@ -13,7 +13,7 @@ public class DankDungeon extends Game {
 
     public static int V_WIDTH = 1024;
     public static int V_HEIGHT = 760;
-    public static final float PPM = 100;
+    public static final float PPM = 80;
 
     public SpriteBatch batch;
 

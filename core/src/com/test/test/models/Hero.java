@@ -139,7 +139,9 @@ public class Hero extends AnimatedB2DSprite {
                 p.tint = Color.RED;
             }
         }
-
+        for(Projectile p : newFireballs){
+            p.setBounces(2);
+        }
         adjustMana(-1.0f);
         screen.add(newFireballs);
         fireballs.addAll(newFireballs);

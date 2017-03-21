@@ -66,6 +66,8 @@ public class HighScoreScreen implements Screen {
         try{
             int lowestScore = Integer.parseInt(highScores.get(highScores.size - 1).split(":")[1].trim());
             this.highScoreSet = score > lowestScore;
+            System.out.println(score > lowestScore);
+            System.out.println(highScoreSet);
         }catch(Exception e){
             e.printStackTrace();
             highScoreSet = false;
@@ -167,6 +169,7 @@ public class HighScoreScreen implements Screen {
     @Override
     public void show() {
         if(highScoreSet){
+            System.out.println("!");
             Input.TextInputListener listener = new Textbox(this, table);
             input.getTextInput(listener, "NEW HIGH SCORE!", "", "Enter Your Name");
         }
@@ -182,7 +185,7 @@ public class HighScoreScreen implements Screen {
                 dispose();
                 game.setScreen(new GameScreen(game, assetManager));
             }else{
-                game.setScreen(new MainMenuScreen(game, assetManager));
+//                game.setScreen(new MainMenuScreen(game, assetManager));
             }
         }
     }

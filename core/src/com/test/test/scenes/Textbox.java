@@ -14,11 +14,13 @@ public class Textbox implements Input.TextInputListener {
 
     public Textbox(HighScoreScreen screen, Table table){
         this.screen = screen;
+        System.out.println("!!");
         this.table = table;
     }
 
     @Override
     public void input(String text) {
+        System.out.println("Input");
         String clean = text.replace(":", "");
         if(clean.length() > 15){
             clean = clean.substring(0,14);
@@ -28,6 +30,8 @@ public class Textbox implements Input.TextInputListener {
 
     @Override
     public void canceled() {
+        System.out.println("!!???");
+
 
     }
 }

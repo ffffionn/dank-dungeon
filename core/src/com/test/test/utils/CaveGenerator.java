@@ -149,9 +149,9 @@ public class CaveGenerator {
         int numWolves = Math.round((MathUtils.sin(seed*seed) * 40) + seed/5);
         System.out.printf("SEED: %f   (%d/%d/%d) \n", seed, numRats, numScorpions, numWolves);
 
-        numRats = 0;
-        numScorpions = 0;
-        numWolves = 1;
+//        numRats = 0;
+//        numScorpions = 0;
+//        numWolves = 0;
 
         Vector2 spawnPoint;
         // ensure enemies don't spawn near the hero
@@ -450,6 +450,9 @@ public class CaveGenerator {
         bdef.position.set(centre);
         wall.setAsBox(TILE_SIZE / 2 / PPM, TILE_SIZE / 2 / PPM, centre, 0);
         fdef.shape = wall;
+//        fdef.restitution = 1.0f;
+//        fdef.friction = 1.0f;
+//        fdef.density = 1.0f;
         fdef.filter.categoryBits = WALL;
         fdef.filter.maskBits = PLAYER | PLAYER_PROJECTILE | ENEMY_PROJECTILE | ENEMY;
 

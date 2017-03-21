@@ -29,13 +29,19 @@ public class Projectile extends AnimatedB2DSprite {
     protected GameScreen screen;
 
     protected Color tint;
+    protected int bounces;
+
+    protected boolean bounceReady;
+
 
     public Projectile(GameScreen screen, Vector2 startPosition, Vector2 target){
         super();
+        this.bounces = 0;
         this.screen = screen;
         this.speed = DEFAULT_SPEED;
         this.damageAmount = DEFAULT_DAMAGE;
         this.tint = Color.valueOf("#efefef");
+        this.bounceReady  = false;
         defineProjectile(startPosition, target);
         velocity = target.cpy().sub(startPosition).nor().scl(speed);
         b2body.setLinearVelocity(velocity);
@@ -66,12 +72,38 @@ public class Projectile extends AnimatedB2DSprite {
         this.tint = tint;
     }
 
+    public void setBounces(int number){
+        this.bounces = number;
+    }
+
+    public int getBounces() {
+        return this.bounces;
+    }
+    public void setBounceReady(){
+        this.bounceReady = true;
+    }
+
+    public void bounce(){
+        if(bounces == 0){
+            setToDestroy();
+        }else{
+            this.bounces--;
+        }
+        bounceReady = false;
+    }
 
     public void update(float delta) {
         if( setToDestroy && !destroyed ){
             destroyed = true;
         }else{
+            if(bounceReady){
+                bounce();
+            }
             animation.update(delta);
+
+            // stay facing the way it's headed
+            b2body.setTransform(b2body.getPosition(), b2body.getLinearVelocity().angleRad());
+            // keep the sprite in line with the body
             sprite.setPosition(b2body.getPosition().x - sprite.getWidth() / 2,
                     b2body.getPosition().y - sprite.getHeight() / 2);
             sprite.setRotation(b2body.getAngle() * MathUtils.radiansToDegrees);
@@ -92,8 +124,8 @@ public class Projectile extends AnimatedB2DSprite {
         shape.setRadius(2.8f / PPM);
         fdef.shape = shape;
         fdef.friction = 0.0f;
-        fdef.restitution = 0.0f;
-        fdef.isSensor = true;
+        fdef.restitution = 1.0f;
+//        fdef.isSensor = true;
 
         fdef.filter.maskBits = WALL | BARRIER;
 
