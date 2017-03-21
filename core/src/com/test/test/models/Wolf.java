@@ -1,5 +1,7 @@
 package com.test.test.models;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
@@ -17,6 +19,13 @@ public class Wolf extends Enemy {
     private static TextureRegion[] attackAnimation;
     private static TextureRegion[] deathAnimation;
 
+    private static float CHARGE_SPEED = 1.35f;
+
+    private float chargeTime;
+    private float chargeCooldown;
+
+    private boolean charging;
+
     public Wolf(GameScreen screen, Vector2 startPosition){
         super(screen, startPosition);
 
@@ -29,6 +38,9 @@ public class Wolf extends Enemy {
         this.maxSight = 1.8f;
         this.coneAngle = 30 * MathUtils.degreesToRadians;
         this.canAttack = true;
+
+        this.chargeCooldown = 2.0f;
+        this.charging = false;
         // first enemy fetches animation frames from TextureAtlas
         if(moveAnimation == null || attackAnimation == null){
             defineAnimations(screen);
@@ -47,38 +59,81 @@ public class Wolf extends Enemy {
 
     @Override
     protected void move() {
-        if(targetInSight()){
-            moveTowards(target);
-            if( b2body.getPosition().dst(target) <= 0.5f && canAttack ) {
-                // attack when in range
-                attack();
+        float distanceToTarget = b2body.getPosition().dst(target.cpy());
+        if (charging) {
+            moveTowards(target.cpy());
+//            faceDirection(chargeDirection);
+            if (Math.abs(b2body.getLinearVelocity().x) < 0.1f &&
+                    Math.abs(b2body.getLinearVelocity().y) < 0.1f) {
+                System.out.println("blocked");
+                stopCharge();
+            } else if (distanceToTarget < 0.01f && distanceToTarget > 0){
+                stopCharge();
             }
-        }else{
-            walkAround();
-            faceDirection(b2body.getLinearVelocity().angleRad());
+        } else {
+            if (targetInSight()) {
+                moveTowards(target.cpy());
+                if (distanceToTarget <= 1.0f && canAttack) {
+                    // attack when in range
+                    attack();
+                }
+            } else {
+                this.max_speed = 0.45f;
+                walkAround();
+            }
         }
+    }
+
+    float chargeDirection;
+
+    private void charge(){
+
+    }
+
+    private void stopCharge(){
+        setAnimation(moveAnimation, 1 / 12f);
+        charging = false;
+        canAttack = false;
+        max_speed = 0.45f;
+        this.attackDamage = 9;
+
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                System.out.println("Cooldown--");
+                canAttack = true;
+            }
+        }, chargeCooldown);
     }
 
     private void attack(){
         // do stuff
+        System.out.println("charge!");
+        charging = true;
+        chargeDirection = b2body.getAngle();
+        attackDamage = 12;
         // play attack animation for duration
-        setAnimation(attackAnimation, 1 / 24f);
+        this.max_speed = CHARGE_SPEED;
+        setAnimation(moveAnimation, 1 / 30f);
+
+        // charge for at most 1.2s
         Timer.schedule(new Timer.Task() {
             @Override
             public void run() {
-                if(!destroyed && !setToDestroy) setAnimation(moveAnimation, 1 / 12f);
+                if(!destroyed && !setToDestroy && charging){
+                    stopCharge();
+                }
             }
         }, 0.8f);
-        // can't shoot again for 1s
-        this.canAttack = false;
-        Timer.schedule(new Timer.Task() {
-            @Override
-            public void run() {
-                canAttack = true;
-            }
-        }, 1f);
+
     }
 
+    @Override
+    public void setTarget(Vector2 target) {
+        if(!charging){
+            super.setTarget(target);
+        }
+    }
 
     @Override
     protected void setDeathAnimation() {

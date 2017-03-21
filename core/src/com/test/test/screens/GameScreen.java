@@ -129,6 +129,7 @@ public class GameScreen implements Screen {
         if(levelUp){
             levelUp = false;
             newFloor();
+            game.setScreen(this);
         }
         stepWorld();
         deleteUselessBodies();
@@ -184,7 +185,7 @@ public class GameScreen implements Screen {
         }
         game.batch.end();
 
-        // draw hud
+        // set the batch to draw from the HUD's camera
         game.batch.setProjectionMatrix(hud.getStage().getCamera().combined);
         hud.getStage().draw();
     }

@@ -40,7 +40,7 @@ public class LoadingScreen implements Screen {
         viewport = new FitViewport(game.V_WIDTH, game.V_HEIGHT, new OrthographicCamera());
         stage = new Stage(viewport, game.batch);
         this.table = new Table();
-        table.debug();
+//        table.debug();
         table.setFillParent(true);
 
         ProgressBar.ProgressBarStyle style = new ProgressBar.ProgressBarStyle();
@@ -105,6 +105,7 @@ public class LoadingScreen implements Screen {
         if(assetManager.update()){
             dispose();
             game.setScreen(new GameScreen(game, assetManager));
+//            game.switchScreen(new GameScreen(game, assetManager));
         }
     }
 

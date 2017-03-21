@@ -164,7 +164,7 @@ public abstract class Enemy extends AnimatedB2DSprite {
     protected void move(){
         // move towards player position
         if(targetInSight()){
-            moveTowards(target);
+            moveTowards(target.cpy());
         }else{
             walkAround();
             faceDirection(b2body.getLinearVelocity().angleRad());
@@ -173,9 +173,10 @@ public abstract class Enemy extends AnimatedB2DSprite {
 
     protected void moveTowards(Vector2 position){
         // if not going full speed move towards a location
-        if( b2body.getLinearVelocity().x < max_speed || b2body.getLinearVelocity().y < max_speed){
-            faceDirection(angleToTarget());
+        if( Math.abs(b2body.getLinearVelocity().x) < max_speed ||
+                Math.abs(b2body.getLinearVelocity().y) < max_speed){
             b2body.setLinearVelocity(position.sub(b2body.getPosition()).nor().scl(max_speed));
+            faceDirection(angleToTarget());
         }
     }
 
@@ -197,6 +198,11 @@ public abstract class Enemy extends AnimatedB2DSprite {
         float checkAngle = (float) Math.acos(product);
 
         if( checkAngle < (this.maxSight / 2) && distance < this.maxSight && distance > 0){
+            screen.getWorld().rayCast(callback, b2body.getPosition(), target);
+            return callback.playerInSight();
+        }else if (distance < 0.3f && distance > 0) {
+            System.out.println("close**");
+            System.out.println(distance);
             screen.getWorld().rayCast(callback, b2body.getPosition(), target);
             return callback.playerInSight();
         }else{

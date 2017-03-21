@@ -43,6 +43,8 @@ public class CaveGenerator {
     private TiledMapTileLayer objectLayer;
     private TiledMap map;
 
+    private Vector2 heroSpawn;
+
     private Body goal;
     private Array<Body> wallBodies;
     private Array<TextureRegion> wallTiles;
@@ -70,7 +72,7 @@ public class CaveGenerator {
 
         // calculate seed
         float seedFloor = floor > 125 ? 1.0f : floor / 125.0f;
-        float seedCeiling = floor > 200 ? 1.0f : MathUtils.log(MathUtils.E, 1+((floor)*(floor)) / 4) / 8;
+        float seedCeiling = floor > 110 ? 1.0f : MathUtils.log(MathUtils.E, 1+((floor)*(floor)) / 4) / 8;
         float seed = MathUtils.random(seedFloor, seedCeiling);
         System.out.printf("Picking seed (%f) from between - (%f, %f) \n", seed, seedFloor, seedCeiling);
 
@@ -116,6 +118,11 @@ public class CaveGenerator {
         defineLevel();
         addGoal();
         addPowerups(seed);
+        // ensure hero spawns at least
+        heroSpawn = getRandomPlace();
+        while (heroSpawn.dst(worldPositionToCell(goal.getPosition())) <= (mapWidth / 2f)) {
+            heroSpawn = getRandomPlace();
+        }
         addEnemies(seed);
         return map;
     }
@@ -137,7 +144,7 @@ public class CaveGenerator {
     public void addEnemies(float seed){
         Array<Enemy> enemies = new Array<Enemy>();
 
-        int numRats = Math.round(MathUtils.sin(seed) * 50) + 2;
+        int numRats = Math.round(MathUtils.sin(seed) * 80) + 2;
         int numScorpions = Math.round((MathUtils.sin(seed * seed) * 70) + seed/3.0f);
         int numWolves = Math.round((MathUtils.sin(seed*seed) * 40) + seed/5);
         System.out.printf("SEED: %f   (%d/%d/%d) \n", seed, numRats, numScorpions, numWolves);
@@ -146,14 +153,31 @@ public class CaveGenerator {
         numScorpions = 0;
         numWolves = 1;
 
+        Vector2 spawnPoint;
+        // ensure enemies don't spawn near the hero
         for( int i = 0; i < numRats; i++){
-            enemies.add( new Rat(screen, cellToWorldPosition(getRandomPlace())) );
+            spawnPoint = getRandomPlace();
+            while (spawnPoint.dst(heroSpawn) < 6.0f) {
+                System.out.println("reroll");
+                spawnPoint = getRandomPlace();
+            }
+            enemies.add( new Rat(screen, cellToWorldPosition(spawnPoint)) );
         }
-        for( int i = 0; i < numScorpions; i++){
-            enemies.add( new Scorpion(screen, cellToWorldPosition(getRandomPlace())) );
+        for (int i = 0; i < numScorpions; i++) {
+            spawnPoint = getRandomPlace();
+            while (spawnPoint.dst(heroSpawn) < 6.0f) {
+                System.out.println("reroll");
+                spawnPoint = getRandomPlace();
+            }
+            enemies.add(new Scorpion(screen, cellToWorldPosition(spawnPoint)));
         }
-        for( int i = 0; i < numWolves; i++){
-            enemies.add( new Wolf(screen, cellToWorldPosition(getRandomPlace())) );
+        for (int i = 0; i < numWolves; i++) {
+            spawnPoint = getRandomPlace();
+            while (spawnPoint.dst(heroSpawn) < 6.0f) {
+                System.out.println("reroll");
+                spawnPoint = getRandomPlace();
+            }
+            enemies.add(new Wolf(screen, cellToWorldPosition(spawnPoint)));
         }
 
         screen.add(enemies);
@@ -205,11 +229,12 @@ public class CaveGenerator {
      * @return The random Cell location to spawn in.
      */
     public Vector2 getHeroSpawn(){
-        Vector2 spawn = getRandomPlace();
-        while(spawn.dst(worldPositionToCell(goal.getPosition())) <= (mapWidth / 2f)){
-            spawn = getRandomPlace();
-        }
-        return spawn;
+//        Vector2 spawn = getRandomPlace();
+//        while(spawn.dst(worldPositionToCell(goal.getPosition())) <= (mapWidth / 2f)){
+//            spawn = getRandomPlace();
+//        }
+//        return spawn;
+        return this.heroSpawn;
     }
 
     /**

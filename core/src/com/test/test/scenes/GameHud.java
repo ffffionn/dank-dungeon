@@ -12,6 +12,8 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.test.test.DankDungeon;
 import com.test.test.models.Hero;
 
+import static com.badlogic.gdx.scenes.scene2d.actions.Actions.fadeIn;
+
 /**
  * The game HUD. Displays HP/MP bars, score, dungeon level and active power-ups.
  */
@@ -54,11 +56,13 @@ public class GameHud {
 
         addStats();
         addBars();
+
+        stage.getRoot().getColor().a = 0;
+        stage.getRoot().addAction(fadeIn(0.5f));
     }
 
     public void update(float dt){
-        healthBar.act(dt);
-        manaBar.act(dt);
+        stage.act(dt);
     }
 
     public void draw(SpriteBatch batch){

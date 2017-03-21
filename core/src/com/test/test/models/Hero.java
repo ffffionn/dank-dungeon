@@ -181,7 +181,7 @@ public class Hero extends AnimatedB2DSprite {
     public void adjustMana(float amount){
         if (hasPower(Pickup.Type.UNLIMITED_MANA)) return;
 
-        this.mana += amount;
+//        this.mana += amount;
         if(mana < 0){
             mana = 0;
         }else if(mana > MAX_MANA){
@@ -209,7 +209,7 @@ public class Hero extends AnimatedB2DSprite {
     @Override
     public void damage(int damageAmount){
         if(!invincible && health > 0){
-            this.health -= damageAmount;
+//            this.health -= damageAmount;
             if (health <= 0){
                 screen.getAssetManager().get("sounds/hero-death.wav", Sound.class).play();
                 die();
