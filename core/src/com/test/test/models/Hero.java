@@ -27,8 +27,8 @@ public class Hero extends AnimatedB2DSprite {
     public static final float MAX_VELOCITY = 2.5f;
     public static final int MAX_HEALTH = 100;
     public static final int MAX_MANA = 100;
+    public static final int HERO_SIZE = 20;
     private static final float INVINCIBILITY_TIMER = 0.85f;
-    private static final int HERO_SIZE = 20;
     private boolean invincible;
     private float mana;
     private Color flashColour;
@@ -139,8 +139,10 @@ public class Hero extends AnimatedB2DSprite {
                 p.tint = Color.RED;
             }
         }
-        for(Projectile p : newFireballs){
-            p.setBounces(2);
+        if(hasPower(Pickup.Type.BOUNCING_BULLETS)){
+            for(Projectile p : newFireballs){
+                p.setBounces(2);
+            }
         }
         adjustMana(-1.0f);
         screen.add(newFireballs);
@@ -183,7 +185,7 @@ public class Hero extends AnimatedB2DSprite {
     public void adjustMana(float amount){
         if (hasPower(Pickup.Type.UNLIMITED_MANA)) return;
 
-//        this.mana += amount;
+        this.mana += amount;
         if(mana < 0){
             mana = 0;
         }else if(mana > MAX_MANA){
@@ -211,7 +213,8 @@ public class Hero extends AnimatedB2DSprite {
     @Override
     public void damage(int damageAmount){
         if(!invincible && health > 0){
-//            this.health -= damageAmount;
+            System.out.printf("%d dmg taken! \n", damageAmount);
+            this.health -= damageAmount;
             if (health <= 0){
                 screen.getAssetManager().get("sounds/hero-death.wav", Sound.class).play();
                 die();

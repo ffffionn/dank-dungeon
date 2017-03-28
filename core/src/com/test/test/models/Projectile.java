@@ -31,8 +31,6 @@ public class Projectile extends AnimatedB2DSprite {
     protected Color tint;
     protected int bounces;
 
-    protected boolean bounceReady;
-
 
     public Projectile(GameScreen screen, Vector2 startPosition, Vector2 target){
         super();
@@ -41,7 +39,6 @@ public class Projectile extends AnimatedB2DSprite {
         this.speed = DEFAULT_SPEED;
         this.damageAmount = DEFAULT_DAMAGE;
         this.tint = Color.valueOf("#efefef");
-        this.bounceReady  = false;
         defineProjectile(startPosition, target);
         velocity = target.cpy().sub(startPosition).nor().scl(speed);
         b2body.setLinearVelocity(velocity);
@@ -79,26 +76,20 @@ public class Projectile extends AnimatedB2DSprite {
     public int getBounces() {
         return this.bounces;
     }
-    public void setBounceReady(){
-        this.bounceReady = true;
-    }
 
     public void bounce(){
         if(bounces == 0){
             setToDestroy();
         }else{
+            System.out.println("bounce");
             this.bounces--;
         }
-        bounceReady = false;
     }
 
     public void update(float delta) {
         if( setToDestroy && !destroyed ){
             destroyed = true;
         }else{
-            if(bounceReady){
-                bounce();
-            }
             animation.update(delta);
 
             // stay facing the way it's headed
@@ -107,6 +98,12 @@ public class Projectile extends AnimatedB2DSprite {
             sprite.setPosition(b2body.getPosition().x - sprite.getWidth() / 2,
                     b2body.getPosition().y - sprite.getHeight() / 2);
             sprite.setRotation(b2body.getAngle() * MathUtils.radiansToDegrees);
+
+            if (Math.abs(b2body.getLinearVelocity().x) < 0.55f &&
+                    Math.abs(b2body.getLinearVelocity().y) < 0.55f) {
+                System.out.println("too slow");
+                setToDestroy();
+            }
         }
     }
 
@@ -121,11 +118,10 @@ public class Projectile extends AnimatedB2DSprite {
 
         FixtureDef fdef = new FixtureDef();
         CircleShape shape = new CircleShape();
-        shape.setRadius(2.8f / PPM);
+        shape.setRadius(2.2f / PPM);
         fdef.shape = shape;
         fdef.friction = 0.0f;
         fdef.restitution = 1.0f;
-//        fdef.isSensor = true;
 
         fdef.filter.maskBits = WALL | BARRIER;
 

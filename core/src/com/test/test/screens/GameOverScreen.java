@@ -5,7 +5,9 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -50,13 +52,20 @@ public class GameOverScreen implements Screen{
 
     @Override
     public void show() {
-        Timer.schedule(new Timer.Task() {
-            @Override
-            public void run() {
-                dispose();
-                game.setScreen(new HighScoreScreen(game, score, assetManager));
-            }
-        }, 2.0f);
+        stage.getRoot().getColor().a = 0;
+        stage.addAction(Actions.sequence(
+                Actions.fadeIn(1.0f),
+                Actions.delay(2.5f),
+                Actions.fadeOut(1.0f),
+                new Action() {
+                    @Override
+                    public boolean act(float delta) {
+                        dispose();
+                        game.setScreen(new HighScoreScreen(game, score, assetManager));
+                        return true;
+                    }
+                }
+        ));
     }
 
     @Override

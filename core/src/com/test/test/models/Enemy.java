@@ -25,6 +25,7 @@ public abstract class Enemy extends AnimatedB2DSprite {
     protected boolean[][] floor;
 
     // enemy attributes
+    protected int level;
     protected float max_speed;
     protected int score_value;
     protected boolean stunned;
@@ -49,6 +50,7 @@ public abstract class Enemy extends AnimatedB2DSprite {
         this.stunned = false;
         this.dead = false;
         this.canAttack = true;
+        this.level = 1;
 
         // attribute defaults
         this.health = this.maxHealth = 80;
@@ -63,10 +65,8 @@ public abstract class Enemy extends AnimatedB2DSprite {
         this.healthBar = new HealthBar(this, uiAtlas.findRegion("empty_bar"), uiAtlas.findRegion("healthbar"));
     }
 
-    public Enemy(GameScreen screen, Vector2 startPosition, float speed, int hp){
+    public Enemy(GameScreen screen, Vector2 startPosition, float seed){
         this(screen, startPosition);
-        this.max_speed = speed;
-        this.health = maxHealth = hp;
     }
 
     @Override
@@ -212,7 +212,7 @@ public abstract class Enemy extends AnimatedB2DSprite {
 
     protected void walkAround(){
         Vector2 pos = worldPositionToCell(b2body.getPosition());
-        avoidWalls(pos);
+        avoidWalls();
 
         Vector2 dir = b2body.getLinearVelocity();
 
@@ -238,7 +238,8 @@ public abstract class Enemy extends AnimatedB2DSprite {
         faceDirection(b2body.getLinearVelocity().angleRad());
     }
 
-    protected void avoidWalls(Vector2 cell){
+    protected void avoidWalls(){
+        Vector2 cell = worldPositionToCell(b2body.getPosition());
         //  1/2 UP - 3/4 LEFT - 5/6 DOWN - 7/0 RIGHT
         int direction = Math.round(b2body.getLinearVelocity().angle()) / 45;
         int x = Math.round(cell.x);
@@ -289,6 +290,7 @@ public abstract class Enemy extends AnimatedB2DSprite {
         shape.setRadius(this.radius / PPM);
         fdef.shape = shape;
         fdef.restitution = 0.0f;
+        fdef.density = 100.0f;
         fdef.filter.categoryBits = ENEMY;
         fdef.filter.maskBits = WALL | PLAYER | PLAYER_PROJECTILE | BARRIER | ENEMY;
 

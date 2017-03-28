@@ -5,13 +5,16 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.*;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.test.test.DankDungeon;
 import com.test.test.models.Hero;
 
+import static com.badlogic.gdx.scenes.scene2d.actions.Actions.color;
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.fadeIn;
 
 /**
@@ -58,7 +61,7 @@ public class GameHud {
         addBars();
 
         stage.getRoot().getColor().a = 0;
-        stage.getRoot().addAction(fadeIn(0.5f));
+        stage.getRoot().addAction(fadeIn(0.8f));
     }
 
     public void update(float dt){
@@ -73,6 +76,12 @@ public class GameHud {
     public void setFloor(int floor) {
         this.floor = floor;
         floorLabel.setText(String.format("FLOOR: %03d", this.floor));
+//        floorLabel.addAction(Actions.sequence(
+//                color(skin.getColor("light-green"), 0.2f, Interpolation.pow2In),
+//                color(skin.getColor("alpha-blue"), 0.2f, Interpolation.pow2Out)));
+//        floorLabel.getColor().a = 0;
+//        floorLabel.addAction(fadeOut(1.0f));
+//        floorLabel.addAction(fadeIn(1.0f));
     }
 
     public void updateHealth(int newHealth){

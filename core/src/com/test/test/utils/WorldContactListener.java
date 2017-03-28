@@ -86,25 +86,33 @@ public class WorldContactListener implements ContactListener{
     private static class ProjectileCollisionHandler{
         public static void collide(Projectile p, Body body) {
             // if it's an entity, damage it
+            boolean friendly = p.getBody().getFixtureList().first().getFilterData().categoryBits == PLAYER_PROJECTILE;
+            String userData = (String) body.getFixtureList().first().getUserData();
+
             if( body.getUserData() instanceof Hero){
-                if(((Hero) body.getUserData()).hasPower(Pickup.Type.INVINCIBLE)){
-//                    p.bounce();
-                }else{
+                if (((Hero) body.getUserData()).hasPower(Pickup.Type.INVINCIBLE)) {
+                    System.out.println("INVINCIBLE BOUNCE");
+                    p.setBounces(1);
+                    p.bounce();
+                } else {
                     ((Hero) body.getUserData()).damage(p.getDamageAmount());
                 }
             }else if (body.getUserData() instanceof Enemy){
-
                 ((B2DSprite) body.getUserData()).damage(p.getDamageAmount());
             }else if( body.getUserData() instanceof Projectile){
                 ((Projectile) body.getUserData()).setToDestroy();
             }
-            if( body.getFixtureList().first().getUserData() == "wall"){
+
+            // handle bouncing
+            if( userData == "wall"){
                 p.bounce();
-//                p.setBounceReady();
-//                System.out.println("BOUNCE");
+            }else if(userData == "barrier" && !friendly){
+                p.setBounces(1);
+                p.bounce();
             }else{
                 p.setToDestroy();
             }
+
         }
     }
 

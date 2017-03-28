@@ -2,6 +2,7 @@ package com.test.test.models;
 
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.test.test.screens.GameScreen;
 
@@ -27,6 +28,17 @@ public class Rat extends Enemy {
         setTexture(moveAnimation[0], 16);
         setAnimation(moveAnimation, 1 / 12f);
 
+    }
+
+
+    public Rat(GameScreen screen, Vector2 startPosition, float seed){
+        this(screen, startPosition);
+        this.level = 1 + MathUtils.floor(seed * 50);
+
+        health = maxHealth = 20 + (level / 10) * 20;
+        score_value = 5 * level;
+        attackDamage = 5 + level / 3;
+        System.out.printf("RAT: %d hp \t %d dmg \t %d score \n", health, attackDamage, score_value);
     }
 
     @Override

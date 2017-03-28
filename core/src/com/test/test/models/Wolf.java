@@ -1,7 +1,5 @@
 package com.test.test.models;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
@@ -39,7 +37,7 @@ public class Wolf extends Enemy {
         this.coneAngle = 30 * MathUtils.degreesToRadians;
         this.canAttack = true;
 
-        this.chargeCooldown = 2.0f;
+        this.chargeCooldown = 2.5f;
         this.charging = false;
         // first enemy fetches animation frames from TextureAtlas
         if(moveAnimation == null || attackAnimation == null){
@@ -57,11 +55,24 @@ public class Wolf extends Enemy {
         this.health = hp;
     }
 
+    public Wolf(GameScreen screen, Vector2 startPosition, float seed){
+        this(screen, startPosition);
+        this.level = 1 + MathUtils.floor(seed * 50);
+
+        health = maxHealth = 200 + level * 20;
+        score_value = 50 * level;
+        attackDamage = 10 + level / 2;
+        System.out.printf("WOLF: %d hp \t %d dmg \t %d score \n", health, attackDamage, score_value);
+    }
+
+
+
     @Override
     protected void move() {
         float distanceToTarget = b2body.getPosition().dst(target.cpy());
         if (charging) {
             moveTowards(target.cpy());
+            avoidWalls();
 //            faceDirection(chargeDirection);
             if (Math.abs(b2body.getLinearVelocity().x) < 0.1f &&
                     Math.abs(b2body.getLinearVelocity().y) < 0.1f) {
@@ -100,7 +111,6 @@ public class Wolf extends Enemy {
         Timer.schedule(new Timer.Task() {
             @Override
             public void run() {
-                System.out.println("Cooldown--");
                 canAttack = true;
             }
         }, chargeCooldown);
@@ -108,7 +118,6 @@ public class Wolf extends Enemy {
 
     private void attack(){
         // do stuff
-        System.out.println("charge!");
         charging = true;
         chargeDirection = b2body.getAngle();
         attackDamage = 12;

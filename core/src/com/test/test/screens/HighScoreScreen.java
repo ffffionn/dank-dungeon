@@ -7,7 +7,9 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -182,8 +184,17 @@ public class HighScoreScreen implements Screen {
         // if this is a game over, rather than from the main menu
         if( Gdx.input.isTouched() ){
             if(newScore >= 0){
-                dispose();
-                game.setScreen(new GameScreen(game, assetManager));
+                stage.addAction(Actions.sequence(
+                        Actions.fadeOut(1.5f),
+                        new Action() {
+                            @Override
+                            public boolean act(float delta) {
+                                dispose();
+                                game.setScreen(new GameScreen(game, assetManager));
+                                return true;
+                            }
+                        }
+                ));
             }else{
 //                game.setScreen(new MainMenuScreen(game, assetManager));
             }

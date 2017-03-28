@@ -41,6 +41,16 @@ public class Scorpion extends Enemy{
         this.health = hp;
     }
 
+    public Scorpion(GameScreen screen, Vector2 startPosition, float seed){
+        this(screen, startPosition);
+        this.level = 1 + MathUtils.floor(seed * 50);
+
+        health = maxHealth = 50 + (level / 5) * 10;
+        score_value = 20 * level;
+        attackDamage = 20 + level / 2;
+        System.out.printf("SCORPION: %d hp \t %d dmg \t %d score  \n", health, attackDamage, score_value);
+    }
+
 
     @Override
     protected void setDeathAnimation() {

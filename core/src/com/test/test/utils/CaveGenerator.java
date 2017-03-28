@@ -132,11 +132,12 @@ public class CaveGenerator {
         for(int i = 0; i < amount; i++){
             System.out.println(i);
             screen.add(new Pickup.MultifirePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
-            screen.add(new Pickup.DoubleDamagePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
-            screen.add(new Pickup.UnlimitedManaPickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
-            screen.add(new Pickup.InvinciblePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
-            screen.add(new Pickup.ManaPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 15));
+//            screen.add(new Pickup.DoubleDamagePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+//            screen.add(new Pickup.UnlimitedManaPickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+            screen.add(new Pickup.BouncingProjectilePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+//            screen.add(new Pickup.InvinciblePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
             screen.add(new Pickup.HealthPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 15));
+            screen.add(new Pickup.ManaPickup(screen, cellToWorldPosition(getTreasureSpot(3)), 15));
         }
         map.getLayers().add(objectLayer);
     }
@@ -149,9 +150,9 @@ public class CaveGenerator {
         int numWolves = Math.round((MathUtils.sin(seed*seed) * 40) + seed/5);
         System.out.printf("SEED: %f   (%d/%d/%d) \n", seed, numRats, numScorpions, numWolves);
 
-//        numRats = 0;
-//        numScorpions = 0;
-//        numWolves = 0;
+//        numRats = 1;
+//        numScorpions = 1;
+//        numWolves = 1;
 
         Vector2 spawnPoint;
         // ensure enemies don't spawn near the hero
@@ -161,7 +162,7 @@ public class CaveGenerator {
                 System.out.println("reroll");
                 spawnPoint = getRandomPlace();
             }
-            enemies.add( new Rat(screen, cellToWorldPosition(spawnPoint)) );
+            enemies.add( new Rat(screen, cellToWorldPosition(spawnPoint), seed) );
         }
         for (int i = 0; i < numScorpions; i++) {
             spawnPoint = getRandomPlace();
@@ -169,7 +170,7 @@ public class CaveGenerator {
                 System.out.println("reroll");
                 spawnPoint = getRandomPlace();
             }
-            enemies.add(new Scorpion(screen, cellToWorldPosition(spawnPoint)));
+            enemies.add(new Scorpion(screen, cellToWorldPosition(spawnPoint), seed));
         }
         for (int i = 0; i < numWolves; i++) {
             spawnPoint = getRandomPlace();
@@ -177,7 +178,7 @@ public class CaveGenerator {
                 System.out.println("reroll");
                 spawnPoint = getRandomPlace();
             }
-            enemies.add(new Wolf(screen, cellToWorldPosition(spawnPoint)));
+            enemies.add(new Wolf(screen, cellToWorldPosition(spawnPoint), seed));
         }
 
         screen.add(enemies);

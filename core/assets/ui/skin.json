@@ -15,8 +15,6 @@
     com.badlogic.gdx.graphics.g2d.BitmapFont: {
         default-font : { file: fonts/bebas.fnt },
         monospaced: { file: fonts/pt_mono.fnt },
-        westfalia: { file: fonts/westfalia.fnt },
-        ui: { file: fonts/segoe-ui.fnt },
     },
     com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
         ui-label: { font: default-font, fontColor: alpha-blue },

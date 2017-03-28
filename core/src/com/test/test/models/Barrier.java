@@ -10,6 +10,7 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.test.test.screens.GameScreen;
 
 import static com.test.test.DankDungeon.PPM;
+import static com.test.test.models.Hero.HERO_SIZE;
 import static com.test.test.utils.WorldContactListener.*;
 
 /**
@@ -73,6 +74,7 @@ public class Barrier extends AnimatedB2DSprite{
 
     private void defineShield(Vector2 position) {
         BodyDef bdef = new BodyDef();
+        position.x += HERO_SIZE / 3 / PPM;
         bdef.position.set(position.x, position.y);
         bdef.type = BodyDef.BodyType.DynamicBody;
         bdef.linearDamping = 10.0f;
@@ -98,20 +100,26 @@ public class Barrier extends AnimatedB2DSprite{
         Vector2 p3 = new Vector2(px, py);
 
         EdgeShape shape = new EdgeShape();
-        shape.set(p1, p2);
-        shape.setRadius(0.5f / PPM);
+//        shape.set(p1, p2);
+        shape.setRadius(2.0f / PPM);
+
+        CircleShape shape2 = new CircleShape();
+        shape2.setRadius(HERO_SIZE / 2 /PPM);
 
         FixtureDef fdef = new FixtureDef();
-        fdef.shape = shape;
+        fdef.shape = shape2;
+        fdef.friction = 0.0f;
+        fdef.restitution = 1.0f;
+        fdef.density = 24.0f;
         fdef.filter.categoryBits = BARRIER;
         fdef.filter.maskBits = PLAYER_PROJECTILE | ENEMY_PROJECTILE | ENEMY;
 
         b2body.createFixture(fdef).setUserData("barrier");
 
-        shape.set(p1, p3);
-        fdef.shape = shape;
+//        shape.set(p1, p3);
+//        fdef.shape = shape;
 
-        b2body.createFixture(fdef).setUserData("barrier");
+//        b2body.createFixture(fdef).setUserData("barrier");
         b2body.setUserData(this);
         shape.dispose();
     }

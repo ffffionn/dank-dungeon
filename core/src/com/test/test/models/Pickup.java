@@ -17,7 +17,7 @@ import static com.test.test.utils.WorldContactListener.*;
  */
 public class Pickup extends B2DSprite {
 
-    public enum Type{ MULTI_FIRE, INVINCIBLE, DOUBLE_DMG, POTION, UNLIMITED_MANA }
+    public enum Type{ MULTI_FIRE, INVINCIBLE, BOUNCING_BULLETS, DOUBLE_DMG, POTION, UNLIMITED_MANA }
     public Type TYPE;
 
     protected int size;
@@ -25,6 +25,7 @@ public class Pickup extends B2DSprite {
     protected static TextureRegion healthBottle;
     protected static TextureRegion manaBottle;
     protected static TextureRegion chilli;
+    protected static TextureRegion ham;
     protected static TextureRegion cheese;
     protected static TextureRegion grapes;
     protected static TextureRegion mushrooms;
@@ -56,6 +57,7 @@ public class Pickup extends B2DSprite {
         cheese = items[5][3];
         grapes = items[5][1];
         mushrooms = items[5][7];
+        ham = items[6][0];
     }
 
     protected void define(GameScreen screen, Vector2 position){
@@ -184,6 +186,21 @@ public class Pickup extends B2DSprite {
             super(screen, mushrooms, startPosition, size);
             TYPE = Type.INVINCIBLE;
             powerTimer = 5.0f;
+            timerCount = 0;
+        }
+
+        @Override
+        public void activate(Hero hero){
+            timerCount = 0.0f;
+        }
+    }
+
+    /** GIVE THE PLAYER BOUNCING PROJECTILES */
+    public static class BouncingProjectilePickup extends TimedPickup {
+        public BouncingProjectilePickup(GameScreen screen, Vector2 startPosition, int size){
+            super(screen, ham, startPosition, size);
+            TYPE = Type.BOUNCING_BULLETS;
+            powerTimer = 7.5f;
             timerCount = 0;
         }
 
