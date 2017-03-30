@@ -269,7 +269,7 @@ public class GameScreen implements Screen {
         entityList.addAll(bodyList);
     }
 
-    // cheats - remove
+    // TODO: remove
     public void handleInput(float dt){
         if (Gdx.input.isKeyPressed(Input.Keys.Q)){
             cam.zoom -= 0.1f;

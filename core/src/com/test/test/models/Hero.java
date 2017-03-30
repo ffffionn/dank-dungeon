@@ -100,7 +100,7 @@ public class Hero extends AnimatedB2DSprite {
             }
         }
 
-        // DEBUG: bail
+        // TODO: remove
         if(Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) die();
     }
 

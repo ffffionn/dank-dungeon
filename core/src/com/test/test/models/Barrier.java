@@ -110,7 +110,7 @@ public class Barrier extends AnimatedB2DSprite{
         fdef.shape = shape2;
         fdef.friction = 0.0f;
         fdef.restitution = 1.0f;
-        fdef.density = 24.0f;
+//        fdef.density = 24.0f;
         fdef.filter.categoryBits = BARRIER;
         fdef.filter.maskBits = PLAYER_PROJECTILE | ENEMY_PROJECTILE | ENEMY;
 

@@ -132,10 +132,10 @@ public class CaveGenerator {
         for(int i = 0; i < amount; i++){
             System.out.println(i);
             screen.add(new Pickup.MultifirePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
-//            screen.add(new Pickup.DoubleDamagePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
-//            screen.add(new Pickup.UnlimitedManaPickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+            screen.add(new Pickup.DoubleDamagePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+            screen.add(new Pickup.UnlimitedManaPickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
             screen.add(new Pickup.BouncingProjectilePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
-//            screen.add(new Pickup.InvinciblePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+            screen.add(new Pickup.InvinciblePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
             screen.add(new Pickup.HealthPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 15));
             screen.add(new Pickup.ManaPickup(screen, cellToWorldPosition(getTreasureSpot(3)), 15));
         }
@@ -230,11 +230,6 @@ public class CaveGenerator {
      * @return The random Cell location to spawn in.
      */
     public Vector2 getHeroSpawn(){
-//        Vector2 spawn = getRandomPlace();
-//        while(spawn.dst(worldPositionToCell(goal.getPosition())) <= (mapWidth / 2f)){
-//            spawn = getRandomPlace();
-//        }
-//        return spawn;
         return this.heroSpawn;
     }
 
@@ -426,7 +421,7 @@ public class CaveGenerator {
         CircleShape shape = new CircleShape();
         shape.setRadius(5 / PPM);
         fdef.shape = shape;
-        fdef.friction = 0.75f;
+        fdef.friction = 0.0f;
         fdef.restitution = 0.0f;
         fdef.isSensor = true;
         fdef.filter.categoryBits = PICKUP;
@@ -451,9 +446,6 @@ public class CaveGenerator {
         bdef.position.set(centre);
         wall.setAsBox(TILE_SIZE / 2 / PPM, TILE_SIZE / 2 / PPM, centre, 0);
         fdef.shape = wall;
-//        fdef.restitution = 1.0f;
-//        fdef.friction = 1.0f;
-//        fdef.density = 1.0f;
         fdef.filter.categoryBits = WALL;
         fdef.filter.maskBits = PLAYER | PLAYER_PROJECTILE | ENEMY_PROJECTILE | ENEMY;
 

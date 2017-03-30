@@ -81,7 +81,6 @@ public class Projectile extends AnimatedB2DSprite {
         if(bounces == 0){
             setToDestroy();
         }else{
-            System.out.println("bounce");
             this.bounces--;
         }
     }

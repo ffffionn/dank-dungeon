@@ -76,12 +76,14 @@ public class GameHud {
     public void setFloor(int floor) {
         this.floor = floor;
         floorLabel.setText(String.format("FLOOR: %03d", this.floor));
+
 //        floorLabel.addAction(Actions.sequence(
 //                color(skin.getColor("light-green"), 0.2f, Interpolation.pow2In),
 //                color(skin.getColor("alpha-blue"), 0.2f, Interpolation.pow2Out)));
 //        floorLabel.getColor().a = 0;
 //        floorLabel.addAction(fadeOut(1.0f));
 //        floorLabel.addAction(fadeIn(1.0f));
+
     }
 
     public void updateHealth(int newHealth){

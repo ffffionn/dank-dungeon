@@ -58,7 +58,6 @@ public class HighScoreScreen implements Screen {
         // get the highscores from file
         scoreFile = Gdx.files.local("data/highscores.txt");
         if (scoreFile.length() == 0) {
-            System.out.println("File not found - Creating blank highscores.txt");
             createBlankScores();
         }else{
             String text = scoreFile.readString();
@@ -68,8 +67,6 @@ public class HighScoreScreen implements Screen {
         try{
             int lowestScore = Integer.parseInt(highScores.get(highScores.size - 1).split(":")[1].trim());
             this.highScoreSet = score > lowestScore;
-            System.out.println(score > lowestScore);
-            System.out.println(highScoreSet);
         }catch(Exception e){
             e.printStackTrace();
             highScoreSet = false;
@@ -86,7 +83,6 @@ public class HighScoreScreen implements Screen {
         for(int i = 0; i < 10; i++){
             highScores.add(String.format("%10s:%d", "-", 0));
         }
-        System.out.println(highScores.size);
         saveHighScores();
     }
 
@@ -101,7 +97,6 @@ public class HighScoreScreen implements Screen {
     }
 
     public void resetLeaderboard(String name){
-        System.out.println("RESETING LEADERBOARD");
         Array<Integer> intScores = new Array<Integer>();
         for( String s : highScores){
             intScores.add(Integer.parseInt(s.split(":")[1].trim()));
@@ -171,7 +166,6 @@ public class HighScoreScreen implements Screen {
     @Override
     public void show() {
         if(highScoreSet){
-            System.out.println("!");
             Input.TextInputListener listener = new Textbox(this, table);
             input.getTextInput(listener, "NEW HIGH SCORE!", "", "Enter Your Name");
         }

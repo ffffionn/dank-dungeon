@@ -201,8 +201,6 @@ public abstract class Enemy extends AnimatedB2DSprite {
             screen.getWorld().rayCast(callback, b2body.getPosition(), target);
             return callback.playerInSight();
         }else if (distance < 0.3f && distance > 0) {
-            System.out.println("close**");
-            System.out.println(distance);
             screen.getWorld().rayCast(callback, b2body.getPosition(), target);
             return callback.playerInSight();
         }else{
