@@ -19,7 +19,6 @@ public class Wolf extends Enemy {
 
     private static float CHARGE_SPEED = 1.35f;
 
-    private float chargeTime;
     private float chargeCooldown;
 
     private boolean charging;
@@ -73,7 +72,6 @@ public class Wolf extends Enemy {
         if (charging) {
             moveTowards(target.cpy());
             avoidWalls();
-//            faceDirection(chargeDirection);
             if (Math.abs(b2body.getLinearVelocity().x) < 0.1f &&
                     Math.abs(b2body.getLinearVelocity().y) < 0.1f) {
                 System.out.println("blocked");
@@ -95,18 +93,13 @@ public class Wolf extends Enemy {
         }
     }
 
-    float chargeDirection;
-
-    private void charge(){
-
-    }
 
     private void stopCharge(){
         setAnimation(moveAnimation, 1 / 12f);
         charging = false;
         canAttack = false;
         max_speed = 0.45f;
-        this.attackDamage = 9;
+        attackDamage = 10 + level / 2;
 
         Timer.schedule(new Timer.Task() {
             @Override
@@ -117,10 +110,9 @@ public class Wolf extends Enemy {
     }
 
     private void attack(){
-        // do stuff
         charging = true;
-        chargeDirection = b2body.getAngle();
-        attackDamage = 12;
+        this.attackDamage = Math.round(attackDamage * 1.2f);
+
         // play attack animation for duration
         this.max_speed = CHARGE_SPEED;
         setAnimation(moveAnimation, 1 / 30f);
@@ -133,7 +125,7 @@ public class Wolf extends Enemy {
                     stopCharge();
                 }
             }
-        }, 0.8f);
+        }, 1.2f);
 
     }
 

@@ -32,7 +32,7 @@ public class Barrier extends AnimatedB2DSprite{
         raised = false;
         defineShield(hero.getPosition());
         b2body.setActive(false);
-        TextureRegion[][] split = TextureRegion.split(screen.getAssetManager().get("textures/shield.png", Texture.class), 48, 48);
+        TextureRegion[][] split = screen.getAtlas().findRegion("shield").split(48, 48);
         TextureRegion[] frames = new TextureRegion[16];
         int index = 0;
         for(int x = 0; x < split.length; x++){

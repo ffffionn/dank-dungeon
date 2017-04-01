@@ -24,9 +24,6 @@ public class StandingState extends HeroState {
         if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) && sprinting.canRun()){
             hero.changeState(sprinting);
         }
-        if(Gdx.input.isKeyJustPressed(Input.Keys.R)){
-            hero.damage(10);
-        }
         if( Math.abs(hero.getBody().getLinearVelocity().x) < 0.1f &&
                 Math.abs(hero.getBody().getLinearVelocity().y) < 0.1f ){
             if(!still){

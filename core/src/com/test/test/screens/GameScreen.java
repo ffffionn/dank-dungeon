@@ -30,7 +30,7 @@ import static com.test.test.DankDungeon.V_HEIGHT;
 import static com.test.test.DankDungeon.V_WIDTH;
 
 /**
- * The main game Screen.
+ * The main Game Loop that updates the entities and draw them.
  */
 public class GameScreen implements Screen {
     // game
@@ -72,32 +72,36 @@ public class GameScreen implements Screen {
     private boolean levelUp;
 
     public GameScreen(DankDungeon game, AssetManager manager){
+        this.game = game;
+        this.assetManager = manager;
         this.floor = 1;
         this.levelUp = false;
-        this.game = game;
-        this.world = new World(new Vector2(0, 0), true);
-        world.setContactListener(new WorldContactListener(this));
-        this.b2dr = new Box2DDebugRenderer();
-        this.cam = new OrthographicCamera();
-        cam.setToOrtho(false, V_WIDTH / 2 / PPM, V_HEIGHT / 2 / PPM);
-        this.assetManager = manager;
-
-        bgm = assetManager.get("sounds/main-loop-100.ogg", Music.class);
-        this.atlas = new TextureAtlas("animations/entities.pack");
-        this.powerTiles = TextureRegion.split(new Texture("textures/items.png"), 25, 25);
-        this.gamePort = new ExtendViewport(DankDungeon.V_WIDTH / PPM, DankDungeon.V_HEIGHT / PPM , cam);
-        this.hud = new GameHud(game.batch, assetManager.get("ui/skin.json", Skin.class));
         this.entityList = new Array<B2DSprite>();
         this.deleteList = new Array<B2DSprite>();
-        this.caveGen = new CaveGenerator(this);
-        this.player = new Hero(this, new Vector2(0, 0));
-        this.mapRenderer = new OrthogonalTiledMapRenderer(map, 1 / PPM);
-        playMusic("main-loop-100");
 
-        Cursor customCursor = Gdx.graphics.newCursor(new Pixmap(Gdx.files.internal("textures/crosshair.png")), 32, 32);
+        // set up box2d physics world
+        this.world = new World(new Vector2(0, 0), true);
+        world.setContactListener(new WorldContactListener(this));
+        this.b2dr = new Box2DDebugRenderer(); // todo: remove
+
+        this.cam = new OrthographicCamera();
+        cam.setToOrtho(false, V_WIDTH / 2 / PPM, V_HEIGHT / 2 / PPM);
+        this.gamePort = new ExtendViewport(DankDungeon.V_WIDTH / PPM, DankDungeon.V_HEIGHT / PPM , cam);
+
+        this.atlas = assetManager.get("textures/worldTextures.pack");
+        this.caveGen = new CaveGenerator(this);
+        this.powerTiles = atlas.findRegion("items").split(25, 25);
+        this.hud = new GameHud(game.batch, assetManager.get("ui/ui_skin.json", Skin.class));
+        this.mapRenderer = new OrthogonalTiledMapRenderer(map, 1 / PPM);
+        this.player = new Hero(this, new Vector2(0, 0));
+
+        // set our custom crosshair
+        Cursor customCursor = Gdx.graphics.newCursor(assetManager.get("textures/crosshair.png", Pixmap.class), 32, 32);
         Gdx.graphics.setCursor(customCursor);
         customCursor.dispose();
 
+        this.bgm = assetManager.get("sounds/main-loop-100.ogg", Music.class);
+        playMusic("main-loop-100");
         generateLevel(floor);
 
         // set camera
@@ -171,7 +175,7 @@ public class GameScreen implements Screen {
         mapRenderer.render();
 
         if(Gdx.input.isKeyPressed(Input.Keys.NUM_1)){
-            b2dr.render(world, cam.combined);
+            b2dr.render(world, cam.combined); // todo: remove
         }
 
         game.batch.setProjectionMatrix(cam.combined);
@@ -197,7 +201,7 @@ public class GameScreen implements Screen {
 
         for( B2DSprite b : deleteList ){
             if( b instanceof Enemy ){
-                // create a pool of blood on the tile they died on
+                // create a pool of blood on the tile enemies die on
                 Vector2 c = CaveGenerator.worldPositionToCell(b.getPosition());
                 TiledMapTileLayer.Cell cell = new TiledMapTileLayer.Cell();
                 cell.setTile(new StaticTiledMapTile(powerTiles[2][8]));
@@ -226,9 +230,9 @@ public class GameScreen implements Screen {
         defineCursorBody();
 
         // previous floor needs to be cleaned up
-        if(floor > 1) caveGen.destroyLevel();
+        if(level > 1) caveGen.destroyLevel();
 
-        this.map = caveGen.generateCave(floor);
+        this.map = caveGen.generateCave(level);
         mapRenderer.setMap(map);
         player.redefine(CaveGenerator.cellToWorldPosition(caveGen.getHeroSpawn()));
     }
@@ -239,6 +243,7 @@ public class GameScreen implements Screen {
 
     private void newFloor(){
         floor++;
+        // increase bgm tempo with level
         if(floor == 5){
             playMusic("main-loop-110");
         }else if(floor == 10){
@@ -282,6 +287,12 @@ public class GameScreen implements Screen {
         }
         if(Gdx.input.isKeyJustPressed(Input.Keys.Z)){
             System.out.println(player.getCurrentState().toString());
+        }
+        if(Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
+            player.damage(10000);
+        }
+        if(Gdx.input.isKeyJustPressed(Input.Keys.R)){
+            player.damage(10);
         }
     }
 
@@ -340,7 +351,6 @@ public class GameScreen implements Screen {
 
     @Override
     public void hide() {
-//        dispose();
     }
 
     @Override

@@ -11,7 +11,6 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.test.test.DankDungeon;
@@ -34,10 +33,10 @@ public class GameOverScreen implements Screen{
         this.game = game;
         this.assetManager = manager;
         this.score = score;
-        viewport = new FitViewport(game.V_WIDTH, game.V_HEIGHT, new OrthographicCamera());
+        viewport = new FitViewport(DankDungeon.V_WIDTH, DankDungeon.V_HEIGHT, new OrthographicCamera());
         stage = new Stage(viewport, game.batch);
 
-        Skin skin = assetManager.get("ui/skin.json", Skin.class);
+        Skin skin = assetManager.get("ui/ui_skin.json", Skin.class);
         Label.LabelStyle defaultStyle = new Label.LabelStyle(skin.getFont("default-font"), skin.getColor("red"));
 
         this.table = new Table();

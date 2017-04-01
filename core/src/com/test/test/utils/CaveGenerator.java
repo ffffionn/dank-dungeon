@@ -1,6 +1,5 @@
 package com.test.test.utils;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
@@ -51,15 +50,24 @@ public class CaveGenerator {
     private Array<TextureRegion> floorTiles;
     private TextureRegion goalTexture;
 
+    private TextureRegion tiles1;
+    private TextureRegion tiles2;
+    private TextureRegion tiles3;
+
     public CaveGenerator(GameScreen screen){
         this.screen = screen;
         this.map = new TiledMap();
         this.wallBodies = new Array<Body>();
-        Pickup.definePickupTextures(new Texture("textures/items.png"));
         this.floorTiles = new Array<TextureRegion>();
         this.wallTiles = new Array<TextureRegion>();
 
-        defineCaveTextures(new Texture("textures/dungeontiles-blue.png"));
+        // get cave and item textures from the atlas
+        Pickup.definePickupTextures(screen.getAtlas().findRegion("items"));
+        tiles1 = screen.getAtlas().findRegion("tiles-blue");
+        tiles2 = screen.getAtlas().findRegion("tiles-poison");
+        tiles3 = screen.getAtlas().findRegion("tiles-dark");
+
+        defineCaveTextures(tiles1);
     }
 
     /**
@@ -84,17 +92,10 @@ public class CaveGenerator {
         objectLayer = new TiledMapTileLayer(mapWidth, mapHeight, TILE_SIZE, TILE_SIZE);
         objectLayer.setName("objects");
 
-
-        // TODO:    atlas --  blue -> poison -> dark
-        Array<String> maps = new Array<String>();
-        maps.add("blue");
-        maps.add("dark");
-        maps.add("poison");
-
-        if(floor == 5){
-            defineCaveTextures(new Texture("textures/dungeontiles-poison.png"));
-        }else if( floor == 10){
-            defineCaveTextures(new Texture("textures/dungeontiles-dark.png"));
+        if(floor == 8){
+            defineCaveTextures(tiles2);
+        }else if( floor == 16){
+            defineCaveTextures(tiles3);
         }
 
 
@@ -128,19 +129,52 @@ public class CaveGenerator {
     }
 
     private void addPowerups(float seed){
-        int amount = 1;
-        for(int i = 0; i < amount; i++){
-            System.out.println(i);
-            screen.add(new Pickup.MultifirePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
-            screen.add(new Pickup.DoubleDamagePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
-            screen.add(new Pickup.UnlimitedManaPickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
-            screen.add(new Pickup.BouncingProjectilePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
-            screen.add(new Pickup.InvinciblePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
-            screen.add(new Pickup.HealthPickup(screen, cellToWorldPosition(getTreasureSpot(4)), 15));
-            screen.add(new Pickup.ManaPickup(screen, cellToWorldPosition(getTreasureSpot(3)), 15));
+        int numPickups = Math.round(MathUtils.sin(seed * seed) * 40) + 1;
+        System.out.printf("%d pickups \n", numPickups);
+
+        for(int i = 0; i < numPickups; i++){
+            switch(MathUtils.random(0,10)){
+                case 0:
+                    screen.add(new Pickup.InvinciblePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+                    break;
+                case 1:
+                    screen.add(new Pickup.DoubleDamagePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+                    break;
+                case 2:
+                    screen.add(new Pickup.BootsPickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+                    break;
+                case 3:
+                    screen.add(new Pickup.BouncingProjectilePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+                    break;
+                case 4:
+                    screen.add(new Pickup.MultifirePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+                    break;
+                case 5:
+                    screen.add(new Pickup.StaffPickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+                    break;
+                case 6:
+                    screen.add(new Pickup.UnlimitedManaPickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+                    break;
+                case 7:
+                case 8:
+                    screen.add(new Pickup.HealthPotion(screen, cellToWorldPosition(getTreasureSpot(4)), 15));
+                    break;
+                case 9:
+                case 10:
+                    screen.add(new Pickup.ManaPotion(screen, cellToWorldPosition(getTreasureSpot(4)), 15));
+                    break;
+                case 11:
+                    screen.add(new Pickup.HPPickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+                    break;
+                }
         }
+
+        screen.add(new Pickup.HealthPotion(screen, cellToWorldPosition(getTreasureSpot(4)), 15));
+        screen.add(new Pickup.ManaPotion(screen, cellToWorldPosition(getTreasureSpot(4)), 15));
+
         map.getLayers().add(objectLayer);
     }
+
 
     public void addEnemies(float seed){
         Array<Enemy> enemies = new Array<Enemy>();
@@ -464,8 +498,9 @@ public class CaveGenerator {
         return wallTiles.random();
     }
 
-    private void defineCaveTextures(Texture tiles){
-        TextureRegion[][] splitTiles = TextureRegion.split(tiles, TILE_SIZE, TILE_SIZE);
+    private void defineCaveTextures(TextureRegion tiles){
+//        TextureRegion[][] splitTiles = TextureRegion.split(tiles, TILE_SIZE, TILE_SIZE);
+        TextureRegion[][] splitTiles = tiles.split(TILE_SIZE, TILE_SIZE);
         floorTiles.clear();
         wallTiles.clear();
 

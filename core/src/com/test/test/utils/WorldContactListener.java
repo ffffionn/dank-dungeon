@@ -11,6 +11,9 @@ import com.test.test.screens.GameScreen;
  */
 public class WorldContactListener implements ContactListener{
 
+    private GameScreen screen;
+
+    // ENTITY COLLISION BITS
     public static final short PLAYER = 0x1;
     public static final short WALL = 0x2;
     public static final short ENEMY = 0x4;
@@ -19,7 +22,6 @@ public class WorldContactListener implements ContactListener{
     public static final short BARRIER = 0x32;
     public static final short PICKUP = 0x64;
 
-    private GameScreen screen;
 
     public WorldContactListener(GameScreen screen){
         this.screen = screen;
@@ -32,47 +34,47 @@ public class WorldContactListener implements ContactListener{
         short a = fa.getFilterData().categoryBits;
         short b = fb.getFilterData().categoryBits;
 
-        if(fa.getUserData() != null && fb.getUserData() != null){
+        if(fa.getUserData() == null || fb.getUserData() == null) {
+            return;
+        }
 
-            // handle projectile collisions
-            if(a == PLAYER_PROJECTILE || a == ENEMY_PROJECTILE){
-                ProjectileCollisionHandler.collide((Projectile) fa.getBody().getUserData(), fb.getBody());
-            }else if(b == PLAYER_PROJECTILE || b == ENEMY_PROJECTILE){
-                ProjectileCollisionHandler.collide((Projectile) fb.getBody().getUserData(), fa.getBody());
+        // handle projectile collisions
+        if(a == PLAYER_PROJECTILE || a == ENEMY_PROJECTILE){
+            ProjectileCollisionHandler.collide((Projectile) fa.getBody().getUserData(), fb.getBody());
+        }else if(b == PLAYER_PROJECTILE || b == ENEMY_PROJECTILE){
+            ProjectileCollisionHandler.collide((Projectile) fb.getBody().getUserData(), fa.getBody());
+        }
+
+        // handle barrier collisions
+        if (a == BARRIER) {
+            if (b == ENEMY) {
+                EnemyCollisionHandler.collide(fb.getBody(), fa.getBody());
             }
-
-            // handle barrier collisions
-            if (a == BARRIER) {
-                if (b == ENEMY) {
-                    EnemyCollisionHandler.collide(fb.getBody(), fa.getBody());
-                }
-            } else if (b == BARRIER) {
-                if( a == ENEMY){
-                    EnemyCollisionHandler.collide(fa.getBody(), fb.getBody());
-                }
+        } else if (b == BARRIER) {
+            if( a == ENEMY){
+                EnemyCollisionHandler.collide(fa.getBody(), fb.getBody());
             }
+        }
 
-            // handle player collisions
-            if(a == PLAYER){
-                if(b == ENEMY){
-                    EnemyCollisionHandler.collide(fb.getBody(), fa.getBody());
-                }else if(fb.getUserData().equals("goal")){
-                    screen.levelUp();
-                }else if(b == PICKUP){
-                    ((Hero) fa.getBody().getUserData()).pickup((Pickup) fb.getBody().getUserData());
-                    ((Pickup) fb.getBody().getUserData()).setToDestroy();
-                }
-            }else if(b == PLAYER){
-                if(a == ENEMY){
-                    EnemyCollisionHandler.collide(fa.getBody(), fb.getBody());
-                }else if(fa.getUserData().equals("goal")){
-                    screen.levelUp();
-                }else if(a == PICKUP){
-                    ((Hero) fb.getBody().getUserData()).pickup((Pickup) fa.getBody().getUserData());
-                    ((Pickup) fa.getBody().getUserData()).setToDestroy();
-                }
+        // handle player collisions
+        if(a == PLAYER){
+            if(b == ENEMY){
+                EnemyCollisionHandler.collide(fb.getBody(), fa.getBody());
+            }else if(fb.getUserData().equals("goal")){
+                screen.levelUp();
+            }else if(b == PICKUP){
+                ((Hero) fa.getBody().getUserData()).pickup((Pickup) fb.getBody().getUserData());
+                ((Pickup) fb.getBody().getUserData()).setToDestroy();
             }
-
+        }else if(b == PLAYER){
+            if(a == ENEMY){
+                EnemyCollisionHandler.collide(fa.getBody(), fb.getBody());
+            }else if(fa.getUserData().equals("goal")){
+                screen.levelUp();
+            }else if(a == PICKUP){
+                ((Hero) fb.getBody().getUserData()).pickup((Pickup) fa.getBody().getUserData());
+                ((Pickup) fa.getBody().getUserData()).setToDestroy();
+            }
         }
 
     }
@@ -104,9 +106,9 @@ public class WorldContactListener implements ContactListener{
             }
 
             // handle bouncing
-            if( userData == "wall"){
+            if( userData.equals("wall")){
                 p.bounce();
-            }else if(userData == "barrier" && !friendly){
+            }else if(userData.equals("barrier") && !friendly){
                 p.setBounces(1);
                 p.bounce();
             }else{

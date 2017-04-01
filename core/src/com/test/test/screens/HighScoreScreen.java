@@ -28,38 +28,36 @@ public class HighScoreScreen implements Screen {
 
     private DankDungeon game;
     private Viewport viewport;
+
     private Stage stage;
     private AssetManager assetManager;
     private Table table;
-    private int newScore;
-
-    private Array<String> highScores;
-    private boolean highScoreSet;
 
     private FileHandle scoreFile;
+    private Array<String> highScores;
+    private boolean highScoreSet;
+    private int newScore;
+
 
     public HighScoreScreen(DankDungeon game, int score, AssetManager manager){
         this.game = game;
         this.assetManager = manager;
-        viewport = new FitViewport(game.V_WIDTH, game.V_HEIGHT, new OrthographicCamera());
-        stage = new Stage(viewport, game.batch);
         this.newScore = score;
-
-        Skin skin = assetManager.get("ui/skin.json", Skin.class);
-        Label.LabelStyle defaultStyle = new Label.LabelStyle(skin.getFont("default-font"), skin.getColor("red"));
-        Label.LabelStyle monoStyle = skin.get("monospaced", Label.LabelStyle.class);
+        this.viewport = new FitViewport(DankDungeon.V_WIDTH, DankDungeon.V_HEIGHT, new OrthographicCamera());
+        this.stage = new Stage(viewport, game.batch);
 
         this.table = new Table();
-//        table.debug();
         table.setFillParent(true);
 
-        highScores = new Array<String>();
+        this.highScores = new Array<String>();
 
-        // get the highscores from file
+        // get the high scores from file
         scoreFile = Gdx.files.local("data/highscores.txt");
         if (scoreFile.length() == 0) {
+            // if the file is empty or doesn't exist, create a blank template
             createBlankScores();
-        }else{
+        } else {
+            // our high scores are of the form 'name:score'
             String text = scoreFile.readString();
             highScores.addAll(text.split("\n"));
         }
@@ -68,6 +66,7 @@ public class HighScoreScreen implements Screen {
             int lowestScore = Integer.parseInt(highScores.get(highScores.size - 1).split(":")[1].trim());
             this.highScoreSet = score > lowestScore;
         }catch(Exception e){
+            // high scores file is formatted wrong
             e.printStackTrace();
             highScoreSet = false;
             createBlankScores();
@@ -102,7 +101,6 @@ public class HighScoreScreen implements Screen {
             intScores.add(Integer.parseInt(s.split(":")[1].trim()));
         }
 
-
         // remove the lowest score and add the new one
         intScores.pop();
         intScores.add(newScore);
@@ -120,7 +118,7 @@ public class HighScoreScreen implements Screen {
 
     private void setTable(){
         table.clear();
-        Skin skin = assetManager.get("ui/skin.json", Skin.class);
+        Skin skin = assetManager.get("ui/ui_skin.json", Skin.class);
         Label.LabelStyle defaultStyle = skin.get("game-over", Label.LabelStyle.class);
         Label.LabelStyle monoStyle = skin.get("monospaced", Label.LabelStyle.class);
 
@@ -135,7 +133,7 @@ public class HighScoreScreen implements Screen {
             labelString = "HIGHSCORES";
             defaultStyle = new Label.LabelStyle(skin.getFont("default-font"), skin.getColor("green"));
         }
-        Label topLabel= new Label(labelString, defaultStyle);
+        Label topLabel = new Label(labelString, defaultStyle);
 
 
         table.add(topLabel).expandX().expandY().center().padTop(10.0f);
@@ -154,12 +152,14 @@ public class HighScoreScreen implements Screen {
             table.add(new Label(scoreString, monoStyle)).expandX();
         }
         table.padBottom(20.0f);
+        table.row();
 
-        if(newScore >= 0){
-            table.row();
-            table.add(new Label("Click anywhere to play again", skin.get("monospaced-green", Label.LabelStyle.class))).expandX().expandY();
-            table.padBottom(20.0f);
+        labelString = "Click anywhere to play again.";
+        if(newScore == -1){
+            labelString = "Click anywhere to return to the Main Menu";
         }
+        table.add(new Label(labelString, skin, "monospaced-green")).expandX().expandY();
+        table.padBottom(20.0f);
 
     }
 
@@ -177,21 +177,21 @@ public class HighScoreScreen implements Screen {
         draw();
         // if this is a game over, rather than from the main menu
         if( Gdx.input.isTouched() ){
-            if(newScore >= 0){
-                stage.addAction(Actions.sequence(
-                        Actions.fadeOut(1.5f),
-                        new Action() {
-                            @Override
-                            public boolean act(float delta) {
-                                dispose();
-                                game.setScreen(new GameScreen(game, assetManager));
-                                return true;
-                            }
+            stage.addAction(Actions.sequence(
+                Actions.fadeOut(newScore == -1 ? 0.5f : 1.5f),
+                new Action() {
+                    @Override
+                    public boolean act(float delta) {
+                        dispose();
+                        if(newScore >= 0){
+                            game.setScreen(new GameScreen(game, assetManager));
+                        }else{
+                            game.setScreen(new MainMenuScreen(game, assetManager));
                         }
-                ));
-            }else{
-//                game.setScreen(new MainMenuScreen(game, assetManager));
-            }
+                        return true;
+                    }
+                }
+            ));
         }
     }
 
@@ -206,7 +206,7 @@ public class HighScoreScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
-
+        viewport.update(width, height);
     }
 
     @Override

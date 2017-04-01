@@ -11,10 +11,10 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.test.test.DankDungeon;
@@ -37,7 +37,7 @@ public class LoadingScreen implements Screen {
     public LoadingScreen(DankDungeon game){
         this.game = game;
         this.assetManager = new AssetManager();
-        viewport = new FitViewport(game.V_WIDTH, game.V_HEIGHT, new OrthographicCamera());
+        viewport = new FitViewport(DankDungeon.V_WIDTH, DankDungeon.V_HEIGHT, new OrthographicCamera());
         stage = new Stage(viewport, game.batch);
         this.table = new Table();
 //        table.debug();
@@ -45,7 +45,7 @@ public class LoadingScreen implements Screen {
 
         ProgressBar.ProgressBarStyle style = new ProgressBar.ProgressBarStyle();
 
-        Skin uiSkin = new Skin(Gdx.files.internal("ui/skin.json"), new TextureAtlas("ui/skin.atlas"));
+        Skin uiSkin = new Skin(Gdx.files.internal("ui/ui_skin.json"), new TextureAtlas("ui/ui_skin.pack"));
 
         Pixmap block = new Pixmap(30, 30, Pixmap.Format.RGBA8888);
         block.setColor(Color.WHITE);
@@ -56,9 +56,14 @@ public class LoadingScreen implements Screen {
         style.knob = uiSkin.newDrawable("block", uiSkin.getColor("light-green"));
         style.knobBefore = uiSkin.newDrawable("block", uiSkin.getColor("dark-green"));
 
+        Label.LabelStyle defaultStyle = uiSkin.get("monospaced-green", Label.LabelStyle.class);
+        Label loadingText = new Label("LOADING..", defaultStyle);
+        table.padTop(Value.percentHeight(0.25f)).add(loadingText).center().expandX();
+        table.row();
 
         this.progress = new ProgressBar(0f, 100f, 0.5f, false, style);
         progress.setSize(300, 20);
+        progress.setAnimateDuration(0.1f);
         table.add(progress).center().expandY().expandX();
         stage.addActor(table);
     }
@@ -66,7 +71,7 @@ public class LoadingScreen implements Screen {
 
     @Override
     public void show() {
-        assetManager.load("ui/skin.json", Skin.class);
+        assetManager.load("ui/ui_skin.json", Skin.class);
 
         assetManager.load("sounds/main-loop-100.ogg", Music.class);
         assetManager.load("sounds/main-loop-110.ogg", Music.class);
@@ -76,6 +81,7 @@ public class LoadingScreen implements Screen {
         assetManager.load("sounds/main-loop-150.ogg", Music.class);
         assetManager.load("sounds/steps.wav", Music.class);
         assetManager.load("sounds/barrier.ogg", Music.class);
+        assetManager.load("sounds/a-journey-awaits.ogg", Music.class);
 
         assetManager.load("sounds/cast-spell.wav", Sound.class);
         assetManager.load("sounds/rat-pain.ogg", Sound.class);
@@ -83,6 +89,7 @@ public class LoadingScreen implements Screen {
         assetManager.load("sounds/scorpion-pain.wav", Sound.class);
         assetManager.load("sounds/scorpion-death.wav", Sound.class);
         assetManager.load("sounds/hero-death.wav", Sound.class);
+        assetManager.load("sounds/hero-powerup.wav", Sound.class);
         assetManager.load("sounds/hero-pain1.ogg", Sound.class);
         assetManager.load("sounds/hero-pain2.ogg", Sound.class);
         assetManager.load("sounds/hero-pain3.ogg", Sound.class);
@@ -91,27 +98,42 @@ public class LoadingScreen implements Screen {
         assetManager.load("sounds/hero-healed.ogg", Sound.class);
         assetManager.load("sounds/wolf-pain.wav", Sound.class);
         assetManager.load("sounds/wolf-death.wav", Sound.class);
+        assetManager.load("textures/worldTextures.pack", TextureAtlas.class);
+        assetManager.load("ui/ui_skin.pack", TextureAtlas.class);
 
-        assetManager.load("textures/crosshair.png", Texture.class);
-//        Texture text = new Texture(Gdx.files.local("textures/shield.png"));
-        assetManager.load("textures/shield.png", Texture.class);
+        // newCursor only takes Pixmap which can only be made directly from file
+        assetManager.load("textures/crosshair.png", Pixmap.class);
     }
 
     @Override
     public void render(float delta) {
+        // update the loading bar
         progress.setValue(assetManager.getProgress());
         stage.act(delta);
+
+        // draw the progress
         stage.draw();
+
+        // if done, transition to MainMenuScreen
         if(assetManager.update()){
-            dispose();
-            game.setScreen(new GameScreen(game, assetManager));
-//            game.switchScreen(new GameScreen(game, assetManager));
+            System.out.println("Assets loaded");
+            stage.addAction(Actions.sequence(
+                Actions.fadeOut(1.0f),
+                new Action() {
+                    @Override
+                    public boolean act(float delta) {
+                        dispose();
+                        game.setScreen(new MainMenuScreen(game, assetManager));
+                        return true;
+                    }
+                }
+            ));
         }
     }
 
     @Override
     public void resize(int width, int height) {
-
+        viewport.update(width, height);
     }
 
     @Override

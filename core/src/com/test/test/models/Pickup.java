@@ -1,6 +1,6 @@
 package com.test.test.models;
 
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -17,21 +17,26 @@ import static com.test.test.utils.WorldContactListener.*;
  */
 public class Pickup extends B2DSprite {
 
-    public enum Type{ MULTI_FIRE, INVINCIBLE, BOUNCING_BULLETS, DOUBLE_DMG, POTION, UNLIMITED_MANA }
+    public enum Type{ MULTI_FIRE, INVINCIBLE, BOUNCING_BULLETS, DOUBLE_DMG, POTION, UNLIMITED_MANA, BUFF}
     public Type TYPE;
 
     protected int size;
+    protected GameScreen screen;
 
     protected static TextureRegion healthBottle;
     protected static TextureRegion manaBottle;
-    protected static TextureRegion chilli;
+    protected static TextureRegion chili;
     protected static TextureRegion ham;
     protected static TextureRegion cheese;
     protected static TextureRegion grapes;
     protected static TextureRegion mushrooms;
+    protected static TextureRegion staff;
+    protected static TextureRegion boots;
+    protected static TextureRegion shield;
 
     public Pickup(GameScreen screen, TextureRegion texture, Vector2 startPosition, int size){
         super();
+        this.screen = screen;
         this.size = size;
         setTexture(texture, size);
         define(screen, startPosition);
@@ -41,23 +46,26 @@ public class Pickup extends B2DSprite {
     public void activate(Hero hero){}
     public void deactivate(){}
 
-    protected void playSound(){
-
+    protected void playSound(String soundID){
+        screen.getAssetManager().get("sounds/" + soundID, Sound.class).play();
     }
 
     protected void updateHUD(){
 
     }
 
-    public static void definePickupTextures(Texture itemTileSet){
-        TextureRegion[][] items = TextureRegion.split(itemTileSet, 25, 25);
+    public static void definePickupTextures(TextureRegion itemTileSet){
+        TextureRegion[][] items = itemTileSet.split(25, 25);
         healthBottle = items[2][1];
         manaBottle = items[2][2];
-        chilli = items[5][4];
+        chili = items[5][4];
         cheese = items[5][3];
         grapes = items[5][1];
         mushrooms = items[5][7];
         ham = items[6][0];
+        staff = items[1][8];
+        boots = items[4][0];
+        shield = items[1][0];
     }
 
     protected void define(GameScreen screen, Vector2 position){
@@ -99,8 +107,10 @@ public class Pickup extends B2DSprite {
         }
 
         @Override
-        public void activate(Hero hero) {
-            timerCount = 0;
+        public void activate(Hero hero){
+            timerCount = 0.0f;
+            playSound("hero-munch.ogg");
+
         }
 
         public boolean isTimeUp(){ return timerCount >= powerTimer; }
@@ -110,8 +120,8 @@ public class Pickup extends B2DSprite {
     // CONCRETE PICKUP OBJECTS BELOW
 
     /** GIVE PLAYER +15 HEALTH */
-    public static class HealthPickup extends Pickup {
-        public HealthPickup(GameScreen screen, Vector2 startPosition, int size){
+    public static class HealthPotion extends Pickup {
+        public HealthPotion(GameScreen screen, Vector2 startPosition, int size){
             super(screen, healthBottle, startPosition, size);
             TYPE = Type.POTION;
         }
@@ -119,12 +129,13 @@ public class Pickup extends B2DSprite {
         @Override
         public void activate(Hero hero){
             hero.addHealth(15);
+            playSound("hero-heal.ogg");
         }
     }
 
     /** GIVE PLAYER +10 MANA */
-    public static class ManaPickup extends Pickup {
-        public ManaPickup(GameScreen screen, Vector2 startPosition, int size){
+    public static class ManaPotion extends Pickup {
+        public ManaPotion(GameScreen screen, Vector2 startPosition, int size){
             super(screen, manaBottle, startPosition, size);
             TYPE = Type.POTION;
         }
@@ -132,13 +143,60 @@ public class Pickup extends B2DSprite {
         @Override
         public void activate(Hero hero){
             hero.adjustMana(20.0f);
+            playSound("hero-healed.ogg");
         }
     }
+
+    /** GIVE PLAYER A PERMANENT DAMAGE BOOST */
+    public static class StaffPickup extends Pickup {
+        public StaffPickup(GameScreen screen, Vector2 startPosition, int size){
+            super(screen, staff, startPosition, size);
+            TYPE = Type.BUFF;
+        }
+
+        @Override
+        public void activate(Hero hero){
+            hero.increaseDamage(5);
+            playSound("hero-powerup.wav");
+        }
+    }
+
+
+    /** GIVE PLAYER PERMANENT MORE MAX HP */
+    public static class HPPickup extends Pickup {
+        public HPPickup(GameScreen screen, Vector2 startPosition, int size){
+            super(screen, shield, startPosition, size);
+            TYPE = Type.BUFF;
+        }
+
+        @Override
+        public void activate(Hero hero){
+            hero.increaseMaxHP(15);
+            playSound("hero-powerup.wav");
+        }
+    }
+
+
+    /** GIVE PLAYER A PERMANENT DAMAGE BOOST */
+    public static class BootsPickup extends Pickup {
+        public BootsPickup(GameScreen screen, Vector2 startPosition, int size){
+            super(screen, boots, startPosition, size);
+            TYPE = Type.BUFF;
+        }
+
+        @Override
+        public void activate(Hero hero){
+            hero.increaseMaxSpeed(0.15f);
+            playSound("hero-powerup.wav");
+        }
+    }
+
+
 
     /** GIVE PLAYER MORE FIREBALLS */
     public static class MultifirePickup extends TimedPickup{
         public MultifirePickup(GameScreen screen, Vector2 startPosition, int size){
-            super(screen, chilli, startPosition, size);
+            super(screen, chili, startPosition, size);
             TYPE = Type.MULTI_FIRE;
             powerTimer = 10.0f;
             timerCount = 0;
@@ -147,6 +205,7 @@ public class Pickup extends B2DSprite {
         @Override
         public void activate(Hero hero){
             timerCount = 0.0f;
+            playSound("hero-munch.ogg");
         }
     }
 
@@ -158,11 +217,6 @@ public class Pickup extends B2DSprite {
             powerTimer = 10.0f;
             timerCount = 0;
         }
-
-        @Override
-        public void activate(Hero hero){
-            timerCount = 0.0f;
-        }
     }
 
     /** GIVE PLAYER UNLIMITED MANA */
@@ -173,25 +227,15 @@ public class Pickup extends B2DSprite {
             powerTimer = 7.5f;
             timerCount = 0;
         }
-
-        @Override
-        public void activate(Hero hero){
-            timerCount = 0.0f;
-        }
     }
 
     /** MAKE THE PLAYER INVINCIBLE AND DEAL DMG ON HIT */
     public static class InvinciblePickup extends TimedPickup {
-        public InvinciblePickup(GameScreen screen, Vector2 startPosition, int size){
+        public InvinciblePickup(GameScreen screen, Vector2 startPosition, int size) {
             super(screen, mushrooms, startPosition, size);
             TYPE = Type.INVINCIBLE;
             powerTimer = 5.0f;
             timerCount = 0;
-        }
-
-        @Override
-        public void activate(Hero hero){
-            timerCount = 0.0f;
         }
     }
 
@@ -202,11 +246,6 @@ public class Pickup extends B2DSprite {
             TYPE = Type.BOUNCING_BULLETS;
             powerTimer = 7.5f;
             timerCount = 0;
-        }
-
-        @Override
-        public void activate(Hero hero){
-            timerCount = 0.0f;
         }
     }
 

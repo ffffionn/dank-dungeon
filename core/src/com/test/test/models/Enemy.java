@@ -41,7 +41,7 @@ public abstract class Enemy extends AnimatedB2DSprite {
 
     protected HealthBar healthBar;
 
-    protected static TextureAtlas uiAtlas = new TextureAtlas("ui/hud.pack");
+    protected static TextureAtlas uiAtlas = new TextureAtlas("ui/ui_skin.pack");
 
     public Enemy(GameScreen screen, Vector2 startPosition){
         super();
@@ -88,7 +88,6 @@ public abstract class Enemy extends AnimatedB2DSprite {
             sprite.setRegion(animation.getFrame());
             sprite.rotate90(true);
         }
-        // rotate region 90 first for perf.
         sprite.draw(sb);
         if(!dead){
             healthBar.draw(sb);

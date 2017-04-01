@@ -5,8 +5,6 @@ import static com.test.test.models.HeroState.attacking;
 import static com.test.test.models.HeroState.standing;
 import static com.test.test.utils.WorldContactListener.*;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
@@ -24,14 +22,18 @@ import com.test.test.screens.GameScreen;
 public class Hero extends AnimatedB2DSprite {
 
     // hero attributes
-    public static final float MAX_VELOCITY = 2.5f;
-    public static final int MAX_HEALTH = 100;
-    public static final int MAX_MANA = 100;
+    public int maxHP;
+    public float maxMana;
+    private float mana;
+
     public static final int HERO_SIZE = 20;
+    private static final float MAX_SPEED_LIMIT = 7.0f;
     private static final float INVINCIBILITY_TIMER = 0.85f;
     private boolean invincible;
-    private float mana;
+    private int attackDamage;
     private Color flashColour;
+
+    private float maxSpeed;
 
     private Array<Pickup> activePowers;
 
@@ -53,10 +55,16 @@ public class Hero extends AnimatedB2DSprite {
         this.currentState = standing;
         this.previousState = standing;
         this.fireballs = new Array<Projectile>();
-        this.health = MAX_HEALTH;
-        this.mana = MAX_MANA;
         this.invincible = false;
         this.flashColour = Color.RED;
+
+        // defaults
+        this.health = this.maxHP = 100;
+        this.mana = this.maxMana = 100.0f;
+        this.attackDamage = 20;
+        this.maxSpeed = 2.0f;
+
+
         define(position);
         this.shield = new Barrier(screen, this);
         castSound = screen.getAssetManager().get("sounds/cast-spell.wav", Sound.class);
@@ -100,8 +108,6 @@ public class Hero extends AnimatedB2DSprite {
             }
         }
 
-        // TODO: remove
-        if(Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) die();
     }
 
     /**
@@ -113,7 +119,7 @@ public class Hero extends AnimatedB2DSprite {
         }
         Array<Projectile> newFireballs = new Array<Projectile>();
 
-        int damage = Projectile.DEFAULT_DAMAGE;
+        int damage = attackDamage;
         float speed = 1.2f * Projectile.DEFAULT_SPEED;
 
         if(hasPower(Pickup.Type.DOUBLE_DMG)){
@@ -151,9 +157,28 @@ public class Hero extends AnimatedB2DSprite {
         castSound.play(0.3f);
     }
 
+    void increaseDamage(int amount){
+        this.attackDamage += amount;
+    }
+
+    public float getMaxSpeed(){
+        return this.maxSpeed;
+    }
+
+    public void increaseMaxHP(int amount){
+        maxHP += amount;
+        health += amount;
+    }
+
+    public void increaseMaxSpeed(float amount){
+        this.maxSpeed += amount;
+        if( maxSpeed >= MAX_SPEED_LIMIT){
+            maxSpeed = MAX_SPEED_LIMIT;
+        }
+    }
+
     public void pickup(Pickup p){
-        if(p.TYPE != Pickup.Type.POTION){
-            screen.getAssetManager().get("sounds/hero-munch.ogg", Sound.class).play();
+        if(p.TYPE != Pickup.Type.POTION && p.TYPE != Pickup.Type.BUFF){
             activePowers.add(p);
         }
         p.activate(this);
@@ -188,11 +213,8 @@ public class Hero extends AnimatedB2DSprite {
         this.mana += amount;
         if(mana < 0){
             mana = 0;
-        }else if(mana > MAX_MANA){
-            mana = MAX_MANA;
-        }
-        if(amount > 0){
-            screen.getAssetManager().get("sounds/hero-healed.ogg", Sound.class).play(0.3f);
+        }else if(mana > maxMana){
+            mana = maxMana;
         }
         // update hud
         screen.getHud().updateMana(MathUtils.floor(this.mana));
@@ -200,10 +222,9 @@ public class Hero extends AnimatedB2DSprite {
 
     public void addHealth(int amount){
         this.health += amount;
-        screen.getAssetManager().get("sounds/hero-heal.ogg", Sound.class).play(0.5f);
         // don't overheal
-        if (health > MAX_HEALTH) health = MAX_HEALTH;
-        screen.getHud().updateHealth(this.health);
+        if (health > maxHP) health = maxHP;
+        screen.getHud().updateHealth(Math.round(this.health / this.maxHP));
     }
 
     /**
@@ -269,7 +290,6 @@ public class Hero extends AnimatedB2DSprite {
         // trigger state change effects
         previousState.leave(this);
         currentState.enter(this);
-//        System.out.printf("**STATE:\t%s  ->  %s\n", previousState.toString(), currentState.toString());
     }
 
     /**

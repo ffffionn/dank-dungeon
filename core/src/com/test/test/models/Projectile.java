@@ -145,9 +145,6 @@ public class Projectile extends AnimatedB2DSprite {
         sprite.draw(sb);
     }
 
-
-    public void setTint(Color tint){ this.tint = tint; }
     protected boolean isFriendly(){ return true; }
     public int getDamageAmount(){ return this.damageAmount; }
-
 }

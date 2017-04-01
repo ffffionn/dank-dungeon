@@ -12,7 +12,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.test.test.DankDungeon;
-import com.test.test.models.Hero;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.color;
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.fadeIn;
@@ -44,8 +43,8 @@ public class GameHud {
     public GameHud(SpriteBatch sb, Skin skin){
         this.score = 0;
         this.floor = 1;
-        this.playerHealth = Hero.MAX_HEALTH;
-        this.playerMana = Hero.MAX_MANA;
+        this.playerHealth = 100;
+        this.playerMana = 100;
         this.viewport = new StretchViewport(DankDungeon.V_WIDTH, DankDungeon.V_HEIGHT, new OrthographicCamera());
         this.stage = new Stage(viewport, sb);
         this.skin = skin;
@@ -76,14 +75,10 @@ public class GameHud {
     public void setFloor(int floor) {
         this.floor = floor;
         floorLabel.setText(String.format("FLOOR: %03d", this.floor));
-
-//        floorLabel.addAction(Actions.sequence(
-//                color(skin.getColor("light-green"), 0.2f, Interpolation.pow2In),
-//                color(skin.getColor("alpha-blue"), 0.2f, Interpolation.pow2Out)));
-//        floorLabel.getColor().a = 0;
-//        floorLabel.addAction(fadeOut(1.0f));
-//        floorLabel.addAction(fadeIn(1.0f));
-
+        // flash the floor slightly darker on update
+        floorLabel.addAction(Actions.sequence(
+                color(skin.getColor("deep-blue"), 0.45f, Interpolation.pow2In),
+                color(skin.getColor("blue"), 0.45f, Interpolation.pow2Out)));
     }
 
     public void updateHealth(int newHealth){
@@ -99,6 +94,10 @@ public class GameHud {
     public void updateScore(int adjustment){
         score += adjustment;
         scoreLabel.setText(String.format("SCORE: %06d", score));
+        // flash the score slightly darker on update
+        scoreLabel.addAction(Actions.sequence(
+                color(skin.getColor("deep-blue"), 0.25f, Interpolation.pow2In),
+                color(skin.getColor("blue"), 0.25f, Interpolation.pow2Out)));
     }
 
     public void resize(int width, int height){
@@ -116,8 +115,6 @@ public class GameHud {
     private void addStats(){
         Table table = new Table();
         table.setFillParent(true);
-//        table.setDebug(true);
-        BitmapFont font =  skin.get("default-font", BitmapFont.class);
 
         scoreLabel = new Label(String.format("SCORE: %06d", score), skin, "ui-label");
         floorLabel = new Label(String.format("FLOOR: %03d", floor), skin, "ui-label");
@@ -143,7 +140,7 @@ public class GameHud {
         barStyle.background = skin.newDrawable("block", skin.getColor("red"));
         barStyle.knobAfter = skin.newDrawable("block", skin.getColor("grey"));
 
-        healthBar = new ProgressBar(0, Hero.MAX_HEALTH, 1.0f, false, barStyle);
+        healthBar = new ProgressBar(0, 100, 1.0f, false, barStyle);
         healthBar.setPosition(10, 50);
         healthBar.setAnimateDuration(0.5f);
         healthBar.setSize(300, healthBar.getPrefHeight());
@@ -153,7 +150,7 @@ public class GameHud {
         barStyle.background = skin.newDrawable("block", skin.getColor("blue"));
         barStyle.knobAfter = skin.newDrawable("block", skin.getColor("grey"));
 
-        manaBar = new ProgressBar(0, Hero.MAX_MANA, 0.5f, false, barStyle);
+        manaBar = new ProgressBar(0, 100, 0.5f, false, barStyle);
         manaBar.setPosition(10, 10);
         manaBar.setAnimateDuration(0.5f);
         manaBar.setSize(300, manaBar.getPrefHeight());

@@ -33,19 +33,20 @@ public abstract class HeroState{
 
     protected void handleMovement(Hero hero){
         Vector2 heroVelocity = hero.getBody().getLinearVelocity();
+        float maxSpeed = hero.getMaxSpeed();
         Vector2 movement = new Vector2(0, 0);
         float modifier = getRunModifier();
-        if (Gdx.input.isKeyPressed(Input.Keys.W) && heroVelocity.y < Hero.MAX_VELOCITY) {
-            movement.y += 0.2f * modifier;
+        if (Gdx.input.isKeyPressed(Input.Keys.W) && heroVelocity.y < maxSpeed) {
+            movement.y += 0.1f * maxSpeed * modifier;
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.S) && heroVelocity.y > -Hero.MAX_VELOCITY) {
-            movement.y -= 0.2f * modifier;
+        if (Gdx.input.isKeyPressed(Input.Keys.S) && heroVelocity.y > -maxSpeed) {
+            movement.y -= 0.1f * maxSpeed * modifier;
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.D) && heroVelocity.x < Hero.MAX_VELOCITY) {
-            movement.x += 0.2f * modifier;
+        if (Gdx.input.isKeyPressed(Input.Keys.D) && heroVelocity.x < maxSpeed) {
+            movement.x += 0.1f * maxSpeed * modifier;
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.A) && heroVelocity.x > -Hero.MAX_VELOCITY) {
-            movement.x -= 0.2f * modifier;
+        if (Gdx.input.isKeyPressed(Input.Keys.A) && heroVelocity.x > -maxSpeed) {
+            movement.x -= 0.1f * maxSpeed * modifier;
         }
         hero.getBody().applyLinearImpulse(movement, hero.getBody().getWorldCenter(), true);
     }
