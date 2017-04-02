@@ -1,7 +1,9 @@
 package com.test.test.models;
 
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -36,6 +38,7 @@ public class Pickup extends B2DSprite {
 
     public Pickup(GameScreen screen, TextureRegion texture, Vector2 startPosition, int size){
         super();
+        this.TYPE = Type.POTION;
         this.screen = screen;
         this.size = size;
         setTexture(texture, size);
@@ -46,8 +49,8 @@ public class Pickup extends B2DSprite {
     public void activate(Hero hero){}
     public void deactivate(){}
 
-    protected void playSound(String soundID){
-        screen.getAssetManager().get("sounds/" + soundID, Sound.class).play();
+    protected void playSound(String soundID, float volume){
+        screen.getAssetManager().get("sounds/" + soundID, Sound.class).play(volume);
     }
 
     protected void updateHUD(){
@@ -97,7 +100,6 @@ public class Pickup extends B2DSprite {
 
         public TimedPickup(GameScreen screen, TextureRegion texture, Vector2 startPosition, int size) {
             super(screen, texture, startPosition, size);
-            TYPE = Type.POTION;
         }
 
         @Override
@@ -109,11 +111,26 @@ public class Pickup extends B2DSprite {
         @Override
         public void activate(Hero hero){
             timerCount = 0.0f;
-            playSound("hero-munch.ogg");
-
+            playSound("hero-munch.ogg", 0.9f);
         }
 
         public boolean isTimeUp(){ return timerCount >= powerTimer; }
+    }
+
+
+    public static class BuffPickup extends Pickup {
+
+        public BuffPickup(GameScreen screen, TextureRegion texture, Vector2 startPosition, int size) {
+            super(screen, texture, startPosition, size);
+            TYPE = Type.BUFF;
+        }
+
+        @Override
+        public void activate(Hero hero){
+            playSound("hero-powerup.wav", 0.7f);
+            screen.getHud().flash(Color.GOLDENROD, Interpolation.exp10Out, 0.8f);
+        }
+
     }
 
 
@@ -129,7 +146,7 @@ public class Pickup extends B2DSprite {
         @Override
         public void activate(Hero hero){
             hero.addHealth(15);
-            playSound("hero-heal.ogg");
+            playSound("hero-heal.ogg", 0.6f);
         }
     }
 
@@ -143,51 +160,49 @@ public class Pickup extends B2DSprite {
         @Override
         public void activate(Hero hero){
             hero.adjustMana(20.0f);
-            playSound("hero-healed.ogg");
+            playSound("hero-healed.ogg", 0.5f);
         }
     }
 
     /** GIVE PLAYER A PERMANENT DAMAGE BOOST */
-    public static class StaffPickup extends Pickup {
+    public static class StaffPickup extends BuffPickup {
         public StaffPickup(GameScreen screen, Vector2 startPosition, int size){
             super(screen, staff, startPosition, size);
-            TYPE = Type.BUFF;
         }
 
         @Override
         public void activate(Hero hero){
+            super.activate(hero);
             hero.increaseDamage(5);
-            playSound("hero-powerup.wav");
         }
     }
 
 
     /** GIVE PLAYER PERMANENT MORE MAX HP */
-    public static class HPPickup extends Pickup {
+    public static class HPPickup extends BuffPickup {
         public HPPickup(GameScreen screen, Vector2 startPosition, int size){
             super(screen, shield, startPosition, size);
-            TYPE = Type.BUFF;
         }
 
         @Override
         public void activate(Hero hero){
+            super.activate(hero);
             hero.increaseMaxHP(15);
-            playSound("hero-powerup.wav");
+
         }
     }
 
 
     /** GIVE PLAYER A PERMANENT DAMAGE BOOST */
-    public static class BootsPickup extends Pickup {
+    public static class BootsPickup extends BuffPickup {
         public BootsPickup(GameScreen screen, Vector2 startPosition, int size){
             super(screen, boots, startPosition, size);
-            TYPE = Type.BUFF;
         }
 
         @Override
         public void activate(Hero hero){
+            super.activate(hero);
             hero.increaseMaxSpeed(0.15f);
-            playSound("hero-powerup.wav");
         }
     }
 
@@ -200,12 +215,6 @@ public class Pickup extends B2DSprite {
             TYPE = Type.MULTI_FIRE;
             powerTimer = 10.0f;
             timerCount = 0;
-        }
-
-        @Override
-        public void activate(Hero hero){
-            timerCount = 0.0f;
-            playSound("hero-munch.ogg");
         }
     }
 
@@ -236,6 +245,18 @@ public class Pickup extends B2DSprite {
             TYPE = Type.INVINCIBLE;
             powerTimer = 5.0f;
             timerCount = 0;
+        }
+
+        @Override
+        public void activate(Hero hero) {
+            super.activate(hero);
+            screen.getHud().flash(Color.GOLD, Interpolation.pow2, powerTimer);
+//            screen.getHud().tintFor(Color.GOLD, powerTimer);
+        }
+
+        @Override
+        public void deactivate() {
+            System.out.println("power gone");
         }
     }
 

@@ -129,11 +129,10 @@ public class CaveGenerator {
     }
 
     private void addPowerups(float seed){
-        int numPickups = Math.round(MathUtils.sin(seed * seed) * 40) + 1;
+        int numPickups = Math.round(MathUtils.sin(seed * seed) * 45) + 1;
         System.out.printf("%d pickups \n", numPickups);
-
         for(int i = 0; i < numPickups; i++){
-            switch(MathUtils.random(0,10)){
+            switch(MathUtils.random(0,11)){
                 case 0:
                     screen.add(new Pickup.InvinciblePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
                     break;
@@ -184,16 +183,11 @@ public class CaveGenerator {
         int numWolves = Math.round((MathUtils.sin(seed*seed) * 40) + seed/5);
         System.out.printf("SEED: %f   (%d/%d/%d) \n", seed, numRats, numScorpions, numWolves);
 
-//        numRats = 1;
-//        numScorpions = 1;
-//        numWolves = 1;
-
         Vector2 spawnPoint;
         // ensure enemies don't spawn near the hero
         for( int i = 0; i < numRats; i++){
             spawnPoint = getRandomPlace();
             while (spawnPoint.dst(heroSpawn) < 6.0f) {
-                System.out.println("reroll");
                 spawnPoint = getRandomPlace();
             }
             enemies.add( new Rat(screen, cellToWorldPosition(spawnPoint), seed) );
@@ -201,7 +195,6 @@ public class CaveGenerator {
         for (int i = 0; i < numScorpions; i++) {
             spawnPoint = getRandomPlace();
             while (spawnPoint.dst(heroSpawn) < 6.0f) {
-                System.out.println("reroll");
                 spawnPoint = getRandomPlace();
             }
             enemies.add(new Scorpion(screen, cellToWorldPosition(spawnPoint), seed));
@@ -209,7 +202,6 @@ public class CaveGenerator {
         for (int i = 0; i < numWolves; i++) {
             spawnPoint = getRandomPlace();
             while (spawnPoint.dst(heroSpawn) < 6.0f) {
-                System.out.println("reroll");
                 spawnPoint = getRandomPlace();
             }
             enemies.add(new Wolf(screen, cellToWorldPosition(spawnPoint), seed));

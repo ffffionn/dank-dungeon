@@ -6,6 +6,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -15,7 +16,11 @@ import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.*;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.*;
@@ -71,6 +76,11 @@ public class GameScreen implements Screen {
 
     private boolean levelUp;
 
+    // for pausing the game
+    private enum State{ RUNNING, PAUSED }
+    private State state;
+    private Stage pauseMenu;
+
     public GameScreen(DankDungeon game, AssetManager manager){
         this.game = game;
         this.assetManager = manager;
@@ -78,6 +88,7 @@ public class GameScreen implements Screen {
         this.levelUp = false;
         this.entityList = new Array<B2DSprite>();
         this.deleteList = new Array<B2DSprite>();
+        this.state = State.RUNNING;
 
         // set up box2d physics world
         this.world = new World(new Vector2(0, 0), true);
@@ -108,6 +119,8 @@ public class GameScreen implements Screen {
         cam.position.set(gamePort.getWorldWidth() / PPM, gamePort.getWorldHeight() / 2 / PPM, 0);
         cam.zoom -= 0.7f;
         mapRenderer.setView(cam);
+
+        createPauseMenu();
     }
 
     private void playMusic(String musicID) {
@@ -120,6 +133,95 @@ public class GameScreen implements Screen {
         bgm.play();
     }
 
+    private void createPauseMenu(){
+        Skin skin = assetManager.get("ui/ui_skin.json", Skin.class);
+        Viewport viewport = new FitViewport(DankDungeon.V_WIDTH, DankDungeon.V_HEIGHT, new OrthographicCamera());
+        pauseMenu = new Stage(viewport, game.batch);
+        Gdx.input.setInputProcessor(pauseMenu);
+
+        Table table = new Table();
+//        table.debug();
+        table.sizeBy(800, 600);
+        table.setPosition((DankDungeon.V_WIDTH / 2) - table.getWidth() / 2,
+                (DankDungeon.V_HEIGHT / 2) - table.getHeight() / 2);
+
+        table.background(skin.newDrawable("block", skin.getColor("dark-grey")));
+        table.top();
+
+        Label l = new Label("Pause", skin, "title");
+        table.add(l).center().colspan(1).expandX().expandY();
+
+        TextButton resumeButton = new TextButton("Resume", skin, "green-button");
+        resumeButton.addListener(new InputListener(){
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                return true;
+            }
+
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                resumeGame();
+            }
+        });
+
+        TextButton mainMenuButton = new TextButton("Exit to Menu", skin, "green-button");
+        mainMenuButton.addListener(new InputListener(){
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                return true;
+            }
+
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                pauseMenu.addAction(Actions.sequence(
+                        Actions.color(Color.BLACK, 0.5f),
+                        new Action() {
+                            @Override
+                            public boolean act(float delta) {
+                                dispose();
+                                game.setScreen(new MainMenuScreen(game, assetManager));
+                                return true;
+                            }
+                        }
+                ));
+
+            }
+        });
+
+        CheckBox cb = new CheckBox("BGM", skin);
+        cb.setChecked(true);
+
+        cb.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if( ((CheckBox) actor).isChecked() ){
+                    bgm.play();
+                }else{
+                    bgm.stop();
+                }
+            }
+        });
+
+
+        table.row();
+        table.add(resumeButton).colspan(1).expandY().expandX().center();
+        table.row();
+        table.add(mainMenuButton).colspan(1).expandY().expandX().center();
+        table.row();
+        table.add(cb);
+
+        pauseMenu.addActor(table);
+    }
+
+    private void pauseGame(){
+        this.state = State.PAUSED;
+
+    }
+
+    private void resumeGame(){
+        this.state = State.RUNNING;
+    }
+
     public void gameOver(){
         int score = hud.getScore();
         dispose();
@@ -128,40 +230,51 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta){
-        if(levelUp){
-            levelUp = false;
-            newFloor();
-            game.setScreen(this);
-        }
-        stepWorld();
-        deleteUselessBodies();
+        if(state != State.PAUSED){
+            if(levelUp){
+                levelUp = false;
+                newFloor();
+            }
+            stepWorld();
+            deleteUselessBodies();
 
-        handleInput(delta);
+            handleInput(delta);
 
-        player.update(delta);
-        updateCursorBody();
+            player.update(delta);
+            updateCursorBody();
 
-        // update world entities
-        for( B2DSprite b : entityList){
-             b.update(delta);
-            if( b instanceof Enemy){
-                ((Enemy) b).setTarget(player.getPosition().cpy());
+            // update world entities
+            for( B2DSprite b : entityList){
+                 b.update(delta);
+                if( b instanceof Enemy){
+                    ((Enemy) b).setTarget(player.getPosition().cpy());
+                }
+            }
+
+            cam.position.x = player.getPosition().x;
+            cam.position.y = player.getPosition().y;
+
+            // camera offset slightly towards cursor
+            Vector2 pos = new Vector2();
+            pos.clamp(-0.1f, 0.1f);
+            pos = cursorBody.getPosition().cpy().sub(player.getPosition()).nor().scl(0.05f);
+            cam.translate(pos);
+            cam.update();
+            hud.update(delta);
+            mapRenderer.setView(cam);
+        }else{
+            pauseMenu.act(delta);
+            if(Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
+                resumeGame();
             }
         }
 
-        // camera offset slightly towards cursor
-        Vector2 pos = new Vector2();
-        pos.clamp(-0.1f, 0.1f);
-        pos = cursorBody.getPosition().cpy().sub(player.getPosition()).nor().scl(0.05f);
-        cam.position.x = player.getPosition().x;
-        cam.position.y = player.getPosition().y;
-        cam.translate(pos);
-        cam.update();
-        hud.update(delta);
-        mapRenderer.setView(cam);
-
         // draw the game
         draw();
+
+        if(state == State.PAUSED){
+            pauseMenu.draw();
+        }
 
         if(player.isSetToDestroy()){
             gameOver();
@@ -276,23 +389,26 @@ public class GameScreen implements Screen {
 
     // TODO: remove
     public void handleInput(float dt){
-        if (Gdx.input.isKeyPressed(Input.Keys.Q)){
-            cam.zoom -= 0.1f;
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.E)){
-            cam.zoom += 0.1f;
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.TAB)){
-            levelUp();
-        }
-        if(Gdx.input.isKeyJustPressed(Input.Keys.Z)){
-            System.out.println(player.getCurrentState().toString());
-        }
+//        if (Gdx.input.isKeyPressed(Input.Keys.Q)){
+//            cam.zoom -= 0.1f;
+//        }
+//        if (Gdx.input.isKeyPressed(Input.Keys.E)){
+//            cam.zoom += 0.1f;
+//        }
+//        if (Gdx.input.isKeyJustPressed(Input.Keys.TAB)){
+//            levelUp();
+//        }
+//        if(Gdx.input.isKeyJustPressed(Input.Keys.Z)){
+//            System.out.println(player.getCurrentState().toString());
+//        }
+//        if(Gdx.input.isKeyJustPressed(Input.Keys.T)){
+//            player.damage(10000);
+//        }
+//        if(Gdx.input.isKeyJustPressed(Input.Keys.R)){
+//            player.damage(10);
+//        }
         if(Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
-            player.damage(10000);
-        }
-        if(Gdx.input.isKeyJustPressed(Input.Keys.R)){
-            player.damage(10);
+            pauseGame();
         }
     }
 
@@ -337,6 +453,7 @@ public class GameScreen implements Screen {
     public void resize(int width, int height){
         gamePort.update(width, height);
         hud.resize(width, height);
+        pauseMenu.getViewport().update(width, height);
     }
 
     @Override

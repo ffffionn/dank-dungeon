@@ -8,6 +8,7 @@
         alpha-blue: { r: 0.376, g: 0.87, b: 0.9, a: 0.75 },
         red: { r: 0.54, g: 0.03, b: 0.03, a: 1 },
         grey: { r: 0.20, g: 0.20, b: 0.20, a: 0.75 },
+        dark-grey: { r: 0.10, g: 0.10, b: 0.10, a: 0.95 },
         dark-green: {hex: 0b2d40 },
         green: { hex: 165751 },
         light-green: { hex: 458c61 },
@@ -23,10 +24,34 @@
     },
     com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
         ui-label: { font: default-font, fontColor: alpha-blue },
+        default: { font: default-font, fontColor: red },
         game-over: { font: default-font, fontColor: red },
         title: { font: default-font, fontColor: yellow-green },
         monospaced: { font: monospaced, fontColor: white },
         monospaced-green: { font: monospaced, fontColor: green }
+    },
+    com.badlogic.gdx.scenes.scene2d.ui.CheckBox$CheckBoxStyle: {
+        default: {
+            checkboxOff: checkbox,
+            checkboxOn: checkbox-cheked,
+            font: default-font,
+            fontColor: yellow-green
+        },
+
+      },
+    com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
+        default: {
+            font: default-font,
+            fontColor: dark-green,
+            up: gray-button,
+            down: gray-button-in
+        },
+        green-button: {
+            font: default-font,
+            fontColor: dark-green,
+            up: green-button,
+            down: green-button-in
+        }
     },
     com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
         default: {

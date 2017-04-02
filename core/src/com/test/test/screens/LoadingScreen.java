@@ -53,17 +53,17 @@ public class LoadingScreen implements Screen {
         uiSkin.add("block", new Texture(block));
 
         style.background = uiSkin.newDrawable("block", uiSkin.getColor("grey"));
-        style.knob = uiSkin.newDrawable("block", uiSkin.getColor("light-green"));
-        style.knobBefore = uiSkin.newDrawable("block", uiSkin.getColor("dark-green"));
+        style.knob = uiSkin.newDrawable("block", uiSkin.getColor("yellow-green"));
+        style.knobBefore = uiSkin.newDrawable("block", uiSkin.getColor("yellow-green"));
 
         Label.LabelStyle defaultStyle = uiSkin.get("monospaced-green", Label.LabelStyle.class);
         Label loadingText = new Label("LOADING..", defaultStyle);
         table.padTop(Value.percentHeight(0.25f)).add(loadingText).center().expandX();
         table.row();
 
-        this.progress = new ProgressBar(0f, 100f, 0.5f, false, style);
-        progress.setSize(300, 20);
-        progress.setAnimateDuration(0.1f);
+        this.progress = new ProgressBar(0.0f, 1.0f, 0.001f, false, style);
+        progress.setSize(600, 30);
+        progress.setAnimateDuration(0.2f);
         table.add(progress).center().expandY().expandX();
         stage.addActor(table);
     }
@@ -116,7 +116,6 @@ public class LoadingScreen implements Screen {
 
         // if done, transition to MainMenuScreen
         if(assetManager.update()){
-            System.out.println("Assets loaded");
             stage.addAction(Actions.sequence(
                 Actions.fadeOut(1.0f),
                 new Action() {

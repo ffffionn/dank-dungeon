@@ -27,8 +27,8 @@ public class Hero extends AnimatedB2DSprite {
     private float mana;
 
     public static final int HERO_SIZE = 20;
-    private static final float MAX_SPEED_LIMIT = 7.0f;
-    private static final float INVINCIBILITY_TIMER = 0.85f;
+    public static final float MAX_SPEED_LIMIT = 7.0f;
+    public static final float INVINCIBILITY_TIMER = 0.85f;
     private boolean invincible;
     private int attackDamage;
     private Color flashColour;
@@ -224,7 +224,7 @@ public class Hero extends AnimatedB2DSprite {
         this.health += amount;
         // don't overheal
         if (health > maxHP) health = maxHP;
-        screen.getHud().updateHealth(Math.round(this.health / this.maxHP));
+        screen.getHud().updateHealth(Math.round(this.health * 100.0f / this.maxHP));
     }
 
     /**
@@ -253,7 +253,7 @@ public class Hero extends AnimatedB2DSprite {
                     }
                 }, INVINCIBILITY_TIMER);
             }
-            screen.getHud().updateHealth(this.health);
+            screen.getHud().updateHealth(Math.round(this.health * 100.0f / this.maxHP));
         }
     }
 

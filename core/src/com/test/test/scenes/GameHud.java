@@ -9,9 +9,11 @@ import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.test.test.DankDungeon;
+import com.test.test.models.Hero;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.color;
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.fadeIn;
@@ -37,7 +39,16 @@ public class GameHud {
     private int playerHealth;
     private int playerMana;
 
+    // for flashing the HUD
+
     private Sprite overlay;
+    private Texture damage;
+    private Interpolation interpolation;
+
+    private float flashDuration;
+    private boolean flashing = false;
+    private float flashTimer = 0.0f;
+
     private float alpha;
 
     public GameHud(SpriteBatch sb, Skin skin){
@@ -49,12 +60,17 @@ public class GameHud {
         this.stage = new Stage(viewport, sb);
         this.skin = skin;
 
-        // TODO: flash red
+        this.interpolation = Interpolation.pow3Out;
+
         Pixmap pix = new Pixmap(DankDungeon.V_WIDTH, DankDungeon.V_HEIGHT, Pixmap.Format.RGBA8888);
-        pix.setColor(skin.getColor("red"));
-        Texture red = new Texture(pix);
-        this.overlay = new Sprite(red);
-        this.alpha = 0.4f;
+        pix.setColor(skin.getColor("white"));
+        pix.fillRectangle(0, 0, DankDungeon.V_WIDTH, DankDungeon.V_HEIGHT);
+        damage = new Texture(pix);
+        this.overlay = new Sprite(damage);
+        overlay.setBounds(0, 0, DankDungeon.V_WIDTH, DankDungeon.V_HEIGHT);
+        overlay.setPosition(-100,-100);
+        this.alpha = 0.0f;
+        overlay.setAlpha(alpha);
 
         addStats();
         addBars();
@@ -65,23 +81,51 @@ public class GameHud {
 
     public void update(float dt){
         stage.act(dt);
+
+        if(flashing){
+            flashTimer += dt;
+            if (flashTimer >= flashDuration || alpha < 0.0f){
+                alpha = 0.0f;
+                flashing = false;
+            }else{
+                alpha = interpolation.apply(flashTimer / flashDuration);
+                // don't let it get too solid
+                if (alpha > 0.5f){
+                    alpha = 1 - alpha;
+                }
+            }
+            overlay.setAlpha(alpha);
+        }
     }
 
     public void draw(SpriteBatch batch){
-        overlay.setColor(skin.getColor("red"));
         overlay.draw(batch);
+    }
+
+    public void flash(Color color, Interpolation i, float duration) {
+        if(flashing) return;
+
+        overlay.setColor(color);
+        interpolation = i;
+        flashDuration = duration;
+        flashTimer = 0.0f;
+        flashing = true;
     }
 
     public void setFloor(int floor) {
         this.floor = floor;
         floorLabel.setText(String.format("FLOOR: %03d", this.floor));
-        // flash the floor slightly darker on update
+        // flash the text slightly darker on update
         floorLabel.addAction(Actions.sequence(
-                color(skin.getColor("deep-blue"), 0.45f, Interpolation.pow2In),
-                color(skin.getColor("blue"), 0.45f, Interpolation.pow2Out)));
+                color(skin.getColor("deep-blue"), 0.25f, Interpolation.pow2In),
+                color(skin.getColor("blue"), 0.25f, Interpolation.pow2Out)));
+        flash(skin.getColor("alpha-blue"), Interpolation.circleOut, 0.3f);
     }
 
     public void updateHealth(int newHealth){
+        if (newHealth < playerHealth){
+            flash(skin.getColor("red"), Interpolation.pow3Out, Hero.INVINCIBILITY_TIMER);
+        }
         playerHealth = newHealth;
         healthBar.setValue(playerHealth);
     }

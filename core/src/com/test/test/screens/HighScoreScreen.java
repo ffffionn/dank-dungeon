@@ -67,7 +67,6 @@ public class HighScoreScreen implements Screen {
             this.highScoreSet = score > lowestScore;
         }catch(Exception e){
             // high scores file is formatted wrong
-            e.printStackTrace();
             highScoreSet = false;
             createBlankScores();
         }

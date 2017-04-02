@@ -106,6 +106,29 @@ public class MainMenuScreen implements Screen{
             }
         });
 
+        TextButton helpButton = new TextButton("Help", skin);
+        helpButton.addListener(new InputListener(){
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                return true;
+            }
+
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                stage.addAction(Actions.sequence(
+                        Actions.fadeOut(0.5f),
+                        new Action() {
+                            @Override
+                            public boolean act(float delta) {
+                                dispose();
+                                game.setScreen(new HelpScreen(game, assetManager));
+                                return true;
+                            }
+                        }
+                ));
+            }
+        });
+
         table.padTop(Value.percentHeight(0.05f));
 
         table.top();
@@ -115,8 +138,10 @@ public class MainMenuScreen implements Screen{
         Table t = new Table();
         t.add(playButton).expandX().expandY().center().padBottom(20.0f);
         t.row();
-        t.add(highScoreButton).expandX().expandY().center();
+        t.add(highScoreButton).expandX().expandY().center().padBottom(20.0f);
         t.row();
+//        t.add(helpButton).expandX().expandY().center();
+//        t.row();
         table.add(t).expandX().expandY().top();
 
         table.padBottom(Value.percentHeight(0.05f));
