@@ -89,7 +89,7 @@ public class LoadingScreen implements Screen {
         assetManager.load("sounds/scorpion-pain.wav", Sound.class);
         assetManager.load("sounds/scorpion-death.wav", Sound.class);
         assetManager.load("sounds/hero-death.wav", Sound.class);
-        assetManager.load("sounds/hero-powerup.wav", Sound.class);
+//        assetManager.load("sounds/hero-powerup.wav", Sound.class);
         assetManager.load("sounds/hero-pain1.ogg", Sound.class);
         assetManager.load("sounds/hero-pain2.ogg", Sound.class);
         assetManager.load("sounds/hero-pain3.ogg", Sound.class);

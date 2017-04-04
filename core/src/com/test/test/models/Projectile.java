@@ -21,6 +21,8 @@ public class Projectile extends AnimatedB2DSprite {
     public static final float DEFAULT_SPEED = 1.75f;
     public static final int DEFAULT_DAMAGE = 20;
 
+    protected float radius = 2.2f / PPM;
+
     protected static TextureRegion[] fireballAnimation;
 
     protected int damageAmount;
@@ -50,18 +52,17 @@ public class Projectile extends AnimatedB2DSprite {
         setAnimation(fireballAnimation, 1 / 12f);
     }
 
-    public Projectile(GameScreen screen, Vector2 startPosition, Vector2 target, int damage, float s){
+    public Projectile(GameScreen screen, Vector2 startPosition, Vector2 target, int damage){
         this(screen, startPosition, target);
         this.damageAmount = damage;
+    }
+
+    public Projectile(GameScreen screen, Vector2 startPosition, Vector2 target, int damage, float s){
+        this(screen, startPosition, target, damage);
         this.speed = s;
         // recalculate velocity with new speed
         velocity = target.cpy().sub(startPosition).nor().scl(speed);
         b2body.setLinearVelocity(velocity);
-    }
-
-    public Projectile(GameScreen screen, Vector2 startPosition, Vector2 target, Color tint){
-        this(screen, startPosition, target);
-        this.tint = tint;
     }
 
     public Projectile(GameScreen screen, Vector2 startPosition, Vector2 target, int damage, float s, Color tint){
@@ -117,7 +118,7 @@ public class Projectile extends AnimatedB2DSprite {
 
         FixtureDef fdef = new FixtureDef();
         CircleShape shape = new CircleShape();
-        shape.setRadius(2.2f / PPM);
+        shape.setRadius(this.radius);
         fdef.shape = shape;
         fdef.friction = 0.0f;
         fdef.restitution = 1.0f;
@@ -145,6 +146,5 @@ public class Projectile extends AnimatedB2DSprite {
         sprite.draw(sb);
     }
 
-    protected boolean isFriendly(){ return true; }
     public int getDamageAmount(){ return this.damageAmount; }
 }

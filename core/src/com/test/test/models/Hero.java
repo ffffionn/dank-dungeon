@@ -110,6 +110,14 @@ public class Hero extends AnimatedB2DSprite {
 
     }
 
+    private Projectile getNewProjectile(Vector2 target, int damage){
+        if(hasPower(Pickup.Type.FREEZE)){
+            return new IceProjectile(screen, getPosition(), target, damage);
+        }else{
+            return new Projectile(screen, getPosition(), target, damage);
+        }
+    }
+
     /**
      * Fires a fireball to direction the hero is facing.
      */
@@ -126,30 +134,36 @@ public class Hero extends AnimatedB2DSprite {
             damage *= 2;
         }
 
-        newFireballs.add(new Projectile(screen, getPosition(), screen.getCursor().getPosition(), damage, speed));
+        newFireballs.add(getNewProjectile(screen.getCursor().getPosition(), damage));
         if(hasPower(Pickup.Type.MULTI_FIRE)){
             float a = 15 * MathUtils.degreesToRadians;
             float dst = getPosition().dst(screen.getCursor().getPosition());
 
             float x = getPosition().x + dst * MathUtils.cos(b2body.getAngle() + a);
             float y = getPosition().y + dst * MathUtils.sin(b2body.getAngle() + a);
-            newFireballs.add(new Projectile(screen, getPosition(), new Vector2(x, y)));
+            newFireballs.add(getNewProjectile(new Vector2(x, y), damage));
 
             x = getPosition().x + dst * MathUtils.cos(b2body.getAngle() - a);
             y = getPosition().y + dst * MathUtils.sin(b2body.getAngle() - a);
-            newFireballs.add(new Projectile(screen, getPosition(), new Vector2(x, y), damage, speed));
+            newFireballs.add(getNewProjectile(new Vector2(x, y), damage));
+        }
 
-        }
-        if(hasPower(Pickup.Type.DOUBLE_DMG)){
-            for(Projectile p : newFireballs){
-                p.tint = Color.RED;
+        if(!hasPower(Pickup.Type.FREEZE)){
+            // don't tint icicles red
+            if(hasPower(Pickup.Type.DOUBLE_DMG)){
+                for(Projectile p : newFireballs){
+                    p.tint = Color.RED;
+                }
+            }
+            // icicles don't bounce
+            if(hasPower(Pickup.Type.BOUNCING_BULLETS)){
+                for(Projectile p : newFireballs){
+                    p.setBounces(2);
+                }
             }
         }
-        if(hasPower(Pickup.Type.BOUNCING_BULLETS)){
-            for(Projectile p : newFireballs){
-                p.setBounces(2);
-            }
-        }
+
+
         adjustMana(-1.0f);
         screen.add(newFireballs);
         fireballs.addAll(newFireballs);

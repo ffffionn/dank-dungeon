@@ -132,7 +132,7 @@ public class CaveGenerator {
         int numPickups = Math.round(MathUtils.sin(seed * seed) * 45) + 1;
         System.out.printf("%d pickups \n", numPickups);
         for(int i = 0; i < numPickups; i++){
-            switch(MathUtils.random(0,11)){
+            switch(MathUtils.random(0,12)){
                 case 0:
                     screen.add(new Pickup.InvinciblePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
                     break;
@@ -164,6 +164,9 @@ public class CaveGenerator {
                     break;
                 case 11:
                     screen.add(new Pickup.HPPickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+                    break;
+                case 12:
+                    screen.add(new Pickup.FreezePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
                     break;
                 }
         }

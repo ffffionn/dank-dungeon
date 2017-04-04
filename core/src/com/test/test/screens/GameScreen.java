@@ -389,24 +389,24 @@ public class GameScreen implements Screen {
 
     // TODO: remove
     public void handleInput(float dt){
-//        if (Gdx.input.isKeyPressed(Input.Keys.Q)){
-//            cam.zoom -= 0.1f;
-//        }
-//        if (Gdx.input.isKeyPressed(Input.Keys.E)){
-//            cam.zoom += 0.1f;
-//        }
-//        if (Gdx.input.isKeyJustPressed(Input.Keys.TAB)){
-//            levelUp();
-//        }
-//        if(Gdx.input.isKeyJustPressed(Input.Keys.Z)){
-//            System.out.println(player.getCurrentState().toString());
-//        }
-//        if(Gdx.input.isKeyJustPressed(Input.Keys.T)){
-//            player.damage(10000);
-//        }
-//        if(Gdx.input.isKeyJustPressed(Input.Keys.R)){
-//            player.damage(10);
-//        }
+        if (Gdx.input.isKeyPressed(Input.Keys.Q)){
+            cam.zoom -= 0.1f;
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.E)){
+            cam.zoom += 0.1f;
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.TAB)){
+            levelUp();
+        }
+        if(Gdx.input.isKeyJustPressed(Input.Keys.Z)){
+            System.out.println(player.getCurrentState().toString());
+        }
+        if(Gdx.input.isKeyJustPressed(Input.Keys.T)){
+            player.damage(10000);
+        }
+        if(Gdx.input.isKeyJustPressed(Input.Keys.R)){
+            player.damage(10);
+        }
         if(Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
             pauseGame();
         }

@@ -1,6 +1,5 @@
 package com.test.test.models;
 
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Interpolation;
@@ -19,7 +18,11 @@ import static com.test.test.utils.WorldContactListener.*;
  */
 public class Pickup extends B2DSprite {
 
-    public enum Type{ MULTI_FIRE, INVINCIBLE, BOUNCING_BULLETS, DOUBLE_DMG, POTION, UNLIMITED_MANA, BUFF}
+    public static enum Type{
+        FREEZE, MULTI_FIRE, INVINCIBLE,
+        BOUNCING_BULLETS, DOUBLE_DMG, POTION,
+        UNLIMITED_MANA, BUFF
+    }
     public Type TYPE;
 
     protected int size;
@@ -30,7 +33,8 @@ public class Pickup extends B2DSprite {
     protected static TextureRegion chili;
     protected static TextureRegion ham;
     protected static TextureRegion cheese;
-    protected static TextureRegion grapes;
+    protected static TextureRegion whiteCheese;
+    protected static TextureRegion pear;
     protected static TextureRegion mushrooms;
     protected static TextureRegion staff;
     protected static TextureRegion boots;
@@ -50,7 +54,7 @@ public class Pickup extends B2DSprite {
     public void deactivate(){}
 
     protected void playSound(String soundID, float volume){
-        screen.getAssetManager().get("sounds/" + soundID, Sound.class).play(volume);
+//        screen.getAssetManager().get("sounds/" + soundID, Sound.class).play(volume);
     }
 
     protected void updateHUD(){
@@ -63,10 +67,11 @@ public class Pickup extends B2DSprite {
         manaBottle = items[2][2];
         chili = items[5][4];
         cheese = items[5][3];
-        grapes = items[5][1];
+        whiteCheese = items[5][6];
+        pear = items[5][2];
         mushrooms = items[5][7];
         ham = items[6][0];
-        staff = items[1][8];
+        staff = items[1][1];
         boots = items[4][0];
         shield = items[1][0];
     }
@@ -231,7 +236,7 @@ public class Pickup extends B2DSprite {
     /** GIVE PLAYER UNLIMITED MANA */
     public static class UnlimitedManaPickup extends TimedPickup {
         public UnlimitedManaPickup(GameScreen screen, Vector2 startPosition, int size){
-            super(screen, grapes, startPosition, size);
+            super(screen, pear, startPosition, size);
             TYPE = Type.UNLIMITED_MANA;
             powerTimer = 7.5f;
             timerCount = 0;
@@ -266,6 +271,17 @@ public class Pickup extends B2DSprite {
             super(screen, ham, startPosition, size);
             TYPE = Type.BOUNCING_BULLETS;
             powerTimer = 7.5f;
+            timerCount = 0;
+        }
+    }
+
+
+    /** GIVE THE PLAYER ICE PROJECTILES */
+    public static class FreezePickup extends TimedPickup {
+        public FreezePickup(GameScreen screen, Vector2 startPosition, int size){
+            super(screen, whiteCheese, startPosition, size);
+            TYPE = Type.FREEZE;
+            powerTimer = 10.0f;
             timerCount = 0;
         }
     }

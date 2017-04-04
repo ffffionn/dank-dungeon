@@ -109,7 +109,7 @@ public class Scorpion extends Enemy{
 
     private void shoot(Vector2 target){
         this.canAttack = false;
-        screen.add(new Projectile(screen, getPosition(), target, this.attackDamage, 1.0f, Color.BLUE));
+        screen.add(new Projectile(screen, getPosition(), target, this.attackDamage, 1.1f, Color.BLUE));
         // play attack animation for duration
         setAnimation(attackAnimation, 1 / 18f);
         Timer.schedule(new Timer.Task() {
