@@ -140,8 +140,8 @@ public class GameScreen implements Screen {
         Gdx.input.setInputProcessor(pauseMenu);
 
         Table table = new Table();
-//        table.debug();
         table.sizeBy(800, 600);
+        // center the pause menu in the middle of the screen
         table.setPosition((DankDungeon.V_WIDTH / 2) - table.getWidth() / 2,
                 (DankDungeon.V_HEIGHT / 2) - table.getHeight() / 2);
 
@@ -397,9 +397,6 @@ public class GameScreen implements Screen {
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.TAB)){
             levelUp();
-        }
-        if(Gdx.input.isKeyJustPressed(Input.Keys.Z)){
-            System.out.println(player.getCurrentState().toString());
         }
         if(Gdx.input.isKeyJustPressed(Input.Keys.T)){
             player.damage(10000);

@@ -19,8 +19,7 @@ public class IceProjectile extends Projectile {
         super(screen, startPosition, target);
 
         if(icicleAnimation == null){
-            icicleAnimation = TextureRegion.split(new Texture("textures/raw/icicle.png"), 64, 64)[4];
-//            icicleAnimation = screen.getAtlas().findRegion("icicle").split(64, 64)[4];
+            icicleAnimation = screen.getAtlas().findRegion("icicle").split(64, 64)[4];
         }
         setTexture(icicleAnimation[0], 12);
         setAnimation(icicleAnimation, 1 / 12f);

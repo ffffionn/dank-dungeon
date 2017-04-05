@@ -38,7 +38,6 @@ public class Rat extends Enemy {
         health = maxHealth = 20 + (level / 10) * 20;
         score_value = 5 * level;
         attackDamage = 5 + level / 3;
-        System.out.printf("RAT: %d hp \t %d dmg \t %d score \n", health, attackDamage, score_value);
     }
 
     @Override

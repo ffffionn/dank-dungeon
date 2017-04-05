@@ -130,7 +130,6 @@ public class CaveGenerator {
 
     private void addPowerups(float seed){
         int numPickups = Math.round(MathUtils.sin(seed * seed) * 45) + 1;
-        System.out.printf("%d pickups \n", numPickups);
         for(int i = 0; i < numPickups; i++){
             switch(MathUtils.random(0,12)){
                 case 0:
@@ -140,10 +139,10 @@ public class CaveGenerator {
                     screen.add(new Pickup.DoubleDamagePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
                     break;
                 case 2:
-                    screen.add(new Pickup.BootsPickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+                    screen.add(new Pickup.BouncingProjectilePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
                     break;
                 case 3:
-                    screen.add(new Pickup.BouncingProjectilePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
+                    screen.add(new Pickup.BootsPickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));
                     break;
                 case 4:
                     screen.add(new Pickup.MultifirePickup(screen, cellToWorldPosition(getTreasureSpot(5)), 15));

@@ -17,13 +17,6 @@ player-cast-forward
   orig: 320, 64
   offset: 0, 0
   index: -1
-crosshair
-  rotate: false
-  xy: 837, 925
-  size: 64, 64
-  orig: 64, 64
-  offset: 0, 0
-  index: -1
 player-cast-onehand
   rotate: false
   xy: 515, 859
@@ -113,73 +106,85 @@ worldTextures2.png
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
+icicle
+  rotate: false
+  xy: 1, 461
+  size: 512, 512
+  orig: 512, 512
+  offset: 0, 0
+  index: -1
 rat-move
   rotate: false
-  xy: 1, 721
+  xy: 1, 331
   size: 512, 128
   orig: 512, 128
   offset: 0, 0
   index: -1
 player-die
   rotate: false
-  xy: 1, 655
+  xy: 1, 265
   size: 512, 64
   orig: 512, 64
   offset: 0, 0
   index: -1
 player-move
   rotate: false
-  xy: 1, 589
+  xy: 1, 199
   size: 512, 64
   orig: 512, 64
   offset: 0, 0
   index: -1
 player-strafe
   rotate: false
-  xy: 1, 523
+  xy: 1, 133
   size: 512, 64
   orig: 512, 64
   offset: 0, 0
   index: -1
 player-wobble
   rotate: false
-  xy: 1, 457
+  xy: 1, 67
   size: 512, 64
   orig: 512, 64
   offset: 0, 0
   index: -1
 scorpion-attack
   rotate: false
-  xy: 1, 391
-  size: 512, 64
-  orig: 512, 64
-  offset: 0, 0
-  index: -1
-scorpion-death-0
-  rotate: false
-  xy: 1, 325
-  size: 512, 64
-  orig: 512, 64
-  offset: 0, 0
-  index: -1
-scorpion-death-1
-  rotate: false
-  xy: 1, 259
+  xy: 1, 1
   size: 512, 64
   orig: 512, 64
   offset: 0, 0
   index: -1
 wolfbeast-move-wounded
   rotate: false
-  xy: 515, 593
+  xy: 515, 717
   size: 256, 256
   orig: 256, 256
   offset: 0, 0
   index: -1
 wolfbeast-move
   rotate: false
-  xy: 1, 1
+  xy: 515, 459
   size: 256, 256
   orig: 256, 256
+  offset: 0, 0
+  index: -1
+
+worldTextures3.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+scorpion-death-0
+  rotate: false
+  xy: 1, 67
+  size: 512, 64
+  orig: 512, 64
+  offset: 0, 0
+  index: -1
+scorpion-death-1
+  rotate: false
+  xy: 1, 1
+  size: 512, 64
+  orig: 512, 64
   offset: 0, 0
   index: -1

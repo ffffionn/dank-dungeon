@@ -1,5 +1,6 @@
 package com.test.test.models;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -151,10 +152,19 @@ public abstract class Enemy extends AnimatedB2DSprite {
             Timer.schedule(new Timer.Task() {
                 @Override
                 public void run() {
+                    frozen = false;
+                    sprite.setColor(Color.valueOf("ffffff"));
                     stunned = false;
                 }
             }, stunDuration);
         }
+    }
+
+    private boolean frozen;
+
+    public void freeze(){
+        frozen = true;
+        stun(1.0f);
     }
 
     /**

@@ -101,7 +101,7 @@ public class Projectile extends AnimatedB2DSprite {
 
             if (Math.abs(b2body.getLinearVelocity().x) < 0.55f &&
                     Math.abs(b2body.getLinearVelocity().y) < 0.55f) {
-                System.out.println("too slow");
+                // moving too slow
                 setToDestroy();
             }
         }
@@ -122,7 +122,6 @@ public class Projectile extends AnimatedB2DSprite {
         fdef.shape = shape;
         fdef.friction = 0.0f;
         fdef.restitution = 1.0f;
-
         fdef.filter.maskBits = WALL | BARRIER;
 
         // is it friendly?

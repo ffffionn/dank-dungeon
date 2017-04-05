@@ -48,7 +48,6 @@ public class Scorpion extends Enemy{
         health = maxHealth = 50 + (level / 5) * 10;
         score_value = 20 * level;
         attackDamage = 20 + level / 2;
-        System.out.printf("SCORPION: %d hp \t %d dmg \t %d score  \n", health, attackDamage, score_value);
     }
 
 

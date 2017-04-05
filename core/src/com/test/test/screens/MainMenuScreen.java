@@ -140,8 +140,8 @@ public class MainMenuScreen implements Screen{
         t.row();
         t.add(highScoreButton).expandX().expandY().center().padBottom(20.0f);
         t.row();
-//        t.add(helpButton).expandX().expandY().center();
-//        t.row();
+        t.add(helpButton).expandX().expandY().center();
+        t.row();
         table.add(t).expandX().expandY().top();
 
         table.padBottom(Value.percentHeight(0.05f));

@@ -61,7 +61,6 @@ public class Wolf extends Enemy {
         health = maxHealth = 200 + level * 20;
         score_value = 50 * level;
         attackDamage = 10 + level / 2;
-        System.out.printf("WOLF: %d hp \t %d dmg \t %d score \n", health, attackDamage, score_value);
     }
 
 
@@ -74,7 +73,6 @@ public class Wolf extends Enemy {
             avoidWalls();
             if (Math.abs(b2body.getLinearVelocity().x) < 0.1f &&
                     Math.abs(b2body.getLinearVelocity().y) < 0.1f) {
-                System.out.println("blocked");
                 stopCharge();
             } else if (distanceToTarget < 0.01f && distanceToTarget > 0){
                 stopCharge();

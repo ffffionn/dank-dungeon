@@ -12,7 +12,6 @@ public class DankDungeon extends Game {
     public static final float PPM = 80;
 
     public SpriteBatch batch;
-
     private FPSLogger log;
 
 	@Override
@@ -26,7 +25,7 @@ public class DankDungeon extends Game {
 	@Override
 	public void render () {
         super.render();
-        log.log();
+//        log.log();
 	}
 
 	@Override

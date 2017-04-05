@@ -1,9 +1,12 @@
 package com.test.test.utils;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.utils.Timer;
 import com.test.test.models.*;
 import com.test.test.screens.GameScreen;
+
 
 
 /**
@@ -93,14 +96,18 @@ public class WorldContactListener implements ContactListener{
 
             if( body.getUserData() instanceof Hero){
                 if (((Hero) body.getUserData()).hasPower(Pickup.Type.INVINCIBLE)) {
-                    System.out.println("INVINCIBLE BOUNCE");
                     p.setBounces(1);
                     p.bounce();
                 } else {
                     ((Hero) body.getUserData()).damage(p.getDamageAmount());
                 }
             }else if (body.getUserData() instanceof Enemy){
-                ((B2DSprite) body.getUserData()).damage(p.getDamageAmount());
+                Enemy e = (Enemy) body.getUserData();
+                e.damage(p.getDamageAmount());
+                if(p instanceof IceProjectile){
+                    e.stun(1.0f);
+                    e.getSprite().setColor(Color.SKY);
+                }
             }else if( body.getUserData() instanceof Projectile){
                 ((Projectile) body.getUserData()).setToDestroy();
             }
@@ -123,7 +130,7 @@ public class WorldContactListener implements ContactListener{
             // if it's an entity, damage it
             if(body.getUserData() instanceof Hero){
                 if(((Hero) body.getUserData()).hasPower(Pickup.Type.INVINCIBLE)){
-                    ((Enemy) enemyBody.getUserData()).damage(9000);
+                    ((Enemy) enemyBody.getUserData()).damage(9999);
                 }else{
                     ((Hero) body.getUserData()).damage(((Enemy) enemyBody.getUserData()).getAttackDamage());
                     Vector2 v = enemyBody.getLinearVelocity();

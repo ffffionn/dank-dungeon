@@ -192,10 +192,16 @@ public class Hero extends AnimatedB2DSprite {
     }
 
     public void pickup(Pickup p){
+        p.activate(this);
         if(p.TYPE != Pickup.Type.POTION && p.TYPE != Pickup.Type.BUFF){
+            for (Pickup pickup : activePowers) {
+                // remove power of same type to refresh timer
+                if (pickup.TYPE.equals(p.TYPE)) {
+                    activePowers.removeValue(pickup, true);
+                }
+            }
             activePowers.add(p);
         }
-        p.activate(this);
 
     }
 
@@ -203,8 +209,8 @@ public class Hero extends AnimatedB2DSprite {
         for(Pickup power : activePowers){
             power.update(dt);
             if(((Pickup.TimedPickup) power).isTimeUp()){
-                power.deactivate();
                 activePowers.removeValue(power, false);
+                power.deactivate(this);
             }
 
         }
@@ -251,19 +257,14 @@ public class Hero extends AnimatedB2DSprite {
             System.out.printf("%d dmg taken! \n", damageAmount);
             this.health -= damageAmount;
             if (health <= 0){
-                screen.getAssetManager().get("sounds/hero-death.wav", Sound.class).play();
                 die();
             }else{
                 invincible = true;
                 screen.getAssetManager().get("sounds/hero-pain" + MathUtils.random(1,3) + ".ogg", Sound.class).play();
-                sprite.setColor(Color.WHITE.cpy().lerp(Color.GOLD, 0.8f));
-                // tint the player/screen red while invincible
                 Timer.schedule(new Timer.Task() {
                     @Override
                     public void run() {
                         invincible = false;
-                        System.out.println("--vulnerable--");
-                        sprite.setColor(Color.WHITE.cpy().lerp(flashColour, 0.0f));
                     }
                 }, INVINCIBILITY_TIMER);
             }
@@ -321,6 +322,7 @@ public class Hero extends AnimatedB2DSprite {
 
     private void die(){
         if(footsteps.isPlaying()) footsteps.stop();
+        screen.getAssetManager().get("sounds/hero-death.wav", Sound.class).play();
         changeState(HeroState.dead);
     }
 

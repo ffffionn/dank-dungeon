@@ -5,126 +5,168 @@ filter: Nearest,Nearest
 repeat: none
 empty_bar2
   rotate: false
-  xy: 1, 419
+  xy: 1, 943
   size: 1115, 52
   orig: 1115, 52
   offset: 0, 0
   index: -1
 healthbar
   rotate: false
-  xy: 1, 379
+  xy: 1, 903
   size: 1105, 38
   orig: 1105, 38
   offset: 0, 0
   index: -1
 empty_bar
   rotate: false
-  xy: 1, 335
+  xy: 1, 859
   size: 1024, 42
   orig: 1024, 42
   offset: 0, 0
   index: -1
+icon_bounce
+  rotate: false
+  xy: 1, 457
+  size: 400, 400
+  orig: 400, 400
+  offset: 0, 0
+  index: -1
+icon_damage
+  rotate: false
+  xy: 1, 55
+  size: 400, 400
+  orig: 400, 400
+  offset: 0, 0
+  index: -1
+icon_ice
+  rotate: false
+  xy: 403, 457
+  size: 400, 400
+  orig: 400, 400
+  offset: 0, 0
+  index: -1
+icon_invincible
+  rotate: false
+  xy: 403, 55
+  size: 400, 400
+  orig: 400, 400
+  offset: 0, 0
+  index: -1
+icon_mana
+  rotate: false
+  xy: 805, 457
+  size: 400, 400
+  orig: 400, 400
+  offset: 0, 0
+  index: -1
+icon_multifire
+  rotate: false
+  xy: 805, 55
+  size: 400, 400
+  orig: 400, 400
+  offset: 0, 0
+  index: -1
 gray-button-in
   rotate: false
-  xy: 1, 195
+  xy: 1207, 857
   size: 381, 138
   orig: 381, 138
   offset: 0, 0
   index: -1
 gray-button
   rotate: false
-  xy: 1, 55
+  xy: 1207, 717
   size: 381, 138
   orig: 381, 138
   offset: 0, 0
   index: -1
 red-button-in
   rotate: false
-  xy: 384, 195
+  xy: 1590, 857
   size: 381, 138
   orig: 381, 138
   offset: 0, 0
   index: -1
 red-button
   rotate: false
-  xy: 384, 55
+  xy: 1207, 577
   size: 381, 138
   orig: 381, 138
   offset: 0, 0
   index: -1
 black-button
   rotate: false
-  xy: 767, 239
+  xy: 1590, 761
   size: 114, 94
   orig: 114, 94
   offset: 0, 0
   index: -1
 plain-1
   rotate: false
-  xy: 1118, 419
+  xy: 1, 1
   size: 69, 52
   orig: 69, 52
   offset: 0, 0
   index: -1
 plain-2
   rotate: false
-  xy: 1, 1
+  xy: 1118, 943
   size: 69, 52
   orig: 69, 52
   offset: 0, 0
   index: -1
 plain-3
   rotate: false
-  xy: 767, 185
+  xy: 1973, 943
   size: 69, 52
   orig: 69, 52
   offset: 0, 0
   index: -1
 plain-4
   rotate: false
-  xy: 883, 281
+  xy: 1207, 523
   size: 69, 52
   orig: 69, 52
   offset: 0, 0
   index: -1
 plain-5
   rotate: false
-  xy: 1189, 419
+  xy: 1590, 707
   size: 69, 52
   orig: 69, 52
   offset: 0, 0
   index: -1
 plain-6
   rotate: false
-  xy: 72, 1
+  xy: 1706, 803
   size: 69, 52
   orig: 69, 52
   offset: 0, 0
   index: -1
 checkbox-cheked
   rotate: false
-  xy: 767, 123
+  xy: 1973, 881
   size: 58, 60
   orig: 58, 60
   offset: 0, 0
   index: -1
 checkbox
   rotate: false
-  xy: 767, 66
+  xy: 1207, 466
   size: 51, 55
   orig: 51, 55
   offset: 0, 0
   index: -1
 radio-in
   rotate: false
-  xy: 954, 280
+  xy: 1590, 652
   size: 49, 53
   orig: 49, 53
   offset: 0, 0
   index: -1
 radio
   rotate: false
-  xy: 1260, 418
+  xy: 1207, 411
   size: 49, 53
   orig: 49, 53
   offset: 0, 0

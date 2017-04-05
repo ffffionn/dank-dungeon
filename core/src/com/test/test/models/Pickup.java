@@ -1,5 +1,6 @@
 package com.test.test.models;
 
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Interpolation;
@@ -51,14 +52,18 @@ public class Pickup extends B2DSprite {
 
     public void update(float dt){ super.update(dt); }
     public void activate(Hero hero){}
-    public void deactivate(){}
+    public void deactivate(Hero hero){}
 
     protected void playSound(String soundID, float volume){
-//        screen.getAssetManager().get("sounds/" + soundID, Sound.class).play(volume);
+        screen.getAssetManager().get("sounds/" + soundID, Sound.class).play(volume);
     }
 
-    protected void updateHUD(){
-
+    protected void updateHUD(Type t, boolean state){
+        if(state){
+            screen.getHud().addPower(t);
+        }else{
+            screen.getHud().deactivatePower(t);
+        }
     }
 
     public static void definePickupTextures(TextureRegion itemTileSet){
@@ -117,6 +122,17 @@ public class Pickup extends B2DSprite {
         public void activate(Hero hero){
             timerCount = 0.0f;
             playSound("hero-munch.ogg", 0.9f);
+            if(!hero.hasPower(this.TYPE)){
+                updateHUD(this.TYPE, true);
+            }
+        }
+
+        @Override
+        public void deactivate(Hero hero) {
+            super.deactivate(hero);
+//            if(!hero.hasPower(this.TYPE)){
+                updateHUD(this.TYPE, false);
+//            }
         }
 
         public boolean isTimeUp(){ return timerCount >= powerTimer; }
@@ -248,20 +264,14 @@ public class Pickup extends B2DSprite {
         public InvinciblePickup(GameScreen screen, Vector2 startPosition, int size) {
             super(screen, mushrooms, startPosition, size);
             TYPE = Type.INVINCIBLE;
-            powerTimer = 5.0f;
+            powerTimer = 7.5f;
             timerCount = 0;
         }
 
         @Override
         public void activate(Hero hero) {
             super.activate(hero);
-            screen.getHud().flash(Color.GOLD, Interpolation.pow2, powerTimer);
-//            screen.getHud().tintFor(Color.GOLD, powerTimer);
-        }
-
-        @Override
-        public void deactivate() {
-            System.out.println("power gone");
+            screen.getHud().flash(Color.GOLD, Interpolation.sineIn, powerTimer);
         }
     }
 
@@ -270,7 +280,7 @@ public class Pickup extends B2DSprite {
         public BouncingProjectilePickup(GameScreen screen, Vector2 startPosition, int size){
             super(screen, ham, startPosition, size);
             TYPE = Type.BOUNCING_BULLETS;
-            powerTimer = 7.5f;
+            powerTimer = 10.0f;
             timerCount = 0;
         }
     }

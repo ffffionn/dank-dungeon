@@ -9,11 +9,13 @@ import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
-import com.badlogic.gdx.utils.Timer;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.test.test.DankDungeon;
 import com.test.test.models.Hero;
+import com.test.test.models.Pickup;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.color;
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.fadeIn;
@@ -33,27 +35,27 @@ public class GameHud {
     private Label floorLabel;
     private ProgressBar healthBar;
     private ProgressBar manaBar;
+    private ArrayMap<Pickup.Type, Image> powerIcons;
+    private Array<Pickup.Type> activePowers;
 
     private int score;
     private int floor;
     private int playerHealth;
     private int playerMana;
 
-    // for flashing the HUD
-
     private Sprite overlay;
-    private Texture damage;
     private Interpolation interpolation;
 
+    private float alpha;
     private float flashDuration;
     private boolean flashing = false;
     private float flashTimer = 0.0f;
 
-    private float alpha;
 
     public GameHud(SpriteBatch sb, Skin skin){
         this.score = 0;
         this.floor = 1;
+        this.activePowers = new Array<Pickup.Type>();
         this.playerHealth = 100;
         this.playerMana = 100;
         this.viewport = new StretchViewport(DankDungeon.V_WIDTH, DankDungeon.V_HEIGHT, new OrthographicCamera());
@@ -65,8 +67,7 @@ public class GameHud {
         Pixmap pix = new Pixmap(DankDungeon.V_WIDTH, DankDungeon.V_HEIGHT, Pixmap.Format.RGBA8888);
         pix.setColor(skin.getColor("white"));
         pix.fillRectangle(0, 0, DankDungeon.V_WIDTH, DankDungeon.V_HEIGHT);
-        damage = new Texture(pix);
-        this.overlay = new Sprite(damage);
+        this.overlay = new Sprite(new Texture(pix));
         overlay.setBounds(0, 0, DankDungeon.V_WIDTH, DankDungeon.V_HEIGHT);
         overlay.setPosition(-100,-100);
         this.alpha = 0.0f;
@@ -74,9 +75,28 @@ public class GameHud {
 
         addStats();
         addBars();
+        addIcons();
 
         stage.getRoot().getColor().a = 0;
         stage.getRoot().addAction(fadeIn(0.8f));
+    }
+
+    public void addPower(Pickup.Type type){
+        if(activePowers.contains(type, true)){
+            return;
+        }
+        activePowers.add(type);
+        Image newIcon = powerIcons.get(type);
+        newIcon.setSize(64, 64);
+        newIcon.setPosition(DankDungeon.V_WIDTH - (74 * activePowers.size), 10);
+        stage.addActor(newIcon);
+        newIcon.getColor().a = 0;
+        newIcon.addAction(Actions.fadeIn(0.3f));
+    }
+
+    public void deactivatePower(Pickup.Type t){
+        activePowers.removeValue(t, true);
+        powerIcons.get(t).addAction(Actions.fadeOut(0.3f));
     }
 
     public void update(float dt){
@@ -103,7 +123,7 @@ public class GameHud {
     }
 
     public void flash(Color color, Interpolation i, float duration) {
-        if(flashing) return;
+        if(flashing && (color != Color.GOLD)) return;
 
         overlay.setColor(color);
         interpolation = i;
@@ -202,5 +222,15 @@ public class GameHud {
 
         stage.addActor(healthBar);
         stage.addActor(manaBar);
+    }
+
+    private void addIcons(){
+        powerIcons = new ArrayMap<Pickup.Type, Image>();
+        powerIcons.put(Pickup.Type.UNLIMITED_MANA, new Image(skin, "icon_mana"));
+        powerIcons.put(Pickup.Type.FREEZE, new Image(skin, "icon_ice"));
+        powerIcons.put(Pickup.Type.MULTI_FIRE, new Image(skin, "icon_multifire"));
+        powerIcons.put(Pickup.Type.BOUNCING_BULLETS, new Image(skin, "icon_bounce"));
+        powerIcons.put(Pickup.Type.DOUBLE_DMG, new Image(skin, "icon_damage"));
+        powerIcons.put(Pickup.Type.INVINCIBLE, new Image(skin, "icon_invincible"));
     }
 }
