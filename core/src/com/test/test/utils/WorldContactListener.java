@@ -105,8 +105,7 @@ public class WorldContactListener implements ContactListener{
                 Enemy e = (Enemy) body.getUserData();
                 e.damage(p.getDamageAmount());
                 if(p instanceof IceProjectile){
-                    e.stun(1.0f);
-                    e.getSprite().setColor(Color.SLATE);
+                    e.freeze();
                 }
             }else if( body.getUserData() instanceof Projectile){
                 ((Projectile) body.getUserData()).setToDestroy();

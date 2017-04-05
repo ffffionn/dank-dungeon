@@ -130,7 +130,7 @@ public class HighScoreScreen implements Screen {
             }
         }else{
             labelString = "HIGHSCORES";
-            defaultStyle = new Label.LabelStyle(skin.getFont("default-font"), skin.getColor("green"));
+            defaultStyle = new Label.LabelStyle(skin.getFont("default-font"), skin.getColor("yellow-green"));
         }
         Label topLabel = new Label(labelString, defaultStyle);
 

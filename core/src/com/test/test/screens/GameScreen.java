@@ -239,7 +239,7 @@ public class GameScreen implements Screen {
             stepWorld();
             deleteUselessBodies();
 
-            handleInput(delta);
+            handleInput();
 
             player.update(delta);
             updateCursorBody();
@@ -252,17 +252,8 @@ public class GameScreen implements Screen {
                 }
             }
 
-            cam.position.x = player.getPosition().x;
-            cam.position.y = player.getPosition().y;
-
-            // camera offset slightly towards cursor
-            Vector2 pos = new Vector2();
-            pos.clamp(-0.1f, 0.1f);
-            pos = cursorBody.getPosition().cpy().sub(player.getPosition()).nor().scl(0.05f);
-            cam.translate(pos);
-            cam.update();
+            updateCamera(delta);
             hud.update(delta);
-            mapRenderer.setView(cam);
         }else{
             pauseMenu.act(delta);
             if(Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
@@ -280,6 +271,23 @@ public class GameScreen implements Screen {
         if(player.isSetToDestroy()){
             gameOver();
         }
+    }
+
+    /**
+     * Updates the camera with a slight offset towards where the mouse is.
+     * @param dt
+     */
+    private void updateCamera(float dt){
+        cam.position.x = player.getPosition().x;
+        cam.position.y = player.getPosition().y;
+
+        // camera offset slightly towards cursor
+        Vector2 pos = new Vector2();
+        pos.clamp(-0.1f, 0.1f);
+        pos = cursorBody.getPosition().cpy().sub(player.getPosition()).nor().scl(0.05f);
+        cam.translate(pos);
+        cam.update();
+        mapRenderer.setView(cam);
     }
 
     private void draw(){
@@ -390,7 +398,7 @@ public class GameScreen implements Screen {
     }
 
     // TODO: remove
-    public void handleInput(float dt){
+    public void handleInput(){
         if (Gdx.input.isKeyPressed(Input.Keys.Q)){
             cam.zoom -= 0.1f;
         }

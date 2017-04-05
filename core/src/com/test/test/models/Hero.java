@@ -78,6 +78,7 @@ public class Hero extends AnimatedB2DSprite {
         HeroState.defineAnimations(screen.getAtlas());
         setTexture(HeroState.standAnimation[0], HERO_SIZE);
         currentState.enter(this);
+        sprite.rotate(90);
     }
 
     public void update(float dt){
@@ -110,6 +111,19 @@ public class Hero extends AnimatedB2DSprite {
 
     }
 
+    /**
+     * Draw the hero.
+     * @param batch
+     */
+    @Override
+    public void render(SpriteBatch batch){
+        sprite.setRegion(animation.getFrame());
+        // rotate region 90 first for perf.
+        sprite.rotate90(true);
+        sprite.draw(batch);
+        shield.render(batch);
+    }
+
     private Projectile getNewProjectile(Vector2 target, int damage){
         if(hasPower(Pickup.Type.FREEZE)){
             return new IceProjectile(screen, getPosition(), target, damage);
@@ -128,7 +142,6 @@ public class Hero extends AnimatedB2DSprite {
         Array<Projectile> newFireballs = new Array<Projectile>();
 
         int damage = attackDamage;
-        float speed = 1.2f * Projectile.DEFAULT_SPEED;
 
         if(hasPower(Pickup.Type.DOUBLE_DMG)){
             damage *= 2;
@@ -302,19 +315,6 @@ public class Hero extends AnimatedB2DSprite {
         // trigger state change effects
         previousState.leave(this);
         currentState.enter(this);
-    }
-
-    /**
-     * Draw the hero.
-     * @param batch
-     */
-    @Override
-    public void render(SpriteBatch batch){
-        sprite.setRegion(animation.getFrame());
-        // rotate region 90 first for perf.
-        sprite.rotate90(true);
-        sprite.draw(batch);
-        shield.render(batch);
     }
 
     private void die(){

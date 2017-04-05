@@ -29,6 +29,7 @@
         title: { font: default-font, fontColor: yellow-green },
         monospaced: { font: monospaced, fontColor: white },
         monospaced-green: { font: monospaced, fontColor: green }
+        monospaced-light: { font: monospaced, fontColor: yellow-green }
     },
     com.badlogic.gdx.scenes.scene2d.ui.CheckBox$CheckBoxStyle: {
         default: {

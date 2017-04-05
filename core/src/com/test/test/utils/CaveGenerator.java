@@ -366,15 +366,17 @@ public class CaveGenerator {
         }
 
         Queue<Cell> cellQueue = new Queue<Cell>();
+        // pick a random floor tile
         cellQueue.addFirst(new Cell(getRandomPlace()));
         Cell cell;
 
+        // add all floor neighbours to the queue
         while(cellQueue.size > 0){
             cell = cellQueue.removeFirst();
             if(cavern[cell.x][cell.y]){
                 cavern[cell.x][cell.y] = false;
 
-                // if neighbours are in bounds, are floor tiles and not already checked - add them
+                // add neighbours that are in bounds and not already checked
                 if(cell.x > 0 && !caveCells[cell.x - 1][cell.y] && cavern[cell.x - 1][cell.y]){
                     cellQueue.addLast(new Cell(new Vector2(cell.x - 1, cell.y)));
                 }

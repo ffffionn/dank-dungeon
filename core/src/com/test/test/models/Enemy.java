@@ -152,7 +152,6 @@ public abstract class Enemy extends AnimatedB2DSprite {
             Timer.schedule(new Timer.Task() {
                 @Override
                 public void run() {
-                    frozen = false;
                     sprite.setColor(Color.valueOf("ffffff"));
                     stunned = false;
                 }
@@ -160,11 +159,9 @@ public abstract class Enemy extends AnimatedB2DSprite {
         }
     }
 
-    private boolean frozen;
-
     public void freeze(){
-        frozen = true;
         stun(1.0f);
+        sprite.setColor(Color.SLATE);
     }
 
     /**

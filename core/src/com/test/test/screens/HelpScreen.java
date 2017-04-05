@@ -4,15 +4,21 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Action;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.test.test.DankDungeon;
+
+import static com.test.test.screens.GameScreen.TILE_SIZE;
 
 /**
  * Created by Fionn on 02/04/2017.
@@ -35,7 +41,7 @@ public class HelpScreen implements Screen {
         Gdx.input.setInputProcessor(stage);
         this.table = new Table();
         table.setFillParent(true);
-        table.debug();
+//        table.debug();
 
         setTable();
 
@@ -48,11 +54,60 @@ public class HelpScreen implements Screen {
 
         Label title = new Label("Help", skin, "title");
 
-        table.add(title).expandX().expandY();
+        table.padTop(10.0f);
+        table.add(title).expandX();
         table.row();
-        
+
+        TextureRegion[][] items = assetManager.get("textures/worldTextures.pack", TextureAtlas.class).findRegion("items").split(25, 25);
+
+        Image healthBottle = new Image(items[2][1]);
+        Image manaBottle = new Image(items[2][2]);
+        Image chili = new Image(items[5][4]);
+        Image cheese = new Image(items[5][3]);
+        Image whiteCheese = new Image(items[5][6]);
+        Image pear = new Image(items[5][2]);
+        Image mushrooms = new Image(items[5][7]);
+        Image ham = new Image(items[6][0]);
+        Image staff = new Image(items[1][1]);
+        Image boots = new Image(items[4][0]);
+        Image shield = new Image(items[1][0]);
+        Image goal = new Image(assetManager.get("textures/worldTextures.pack", TextureAtlas.class).findRegion("tiles-blue").split(TILE_SIZE, TILE_SIZE)[1][7]);
+
+        Table t = new Table();
+
+        t.add(healthBottle).colspan(3);
+        t.add(manaBottle).colspan(3);
+        t.add();
+        t.add(new Label("Use potions to stay alive!", skin, "monospaced-light")).expandX().pad(20.0f);
+        t.row();
+
+        t.add(goal).colspan(7);
+        t.add(new Label("Find the stairs on \n each floor to progress", skin, "monospaced-light")).expandX().pad(10.0f);
+        t.row();
+
+        t.add(staff).colspan(2);
+        t.add(shield).colspan(2);
+        t.add(boots).colspan(2);
+        t.add();
+        t.add(new Label("Collect items to permanently \n boost stats", skin, "monospaced-light")).expandX().pad(10.0f);
+        t.row();
+
+        t.add(cheese);
+        t.add(whiteCheese);
+        t.add(chili);
+        t.add(ham);
+        t.add(pear);
+        t.add(mushrooms);
+        t.add();
+        t.add(new Label("Eat foods to augment your spells", skin, "monospaced-light")).expandX().pad(10.0f);
+        t.row();
+
+
+
+        table.add(t).expandX().expandY();
+
         table.row();
-        table.add(new Label("Click anywhere to return to the Main Menu", skin, "monospaced-green")).expandX().expandY();
+        table.add(new Label("Click anywhere to return to the Main Menu", skin, "monospaced-green")).expandX();
         table.padBottom(20.0f);
     }
 
@@ -67,7 +122,7 @@ public class HelpScreen implements Screen {
         stage.draw();
         if(Gdx.input.isTouched()){
             stage.addAction(Actions.sequence(
-                    Actions.fadeOut(1.5f),
+//                    Actions.fadeOut(1.5f),
                     new Action() {
                         @Override
                         public boolean act(float delta) {

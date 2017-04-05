@@ -123,8 +123,7 @@ public class LoadingScreen implements Screen {
                     @Override
                     public boolean act(float delta) {
                         dispose();
-//                        game.setScreen(new MainMenuScreen(game, assetManager));
-                        game.setScreen(new GameScreen(game, assetManager));
+                        game.setScreen(new MainMenuScreen(game, assetManager));
                         return true;
                     }
                 }
