@@ -21,8 +21,6 @@ public class Projectile extends AnimatedB2DSprite {
     public static final float DEFAULT_SPEED = 1.75f;
     public static final int DEFAULT_DAMAGE = 20;
 
-    protected float radius = 2.2f / PPM;
-
     protected static TextureRegion[] fireballAnimation;
 
     protected int damageAmount;
@@ -118,7 +116,7 @@ public class Projectile extends AnimatedB2DSprite {
 
         FixtureDef fdef = new FixtureDef();
         CircleShape shape = new CircleShape();
-        shape.setRadius(this.radius);
+        shape.setRadius(2.0f / PPM);
         fdef.shape = shape;
         fdef.friction = 0.0f;
         fdef.restitution = 1.0f;

@@ -148,18 +148,15 @@ public class Hero extends AnimatedB2DSprite {
             newFireballs.add(getNewProjectile(new Vector2(x, y), damage));
         }
 
-        if(!hasPower(Pickup.Type.FREEZE)){
             // don't tint icicles red
-            if(hasPower(Pickup.Type.DOUBLE_DMG)){
-                for(Projectile p : newFireballs){
-                    p.tint = Color.RED;
-                }
+        if(hasPower(Pickup.Type.DOUBLE_DMG) && !hasPower(Pickup.Type.FREEZE)){
+            for(Projectile p : newFireballs){
+                p.tint = Color.RED;
             }
-            // icicles don't bounce
-            if(hasPower(Pickup.Type.BOUNCING_BULLETS)){
-                for(Projectile p : newFireballs){
-                    p.setBounces(2);
-                }
+        }
+        if(hasPower(Pickup.Type.BOUNCING_BULLETS)){
+            for(Projectile p : newFireballs){
+                p.setBounces(2);
             }
         }
 

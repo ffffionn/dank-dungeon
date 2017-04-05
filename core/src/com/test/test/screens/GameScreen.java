@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -352,6 +353,7 @@ public class GameScreen implements Screen {
 
     public void levelUp(){
         levelUp = true;
+        assetManager.get("sounds/stairs.ogg", Sound.class).play(0.5f);
     }
 
     private void newFloor(){

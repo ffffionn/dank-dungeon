@@ -12,7 +12,6 @@ import static com.test.test.DankDungeon.PPM;
  */
 public class IceProjectile extends Projectile {
 
-    protected float radius = 1.5f / PPM;
     protected static TextureRegion[] icicleAnimation;
 
     public IceProjectile(GameScreen screen, Vector2 startPosition, Vector2 target){
@@ -31,5 +30,8 @@ public class IceProjectile extends Projectile {
         this.damageAmount = damage;
     }
 
-
+    @Override
+    public void bounce() {
+        setToDestroy();
+    }
 }
