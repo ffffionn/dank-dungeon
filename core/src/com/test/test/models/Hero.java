@@ -88,12 +88,12 @@ public class Hero extends AnimatedB2DSprite {
             shield.update(dt);
             currentState.update(dt, this);
             tickPower(dt);
+            // regen mana more based on how long player is idle for
             if( currentState == standing && mana < 100.0f){
                 this.mana += (((StandingState) currentState).getTimeStanding() * dt);
                 screen.getHud().updateMana(MathUtils.floor(this.mana));
             }
         }else{  // player is dead
-            // set game over animation
             if( animation.getTimesPlayed() == 1 ){
                 setToDestroy();
             }
@@ -312,6 +312,7 @@ public class Hero extends AnimatedB2DSprite {
     public void changeState(HeroState s){
         previousState = currentState;
         currentState = s;
+        System.out.printf("%s -> %s  \n", previousState, currentState);
         // trigger state change effects
         previousState.leave(this);
         currentState.enter(this);

@@ -1,11 +1,8 @@
 package com.test.test.models;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.test.test.screens.GameScreen;
-
-import static com.test.test.DankDungeon.PPM;
 
 /**
  * An extension of the Projectile class that stun enemies.

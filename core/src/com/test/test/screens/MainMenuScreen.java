@@ -40,7 +40,6 @@ public class MainMenuScreen implements Screen{
 
         this.skin = assetManager.get("ui/ui_skin.json");
         this.table = new Table();
-//        table.debug();
         table.setFillParent(true);
 
         setTable();
@@ -92,7 +91,7 @@ public class MainMenuScreen implements Screen{
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 stage.addAction(Actions.sequence(
-                        Actions.fadeOut(0.5f),
+                        Actions.fadeOut(0.3f),
                         new Action() {
                             @Override
                             public boolean act(float delta) {
@@ -116,7 +115,7 @@ public class MainMenuScreen implements Screen{
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 stage.addAction(Actions.sequence(
-                        Actions.fadeOut(0.5f),
+                        Actions.fadeOut(0.3f),
                         new Action() {
                             @Override
                             public boolean act(float delta) {

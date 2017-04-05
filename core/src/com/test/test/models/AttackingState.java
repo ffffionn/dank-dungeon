@@ -20,7 +20,7 @@ public class AttackingState extends HeroState {
     @Override
     public void enter(Hero hero){
         timer = 0.0f;
-        hero.setAnimation(castAnimation, 1 / 32f);
+        hero.setAnimation(castAnimation, 1 / 24f);
     }
 
     public String toString(){ return "attacking"; }

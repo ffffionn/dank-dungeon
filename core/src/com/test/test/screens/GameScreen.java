@@ -39,45 +39,36 @@ import static com.test.test.DankDungeon.V_WIDTH;
  * The main Game Loop that updates the entities and draw them.
  */
 public class GameScreen implements Screen {
-    // game
+
+    public static final int TILE_SIZE = 24;
+
     private DankDungeon game;
 
-    // screen
+    private GameHud hud;
     private OrthographicCamera cam;
     private Viewport gamePort;
-    private GameHud hud;
 
     private TextureAtlas atlas;
 
-    // map
     private TiledMap map;
     private OrthogonalTiledMapRenderer mapRenderer;
 
-    // box2d
-    private World world;
-    private Box2DDebugRenderer b2dr;
-
-    // objects
     private Hero player;
     private Body cursorBody;
 
     private Array<B2DSprite> entityList;
     private Array<B2DSprite> deleteList;
 
-    // tools
+    private World world;
     private AssetManager assetManager;
     private CaveGenerator caveGen;
-    private int floor;
 
+    private int floor;
     private Music bgm;
+    private boolean levelUp;
 
     private TextureRegion[][] powerTiles;
 
-    public static final int TILE_SIZE = 24;
-
-    private boolean levelUp;
-
-    // for pausing the game
     private enum State{ RUNNING, PAUSED }
     private State state;
     private Stage pauseMenu;
@@ -94,7 +85,6 @@ public class GameScreen implements Screen {
         // set up box2d physics world
         this.world = new World(new Vector2(0, 0), true);
         world.setContactListener(new WorldContactListener(this));
-        this.b2dr = new Box2DDebugRenderer(); // todo: remove
 
         this.cam = new OrthographicCamera();
         cam.setToOrtho(false, V_WIDTH / 2 / PPM, V_HEIGHT / 2 / PPM);
@@ -118,7 +108,7 @@ public class GameScreen implements Screen {
 
         // set camera
         cam.position.set(gamePort.getWorldWidth() / PPM, gamePort.getWorldHeight() / 2 / PPM, 0);
-        cam.zoom -= 0.7f;
+        cam.zoom -= 0.6f;
         mapRenderer.setView(cam);
 
         createPauseMenu();
@@ -296,10 +286,6 @@ public class GameScreen implements Screen {
 
         mapRenderer.render();
 
-        if(Gdx.input.isKeyPressed(Input.Keys.NUM_1)){
-            b2dr.render(world, cam.combined); // todo: remove
-        }
-
         game.batch.setProjectionMatrix(cam.combined);
         game.batch.begin();
         hud.draw(game.batch);
@@ -397,23 +383,7 @@ public class GameScreen implements Screen {
         entityList.addAll(bodyList);
     }
 
-    // TODO: remove
     public void handleInput(){
-        if (Gdx.input.isKeyPressed(Input.Keys.Q)){
-            cam.zoom -= 0.1f;
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.E)){
-            cam.zoom += 0.1f;
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.TAB)){
-            levelUp();
-        }
-        if(Gdx.input.isKeyJustPressed(Input.Keys.T)){
-            player.damage(10000);
-        }
-        if(Gdx.input.isKeyJustPressed(Input.Keys.R)){
-            player.damage(10);
-        }
         if(Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
             pauseGame();
         }
@@ -495,7 +465,6 @@ public class GameScreen implements Screen {
         player.dispose();
         world.destroyBody(player.getBody());
         world.dispose();
-        b2dr.dispose();
         hud.dispose();
     }
 

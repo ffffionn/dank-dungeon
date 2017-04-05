@@ -177,7 +177,7 @@ public class HighScoreScreen implements Screen {
         // if this is a game over, rather than from the main menu
         if( Gdx.input.isTouched() ){
             stage.addAction(Actions.sequence(
-                Actions.fadeOut(newScore == -1 ? 0.5f : 1.5f),
+                Actions.fadeOut(newScore == -1 ? 0.3f : 1.5f),
                 new Action() {
                     @Override
                     public boolean act(float delta) {

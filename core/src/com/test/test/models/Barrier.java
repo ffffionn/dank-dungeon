@@ -1,10 +1,7 @@
 package com.test.test.models;
 
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.test.test.screens.GameScreen;
@@ -55,7 +52,6 @@ public class Barrier extends AnimatedB2DSprite{
     @Override
     public void render(SpriteBatch sb) {
         if(raised){
-//            super.render(sb);
             sprite.setRegion(animation.getFrame());
             sprite.rotate90(true);
             sprite.draw(sb);
@@ -81,45 +77,18 @@ public class Barrier extends AnimatedB2DSprite{
         bdef.fixedRotation = true;
         b2body = screen.getWorld().createBody(bdef);
 
-        // create the points for the barrier
-        // points made relative to body
-
-        float rotation = 0.0f;
-        float angleOffset = MathUtils.PI / 4;
-
-        float px = (MathUtils.cos(rotation) * (shieldSize)) / PPM;
-        float py = (MathUtils.sin(rotation) * (shieldSize)) / PPM;
-        Vector2 p1 = new Vector2(px, py);
-
-        px = (MathUtils.cos(rotation - angleOffset) * (shieldSize)) / PPM;
-        py = (MathUtils.sin(rotation - angleOffset) * (shieldSize)) / PPM;
-        Vector2 p2 = new Vector2(px, py);
-
-        px = (MathUtils.cos(rotation + angleOffset) * (shieldSize)) / PPM;
-        py = (MathUtils.sin(rotation + angleOffset) * (shieldSize)) / PPM;
-        Vector2 p3 = new Vector2(px, py);
-
-        EdgeShape shape = new EdgeShape();
-//        shape.set(p1, p2);
-        shape.setRadius(2.0f / PPM);
-
-        CircleShape shape2 = new CircleShape();
-        shape2.setRadius(HERO_SIZE / 2 /PPM);
+        CircleShape shape = new CircleShape();
+        shape.setRadius(HERO_SIZE / 2 /PPM);
 
         FixtureDef fdef = new FixtureDef();
-        fdef.shape = shape2;
+        fdef.shape = shape;
         fdef.friction = 0.0f;
         fdef.restitution = 1.0f;
-//        fdef.density = 24.0f;
         fdef.filter.categoryBits = BARRIER;
         fdef.filter.maskBits = PLAYER_PROJECTILE | ENEMY_PROJECTILE | ENEMY;
 
         b2body.createFixture(fdef).setUserData("barrier");
 
-//        shape.set(p1, p3);
-//        fdef.shape = shape;
-
-//        b2body.createFixture(fdef).setUserData("barrier");
         b2body.setUserData(this);
         shape.dispose();
     }

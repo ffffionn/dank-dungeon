@@ -3,11 +3,11 @@ package com.test.test.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Action;
-import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -41,7 +41,6 @@ public class HelpScreen implements Screen {
         Gdx.input.setInputProcessor(stage);
         this.table = new Table();
         table.setFillParent(true);
-//        table.debug();
 
         setTable();
 
@@ -119,10 +118,11 @@ public class HelpScreen implements Screen {
     @Override
     public void render(float delta) {
         stage.act(delta);
-        stage.draw();
+        draw();
+
         if(Gdx.input.isTouched()){
             stage.addAction(Actions.sequence(
-//                    Actions.fadeOut(1.5f),
+                    Actions.fadeOut(0.3f),
                     new Action() {
                         @Override
                         public boolean act(float delta) {
@@ -133,6 +133,16 @@ public class HelpScreen implements Screen {
                     }
             ));
         }
+    }
+
+
+    public void draw(){
+        Gdx.gl.glClearColor(0f / 255f, 0f / 255f, 0f / 255f, 1f);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        game.batch.begin();
+        game.batch.end();
+        stage.draw();
     }
 
     @Override
